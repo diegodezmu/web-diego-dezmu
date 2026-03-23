@@ -1,0 +1,42 @@
+.page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.pageTitleWrap {
+  position: absolute;
+  top: 132px;
+  left: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  transform: translateX(-50%);
+}
+
+.pageTitleLine {
+  width: 1px;
+  height: 28px;
+  background: var(--color-line);
+}
+
+.pageTitle {
+  font-size: var(--title-size);
+  line-height: 1.4;
+  color: var(--color-light-default);
+  text-transform: lowercase;
+}
+
+.interactionLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  touch-action: none;
+}
+
+@media (max-width: 767px) {
+  .pageTitleWrap {
+    top: 98px;
+  }
+}

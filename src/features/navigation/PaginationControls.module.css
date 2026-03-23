@@ -1,0 +1,115 @@
+.sideButton {
+  position: fixed;
+  top: 50%;
+  z-index: 4;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--frame-margin);
+  height: 172px;
+  gap: 8px;
+  padding: 0 8px;
+  color: var(--color-light-off);
+  background-color: transparent;
+  border-radius: 2px;
+  transform: translateY(-50%);
+  transition:
+    background-color var(--page-transition),
+    color var(--page-transition),
+    transform var(--page-transition);
+}
+
+.sideButton:hover {
+  background-color: var(--color-dark-hover);
+  color: var(--color-light-hover);
+  transform: translateY(-50%);
+}
+
+.sideButton:hover .sideArrow {
+  transform: translateX(-4px);
+}
+
+.sideButtonRight:hover .sideArrow {
+  transform: translateX(4px);
+}
+
+.sideButtonLeft {
+  left: 0;
+}
+
+.sideButtonRight {
+  right: 0;
+  flex-direction: row-reverse;
+}
+
+.sideArrow {
+  color: var(--color-light-default);
+  font-size: 28px;
+  line-height: 1;
+  transition: transform var(--page-transition), color var(--page-transition);
+}
+
+.sideButton:hover .sideArrow {
+  color: var(--color-light-hover);
+}
+
+.sideLabel {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.sideButtonLeft .sideLabel {
+  transform: rotate(180deg);
+}
+
+.mobileNav {
+  position: fixed;
+  top: calc(var(--frame-margin) + 48px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--frame-margin);
+  pointer-events: none;
+}
+
+.mobileArrow,
+.mobileSpacer {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileArrow {
+  pointer-events: auto;
+  color: var(--color-light-default);
+  font-size: 42px;
+  line-height: 1;
+  transition: color var(--page-transition), transform var(--page-transition);
+}
+
+.mobileArrow:hover {
+  color: var(--color-light-hover);
+  transform: scale(1.06);
+}
+
+@media (max-width: 1200px) {
+  .sideButton {
+    height: 152px;
+  }
+
+  .sideArrow {
+    font-size: 24px;
+  }
+
+  .sideLabel {
+    font-size: 18px;
+  }
+}

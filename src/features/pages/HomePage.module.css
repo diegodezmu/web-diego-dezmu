@@ -1,0 +1,47 @@
+.page {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: var(--frame-margin);
+}
+
+.heroCopy {
+  position: absolute;
+  bottom: var(--frame-margin);
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  transform: translateX(-50%);
+}
+
+.roleLine {
+  width: 1px;
+  height: 28px;
+  background: var(--color-line);
+}
+
+.role {
+  color: var(--color-light-default);
+  font-size: var(--title-size);
+  line-height: 1.4;
+  text-transform: none;
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: var(--frame-margin);
+  }
+
+  .heroCopy {
+    bottom: var(--frame-margin);
+    left: var(--frame-margin);
+    transform: none;
+  }
+
+  .role {
+    font-size: 18px;
+  }
+}

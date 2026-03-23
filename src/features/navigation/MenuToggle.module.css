@@ -1,0 +1,78 @@
+.toggle {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 90px;
+  height: 32px;
+  gap: 14px;
+  color: var(--color-light-default);
+  transition: color var(--page-transition);
+}
+
+.toggle:hover,
+.toggle:focus-visible {
+  color: var(--color-light-hover);
+}
+
+.labelWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.labelLead {
+  display: inline-block;
+  font-size: var(--menu-button-size);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.labelMask {
+  display: inline-flex;
+  width: 0;
+  overflow: hidden;
+  transition: width 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: width;
+}
+
+.labelTail {
+  display: inline-block;
+  font-size: var(--menu-button-size);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: translateX(10px);
+  transition:
+    opacity 180ms ease,
+    transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+.toggle:hover .labelMask,
+.toggle:focus-visible .labelMask {
+  width: 56px;
+}
+
+.toggle:hover .labelTail,
+.toggle:focus-visible .labelTail {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.rule {
+  width: 1px;
+  height: 28px;
+  background: currentColor;
+  transform: scaleY(0.94);
+}
+
+@media (max-width: 767px) {
+  .labelMask {
+    width: 0;
+  }
+
+  .rule {
+    height: 28px;
+  }
+}

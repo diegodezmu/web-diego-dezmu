@@ -1,0 +1,39 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--frame-margin) var(--frame-margin) 0;
+  pointer-events: none;
+}
+
+.logoLink {
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity var(--page-transition), transform var(--page-transition);
+}
+
+.logoLinkVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.logoMicro {
+  width: 88px;
+  height: auto;
+}
+
+@media (max-width: 767px) {
+  .header {
+    padding-top: var(--frame-margin);
+  }
+
+  .logoMicro {
+    width: 84px;
+  }
+}

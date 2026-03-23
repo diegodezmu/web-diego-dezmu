@@ -1,0 +1,116 @@
+.page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.contentFade {
+  position: absolute;
+  left: var(--frame-margin);
+  right: var(--frame-margin);
+  bottom: 0;
+  height: 34vh;
+  background: linear-gradient(0deg, rgba(1, 1, 1, 0.98) 0%, rgba(1, 1, 1, 0.94) 38%, rgba(1, 1, 1, 0) 100%);
+  pointer-events: none;
+  transition: opacity 220ms ease;
+  z-index: 3;
+}
+
+.scrollArea {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--frame-margin) 24vh;
+}
+
+.contentColumn {
+  width: min(100%, 393px);
+  margin: 0 auto;
+}
+
+.heroCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 50vh;
+  margin-bottom: 32px;
+}
+
+.pageTitleWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pageTitleLine {
+  width: 1px;
+  height: 28px;
+  background: var(--color-line);
+}
+
+.pageTitle {
+  font-size: var(--title-size);
+  line-height: 1.4;
+  color: var(--color-light-default);
+  text-transform: lowercase;
+}
+
+.portraitFrame {
+  width: min(100%, 348px);
+  box-shadow: var(--shadow-soft);
+}
+
+.portrait {
+  width: 100%;
+  height: 348px;
+  object-fit: cover;
+}
+
+.copyBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24vh;
+}
+
+.copyParagraph {
+  color: var(--color-light-default);
+  font-size: var(--body-size);
+  line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+  .scrollArea {
+    padding-top: 122px;
+  }
+
+  .contentColumn {
+    width: min(100%, 278px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .heroCard {
+    gap: 12px;
+    margin-top: 0;
+    margin-bottom: 40px;
+  }
+
+  .pageTitle {
+    font-size: 22px;
+  }
+
+  .copyBlock {
+    gap: 32px;
+  }
+
+  .copyParagraph {
+    font-size: 13px;
+  }
+
+  .contentFade {
+    left: var(--frame-margin);
+    right: var(--frame-margin);
+  }
+}
