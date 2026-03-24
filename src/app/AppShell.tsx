@@ -84,7 +84,7 @@ export function AppShell() {
     }
   }, [capabilities.isTouch])
 
-  const fallbackMode = menuOpen ? 'menuFlood' : sceneMode
+  const fallbackMode = menuOpen ? 'menuGrid' : sceneMode
 
   return (
     <div className={styles.shell} data-section={activeSection}>

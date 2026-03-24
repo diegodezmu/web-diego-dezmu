@@ -4,28 +4,25 @@
   height: 100%;
 }
 
-.pageTitleWrap {
+.titleAnchor {
   position: absolute;
-  top: 132px;
   left: 50%;
-  z-index: 3;
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
+  z-index: 4;
   transform: translateX(-50%);
+  transition:
+    top 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
 }
 
-.pageTitleLine {
-  width: 1px;
-  height: 28px;
-  background: var(--color-line);
+.titleCenter {
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
-.pageTitle {
-  font-size: var(--title-size);
-  line-height: 1.4;
-  color: var(--color-light-default);
-  text-transform: lowercase;
+.titleTop {
+  top: calc(var(--frame-margin) + 4px);
+  transform: translateX(-50%);
 }
 
 .interactionLayer {
@@ -35,8 +32,38 @@
   touch-action: none;
 }
 
+.previewBand {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  z-index: 3;
+  width: min(100%, 680px);
+  padding: 10px 0 0;
+  transform: translateX(-50%);
+  transition: opacity 240ms ease, transform 280ms ease;
+  pointer-events: none;
+}
+
+.previewText {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--color-light-off);
+  text-align: left;
+  text-transform: uppercase;
+}
+
 @media (max-width: 767px) {
-  .pageTitleWrap {
-    top: 98px;
+  .previewBand {
+    width: min(100%, 322px);
+    bottom: 24px;
+  }
+
+  .previewText {
+    font-size: 15px;
+  }
+
+  .titleTop {
+    top: 148px;
   }
 }

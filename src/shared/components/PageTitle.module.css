@@ -1,0 +1,19 @@
+.titleWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rule {
+  width: 1px;
+  height: 28px;
+  background: var(--color-line);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--title-size);
+  line-height: 1.4;
+  color: var(--color-light-primary);
+  text-transform: uppercase;
+}

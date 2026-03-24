@@ -1,8 +1,8 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import type { SceneSnapshot } from './types'
 import { useAppStore } from '@/state/appStore'
+import type { SceneSnapshot } from './types'
 
 function createInitialPositions(maxCount: number) {
   const points = new Float32Array(maxCount * 3)
@@ -13,6 +13,16 @@ function createInitialPositions(maxCount: number) {
   }
 
   return points
+}
+
+function createInitialColors(maxCount: number) {
+  const colors = new Float32Array(maxCount * 3)
+
+  for (let index = 0; index < colors.length; index += 1) {
+    colors[index] = 0.75
+  }
+
+  return colors
 }
 
 function createSpriteTexture() {
@@ -35,8 +45,8 @@ function createSpriteTexture() {
     size / 2,
   )
   gradient.addColorStop(0, 'rgba(255,255,255,1)')
-  gradient.addColorStop(0.35, 'rgba(255,255,255,0.95)')
-  gradient.addColorStop(0.7, 'rgba(255,255,255,0.28)')
+  gradient.addColorStop(0.28, 'rgba(255,255,255,0.92)')
+  gradient.addColorStop(0.64, 'rgba(255,255,255,0.22)')
   gradient.addColorStop(1, 'rgba(255,255,255,0)')
   context.fillStyle = gradient
   context.fillRect(0, 0, size, size)
@@ -55,16 +65,19 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
   const geometryRef = useRef<THREE.BufferGeometry | null>(null)
   const materialRef = useRef<THREE.PointsMaterial | null>(null)
   const positions = useMemo(() => createInitialPositions(maxCount), [maxCount])
+  const colors = useMemo(() => createInitialColors(maxCount), [maxCount])
   const positionsRef = useRef(positions)
+  const colorsRef = useRef(colors)
   const spriteTexture = useMemo(() => createSpriteTexture(), [])
   const pointerWorld = useMemo(() => new THREE.Vector3(), [])
   const rayTarget = useMemo(() => new THREE.Vector3(), [])
   const rayDirection = useMemo(() => new THREE.Vector3(), [])
   const { camera } = useThree()
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const snapshot = snapshotRef.current
     const positions = positionsRef.current
+    const colors = colorsRef.current
     const geometry = geometryRef.current
     const material = materialRef.current
     const { pointer, capabilities } = useAppStore.getState()
@@ -82,6 +95,7 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
       distanceToParticlePlane
     const pointerRadiusWorld =
       (snapshot.pointerRadiusPx / Math.max(1, state.size.height)) * verticalWorldSpan
+    const lerpFactor = 1 - Math.pow(1 - Math.min(snapshot.recovery, 0.96), delta * 60)
 
     if (hasPointer) {
       rayTarget.set(pointer.x, pointer.y, 0.5).unproject(camera)
@@ -103,20 +117,20 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
       }
 
       if (snapshot.orbit > 0 && !capabilities.reducedMotion) {
-        const orbitPhase = state.clock.elapsedTime * 0.55 + index * 0.017
+        const orbitPhase = state.clock.elapsedTime * 0.56 + index * 0.017
         targetX += Math.sin(orbitPhase) * snapshot.orbit
         targetY += Math.cos(orbitPhase * 1.14) * snapshot.orbit
         if (snapshot.is3D) {
-          targetZ += Math.sin(orbitPhase * 0.76) * snapshot.orbit * 1.2
+          targetZ += Math.sin(orbitPhase * 0.82) * snapshot.orbit * 1.28
         }
       }
 
       if (snapshot.drift > 0 && !capabilities.reducedMotion) {
-        const driftPhase = state.clock.elapsedTime * 0.18 + index * 0.011
+        const driftPhase = state.clock.elapsedTime * 0.16 + index * 0.011
         targetX += Math.sin(driftPhase * 0.93) * snapshot.drift
-        targetY += Math.cos(driftPhase * 0.71 + index * 0.003) * snapshot.drift * 0.82
+        targetY += Math.cos(driftPhase * 0.71 + index * 0.003) * snapshot.drift * 0.86
         if (snapshot.is3D) {
-          targetZ += Math.sin(driftPhase * 0.58 + index * 0.005) * snapshot.drift * 0.74
+          targetZ += Math.sin(driftPhase * 0.58 + index * 0.005) * snapshot.drift * 0.82
         }
       }
 
@@ -124,9 +138,11 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
       let currentY = positions[offset + 1]
       let currentZ = positions[offset + 2]
 
-      currentX += (targetX - currentX) * snapshot.recovery
-      currentY += (targetY - currentY) * snapshot.recovery
-      currentZ += (targetZ - currentZ) * snapshot.recovery
+      currentX += (targetX - currentX) * lerpFactor
+      currentY += (targetY - currentY) * lerpFactor
+      currentZ += (targetZ - currentZ) * lerpFactor
+
+      let glow = 0
 
       if (hasPointer) {
         const deltaX = currentX - pointerWorld.x
@@ -135,8 +151,8 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
         const distance = Math.hypot(deltaX, deltaY, deltaZ) || 1
 
         if (distance < pointerRadiusWorld) {
-          const force =
-            ((1 - distance / pointerRadiusWorld) ** 2 * snapshot.pointerStrength) / distance
+          glow = (1 - distance / pointerRadiusWorld) ** 2
+          const force = (glow * snapshot.pointerStrength) / distance
           currentX += deltaX * force
           currentY += deltaY * force
           currentZ += deltaZ * force * 0.7
@@ -146,12 +162,17 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
       positions[offset] = currentX
       positions[offset + 1] = currentY
       positions[offset + 2] = currentZ
+
+      const intensity = snapshot.opacity + (1 - snapshot.opacity) * glow
+      colors[offset] = intensity
+      colors[offset + 1] = intensity
+      colors[offset + 2] = intensity
     }
 
     geometry.attributes.position.needsUpdate = true
+    geometry.attributes.color.needsUpdate = true
     geometry.setDrawRange(0, snapshot.count)
-    material.size = snapshot.size
-    material.opacity = snapshot.opacity
+    material.size = (snapshot.sizePx / Math.max(1, state.size.height)) * verticalWorldSpan
   })
 
   return (
@@ -163,17 +184,24 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
           count={positions.length / 3}
           itemSize={3}
         />
+        <bufferAttribute
+          attach="attributes-color"
+          args={[colors, 3]}
+          count={colors.length / 3}
+          itemSize={3}
+        />
       </bufferGeometry>
       <pointsMaterial
         ref={materialRef}
         alphaMap={spriteTexture}
         alphaTest={0.02}
         blending={THREE.AdditiveBlending}
-        color="#ffffff"
         depthWrite={false}
+        opacity={1}
         size={0.05}
         sizeAttenuation
         transparent
+        vertexColors
       />
     </points>
   )

@@ -4,6 +4,18 @@
   overflow: hidden;
 }
 
+.shell::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
 .routeLayer {
   position: relative;
   z-index: 2;
@@ -29,35 +41,36 @@
   transition: opacity var(--page-transition), transform var(--page-transition);
 }
 
-.fallbackBackdrop--logo {
+.fallbackBackdrop--homeAlpha {
   background:
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.11), transparent 20%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 28%),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 24%),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.03), transparent 42%),
     var(--color-dark);
 }
 
-.fallbackBackdrop--aboutCurve,
-.fallbackBackdrop--contactCurve {
+.fallbackBackdrop--aboutBeta,
+.fallbackBackdrop--contactDelta {
   background:
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.12), transparent 24%),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 22%),
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06), transparent 42%),
     var(--color-dark);
 }
 
 .fallbackBackdrop--aboutFrame {
   background:
-    linear-gradient(var(--color-light-off), var(--color-light-off)) top 8vh left 6vw / calc(100% - 12vw)
+    linear-gradient(var(--color-light-off), var(--color-light-off)) top 10vh left 5vw / calc(100% - 10vw)
       1px no-repeat,
-    linear-gradient(var(--color-light-off), var(--color-light-off)) bottom 8vh left 6vw /
-      calc(100% - 12vw) 1px no-repeat,
-    linear-gradient(var(--color-light-off), var(--color-light-off)) top 8vh left 6vw / 1px
-      calc(100% - 16vh) no-repeat,
-    linear-gradient(var(--color-light-off), var(--color-light-off)) top 8vh right 6vw / 1px
-      calc(100% - 16vh) no-repeat,
+    linear-gradient(var(--color-light-off), var(--color-light-off)) bottom 10vh left 5vw /
+      calc(100% - 10vw) 1px no-repeat,
+    linear-gradient(var(--color-light-off), var(--color-light-off)) top 10vh left 5vw / 1px
+      calc(100% - 20vh) no-repeat,
+    linear-gradient(var(--color-light-off), var(--color-light-off)) top 10vh right 5vw / 1px
+      calc(100% - 20vh) no-repeat,
     var(--color-dark);
 }
 
-.fallbackBackdrop--stackCloud {
+.fallbackBackdrop--stackGamma,
+.fallbackBackdrop--stackNebula {
   background:
     radial-gradient(circle at 20% 55%, rgba(255, 255, 255, 0.08), transparent 18%),
     radial-gradient(circle at 38% 46%, rgba(255, 255, 255, 0.11), transparent 16%),
@@ -66,10 +79,16 @@
     var(--color-dark);
 }
 
-.fallbackBackdrop--menuFlood {
+.fallbackBackdrop--contactDeltaOut {
   background:
-    radial-gradient(circle at 18% 30%, rgba(255, 255, 255, 0.07), transparent 16%),
-    radial-gradient(circle at 48% 60%, rgba(255, 255, 255, 0.08), transparent 18%),
-    radial-gradient(circle at 82% 40%, rgba(255, 255, 255, 0.06), transparent 15%),
+    radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.08), transparent 18%),
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.04), transparent 20%),
+    var(--color-dark);
+}
+
+.fallbackBackdrop--menuGrid {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px) 0 0 / 24px 24px,
     var(--color-dark);
 }

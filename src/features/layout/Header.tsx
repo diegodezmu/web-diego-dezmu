@@ -1,23 +1,17 @@
-import { Link } from 'react-router-dom'
-import { assets } from '@/shared/assets'
+import { MenuToggle } from '@/features/navigation/MenuToggle'
+import { MicroLogo } from '@/shared/components/MicroLogo'
 import { useAppStore } from '@/state/appStore'
-import { MenuToggle } from '../navigation/MenuToggle'
 import styles from './Header.module.css'
 
 export function Header() {
   const menuOpen = useAppStore((state) => state.menuOpen)
-  const showMicroLogo = !menuOpen
+  const activeSection = useAppStore((state) => state.activeSection)
 
   return (
     <header className={styles.header}>
-      <Link
-        className={`${styles.logoLink} ${showMicroLogo ? styles.logoLinkVisible : ''}`}
-        to="/"
-        aria-label="Go to home"
-        data-cursor="interactive"
-      >
-        <img className={styles.logoMicro} src={assets.logoMicroUrl} alt="Diego Dezmu" />
-      </Link>
+      <div className={styles.leading}>
+        {!menuOpen && activeSection !== 'home' ? <MicroLogo /> : null}
+      </div>
 
       {!menuOpen ? <MenuToggle /> : null}
     </header>

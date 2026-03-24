@@ -1,36 +1,23 @@
 .sideButton {
   position: fixed;
   top: 50%;
-  z-index: 4;
+  z-index: 6;
   display: inline-flex;
-  justify-content: center;
   align-items: center;
-  width: var(--frame-margin);
-  height: 172px;
-  gap: 8px;
-  padding: 0 8px;
+  justify-content: center;
+  width: 160px;
+  height: 372px;
+  gap: 18px;
   color: var(--color-light-off);
-  background-color: transparent;
-  border-radius: 2px;
+  background: transparent;
   transform: translateY(-50%);
-  transition:
-    background-color var(--page-transition),
-    color var(--page-transition),
-    transform var(--page-transition);
+  transition: background-color var(--page-transition), color var(--page-transition);
 }
 
-.sideButton:hover {
-  background-color: var(--color-dark-hover);
-  color: var(--color-light-hover);
-  transform: translateY(-50%);
-}
-
-.sideButton:hover .sideArrow {
-  transform: translateX(-4px);
-}
-
-.sideButtonRight:hover .sideArrow {
-  transform: translateX(4px);
+.sideButton:hover,
+.sideButton:focus-visible {
+  background: var(--color-dark-hover);
+  color: var(--color-light-highlight);
 }
 
 .sideButtonLeft {
@@ -42,74 +29,88 @@
   flex-direction: row-reverse;
 }
 
-.sideArrow {
-  color: var(--color-light-default);
-  font-size: 28px;
-  line-height: 1;
-  transition: transform var(--page-transition), color var(--page-transition);
-}
-
-.sideButton:hover .sideArrow {
-  color: var(--color-light-hover);
-}
-
 .sideLabel {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.4;
+  color: inherit;
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  font-size: 22px;
-  line-height: 1.4;
-  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .sideButtonLeft .sideLabel {
   transform: rotate(180deg);
 }
 
+.chevron {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  border-top: 1.25px solid currentColor;
+  border-right: 1.25px solid currentColor;
+  transition: transform var(--page-transition);
+}
+
+.chevronLeft {
+  transform: rotate(-135deg);
+}
+
+.chevronRight {
+  transform: rotate(45deg);
+}
+
+.sideButtonLeft:hover .chevronLeft,
+.sideButtonLeft:focus-visible .chevronLeft {
+  transform: translateX(-4px) rotate(-135deg);
+}
+
+.sideButtonRight:hover .chevronRight,
+.sideButtonRight:focus-visible .chevronRight {
+  transform: translateX(4px) rotate(45deg);
+}
+
 .mobileNav {
   position: fixed;
-  top: calc(var(--frame-margin) + 48px);
-  left: 0;
-  right: 0;
-  z-index: 5;
+  top: clamp(128px, 18vh, 168px);
+  left: var(--frame-margin);
+  right: var(--frame-margin);
+  z-index: 6;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 var(--frame-margin);
+  justify-content: space-between;
   pointer-events: none;
 }
 
 .mobileArrow,
 .mobileSpacer {
   display: inline-flex;
-  width: 26px;
-  height: 26px;
   align-items: center;
   justify-content: center;
+  width: 42px;
+  height: 42px;
 }
 
 .mobileArrow {
   pointer-events: auto;
-  color: var(--color-light-default);
-  font-size: 42px;
-  line-height: 1;
+  color: var(--color-light-primary);
   transition: color var(--page-transition), transform var(--page-transition);
 }
 
-.mobileArrow:hover {
-  color: var(--color-light-hover);
-  transform: scale(1.06);
+.mobileArrow:hover,
+.mobileArrow:focus-visible {
+  color: var(--color-light-highlight);
+  transform: scale(1.04);
+}
+
+.mobileArrow .chevron {
+  width: 18px;
+  height: 18px;
 }
 
 @media (max-width: 1200px) {
   .sideButton {
-    height: 152px;
-  }
-
-  .sideArrow {
-    font-size: 24px;
-  }
-
-  .sideLabel {
-    font-size: 18px;
+    width: 136px;
+    height: 332px;
   }
 }

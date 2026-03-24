@@ -1,12 +1,14 @@
 export type AppSection = 'home' | 'about' | 'stack' | 'contact'
 
 export type SceneMode =
-  | 'logo'
-  | 'aboutCurve'
+  | 'homeAlpha'
+  | 'aboutBeta'
   | 'aboutFrame'
-  | 'stackCloud'
-  | 'contactCurve'
-  | 'menuFlood'
+  | 'stackGamma'
+  | 'stackNebula'
+  | 'contactDelta'
+  | 'contactDeltaOut'
+  | 'menuGrid'
 
 export type DeviceTier = 'desktop' | 'tablet' | 'mobile' | 'lowPower'
 
@@ -37,6 +39,20 @@ export type CurveDefinition = {
   animate: boolean
 }
 
+export type ParticleTuning = {
+  count: number
+  sizePx: number
+  opacity: number
+  strokeWeightPx: number
+  jitterPx: number
+  haloPx: number
+  pointerRadiusPx: number
+  pointerStrength: number
+  driftMotion: number
+  orbitMotion: number
+  recovery: number
+}
+
 export type StackCluster = {
   name: string
   slug: string
@@ -45,16 +61,8 @@ export type StackCluster = {
   skills: string[]
 }
 
-export type ScenePreset = {
-  count: number
-  size: number
-  opacity: number
-  jitter: number
-  orbit: number
-  drift: number
-  recovery: number
-  pointerRadiusPx: number
-  pointerStrength: number
+export type ScenePreset = ParticleTuning & {
+  spin: number
   cameraPosition: readonly [number, number, number]
   cameraLookAt: readonly [number, number, number]
   spread: readonly [number, number, number]

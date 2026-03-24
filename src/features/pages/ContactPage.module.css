@@ -1,87 +1,48 @@
 .page {
   position: relative;
-  display: grid;
   width: 100%;
   height: 100%;
-  align-items: center;
-  justify-items: center;
-  padding: var(--frame-margin);
+  touch-action: none;
 }
 
-.contentWrap {
-  display: flex;
-  align-items: center;
-  gap: 28px;
+.titleAnchor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
 }
 
-.mailButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 286px;
-  min-width: 286px;
-  min-height: 120px;
-  padding: 0 24px;
-  border: 1px solid var(--color-light-default);
-  color: var(--color-light-default);
-  font-size: 17px;
-  line-height: 1.5;
-  background: rgba(1, 1, 1, 0.56);
-  transition:
-    border-color var(--page-transition),
-    background-color var(--page-transition),
-    color var(--page-transition),
-    transform var(--page-transition);
-}
-
-.mailButton:hover {
-  border-color: var(--color-light-hover);
-  background: var(--color-dark-hover);
-  color: var(--color-light-hover);
-  transform: translateY(-2px);
-}
-
-.titleBlock {
+.linksBlock {
+  position: absolute;
+  left: 50%;
+  bottom: 92px;
+  z-index: 4;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 220ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.titleLine {
-  font-size: var(--title-size);
-  line-height: 1.4;
-  color: var(--color-light-default);
+.emailLink,
+.socialText {
+  font-size: var(--link-size);
+  line-height: 1.5;
+  text-decoration: underline;
 }
 
-.caption {
-  position: absolute;
-  bottom: var(--frame-margin);
-  left: 50%;
-  color: var(--color-light-off);
-  font-size: var(--caption-size);
-  line-height: 1.4;
-  letter-spacing: 0.08em;
-  transform: translateX(-50%);
+.emailLink {
+  color: var(--color-light-primary);
+}
+
+.socialText {
+  color: var(--color-light-secondary);
 }
 
 @media (max-width: 767px) {
-  .page {
-    align-items: start;
-    padding-top: max(30vh, var(--frame-margin));
-  }
-
-  .contentWrap {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
-  }
-
-  .mailButton {
-    width: 228px;
-    min-height: 92px;
-  }
-
-  .titleLine {
-    font-size: 22px;
+  .linksBlock {
+    bottom: 72px;
   }
 }

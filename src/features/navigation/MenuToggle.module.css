@@ -1,78 +1,93 @@
 .toggle {
-  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  width: 90px;
-  height: 32px;
-  gap: 14px;
-  color: var(--color-light-default);
+  min-width: 96px;
+  min-height: 28px;
+  color: var(--color-light-primary);
+  animation: toggleEnter 720ms cubic-bezier(0.22, 1, 0.36, 1);
   transition: color var(--page-transition);
 }
 
 .toggle:hover,
 .toggle:focus-visible {
-  color: var(--color-light-hover);
+  color: var(--color-light-highlight);
 }
 
-.labelWrap {
+.word {
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-}
-
-.labelLead {
-  display: inline-block;
-  font-size: var(--menu-button-size);
+  font-family: var(--font-display);
+  font-size: 20px;
   line-height: 1;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
 }
 
-.labelMask {
+.lead {
+  display: inline-flex;
+  align-items: center;
+}
+
+.tail {
   display: inline-flex;
   width: 0;
   overflow: hidden;
-  transition: width 360ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: width;
+  transition: width 380ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.labelTail {
-  display: inline-block;
-  font-size: var(--menu-button-size);
-  line-height: 1;
-  letter-spacing: 0.02em;
+.char {
+  display: inline-flex;
+  align-items: center;
   opacity: 0;
-  transform: translateX(10px);
+  transform: translate3d(10px, 0, 0);
   transition:
-    opacity 180ms ease,
+    opacity 160ms ease,
     transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform, opacity;
+  transition-delay: var(--char-delay);
 }
 
-.toggle:hover .labelMask,
-.toggle:focus-visible .labelMask {
-  width: 56px;
+.toggle:hover .tail,
+.toggle:focus-visible .tail {
+  width: 58px;
 }
 
-.toggle:hover .labelTail,
-.toggle:focus-visible .labelTail {
+.toggle:hover .char,
+.toggle:focus-visible .char {
   opacity: 1;
-  transform: translateX(0);
+  transform: translate3d(0, 0, 0);
 }
 
-.rule {
-  width: 1px;
-  height: 28px;
-  background: currentColor;
-  transform: scaleY(0.94);
+@keyframes toggleEnter {
+  from {
+    opacity: 0;
+    transform: translate3d(24px, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @media (max-width: 767px) {
-  .labelMask {
+  .toggle {
+    min-width: 48px;
+  }
+
+  .word {
+    font-size: 20px;
+  }
+
+  .toggle:hover .tail,
+  .toggle:focus-visible .tail {
     width: 0;
   }
 
-  .rule {
-    height: 28px;
+  .toggle:hover .char,
+  .toggle:focus-visible .char {
+    opacity: 0;
+    transform: translate3d(10px, 0, 0);
   }
 }

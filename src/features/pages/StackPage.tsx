@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react'
+import { siteContent, stackPreviewText } from '@/config/content'
+import { PageTitle } from '@/shared/components/PageTitle'
 import { useAppStore } from '@/state/appStore'
 import styles from './StackPage.module.css'
 
@@ -13,32 +15,27 @@ export function StackPage() {
     y: 0,
   })
   const interactionRef = useRef<HTMLDivElement | null>(null)
+  const stackProgress = useAppStore((state) => state.stackProgress)
+  const isTouch = useAppStore((state) => state.capabilities.isTouch)
   const setStackView = useAppStore((state) => state.setStackView)
   const resetStackView = useAppStore((state) => state.resetStackView)
+  const setStackProgress = useAppStore((state) => state.setStackProgress)
 
   useEffect(() => {
     resetStackView()
-  }, [resetStackView])
+    setStackProgress(0)
+  }, [resetStackView, setStackProgress])
 
   useEffect(() => {
     const element = interactionRef.current
-
     if (!element) {
       return
     }
 
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault()
-      const currentView = useAppStore.getState().stackView
-      const zoomSensitivity = currentView.zoom > 0.82 ? 0.00145 : 0.0012
-
-      setStackView({
-        zoom: clamp(
-          currentView.zoom - event.deltaY * zoomSensitivity,
-          0.04,
-          1,
-        ),
-      })
+      const current = useAppStore.getState().stackProgress
+      setStackProgress(clamp(current + event.deltaY * 0.0012, 0, 1))
     }
 
     element.addEventListener('wheel', handleWheel, { passive: false })
@@ -46,13 +43,14 @@ export function StackPage() {
     return () => {
       element.removeEventListener('wheel', handleWheel)
     }
-  }, [setStackView])
+  }, [setStackProgress])
+
+  const titleShiftClass = stackProgress > 0.46 ? styles.titleTop : styles.titleCenter
 
   return (
     <section className={styles.page}>
-      <div className={styles.pageTitleWrap}>
-        <span className={styles.pageTitleLine} aria-hidden="true" />
-        <h2 className={styles.pageTitle}>stack</h2>
+      <div className={`${styles.titleAnchor} ${titleShiftClass}`}>
+        <PageTitle title={siteContent.stackTitle} />
       </div>
 
       <div
@@ -80,11 +78,16 @@ export function StackPage() {
             y: event.clientY,
           }
 
+          if (isTouch) {
+            const currentProgress = useAppStore.getState().stackProgress
+            setStackProgress(clamp(currentProgress + deltaY * -0.004, 0, 1))
+            return
+          }
+
           const currentView = useAppStore.getState().stackView
-          const panSensitivity = 0.0068 + currentView.zoom * 0.0038
           setStackView({
-            panX: clamp(currentView.panX + deltaX * panSensitivity, -1.12, 1.12),
-            panY: clamp(currentView.panY - deltaY * panSensitivity, -0.92, 0.92),
+            panX: clamp(currentView.panX + deltaX * 0.005, -1.24, 1.24),
+            panY: clamp(currentView.panY - deltaY * 0.005, -0.94, 0.94),
           })
         }}
         onPointerUp={(event) => {
@@ -95,6 +98,17 @@ export function StackPage() {
           pointerState.current.active = false
         }}
       />
+
+      <div
+        className={styles.previewBand}
+        style={{
+          opacity: 1 - Math.min(1, stackProgress * 2.1),
+          transform: `translateY(${stackProgress * 40}px)`,
+        }}
+        aria-hidden={stackProgress > 0.5}
+      >
+        <p className={styles.previewText}>{stackPreviewText}</p>
+      </div>
     </section>
   )
 }

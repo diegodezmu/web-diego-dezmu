@@ -3,25 +3,29 @@ import type { AppSection, StackCluster } from '@/shared/types'
 export const sectionOrder: AppSection[] = ['home', 'about', 'stack', 'contact']
 
 export const sectionLabels: Record<AppSection, string> = {
-  home: 'home',
-  about: 'about',
-  stack: 'stack',
-  contact: 'contact',
+  home: 'HOME',
+  about: 'ABOUT',
+  stack: 'STACK',
+  contact: 'CONTACT',
 }
 
 export const siteContent = {
-  displayName: 'Diego Dezmu',
-  role: 'AI System Designer',
-  aboutTitle: 'about',
+  displayName: 'DIEGO DEZMU',
+  microDisplayName: 'D. DEZMU',
+  rolePrimary: 'AI BUILDER',
+  roleSecondary: 'PRODUCT DESIGNER',
+  aboutTitle: 'ABOUT',
   aboutParagraphs: [
     'Diego is an AI builder with a foundation in software development, product design and audio engineering.',
     '"My multidisciplinary background taught me to think in systems: optimize signals, remove noise, and ensure the output is clean". For over a decade of career I applied that same logic to every framework, from designing mobile apps to immersive audiovisual experiences, audio interfaces, workflows or any kind of solution.',
     '"Today I am currently specialized in generative AI, working at the intersection of solution design and intelligent systems, agent architectures, and automations that connect work ecosystems."',
     '"I combine design thinking with the technical ability to build with AI. I do not need to translate between teams. I speak both languages."',
   ],
-  contactTitleLines: ['send the brief.', "I'll bring the", 'architecture'],
+  stackTitle: 'STACK',
+  contactTitle: 'CONTACT',
   contactEmail: 'diego.dezmu@gmail.com',
-  contactCaption: '© COPYWRIGHT DIEGO.DEZMU 2026',
+  contactSocialLabel: 'Instagram / Twitter',
+  menuCaption: '\u00a9 COPYWRIGHT DIEGO DEZMU 2026',
 }
 
 export const stackClusterConfig: StackCluster[] = [
@@ -94,10 +98,14 @@ export const stackClusterConfig: StackCluster[] = [
     skills: [
       'Sound design',
       'Audio engineering',
-      'Audio Mixing',
+      'Audio mixing',
       'Audio mastering',
       'Ableton Live',
       'Max4live',
     ],
   },
 ]
+
+export const stackPreviewText = stackClusterConfig
+  .flatMap((cluster) => cluster.skills)
+  .join(' - ')
