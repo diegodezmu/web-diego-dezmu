@@ -4,12 +4,31 @@
   font-family: var(--font-display);
   font-size: var(--micro-logo-size);
   line-height: 1;
+  letter-spacing: var(--micro-logo-tracking);
   color: var(--color-light-primary);
+  text-shadow: var(--shadow-soft);
   text-transform: uppercase;
   transition: color var(--page-transition), opacity var(--page-transition);
+}
+
+.logoAnimate {
+  animation: microLogoIn 760ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: center;
 }
 
 .logo:hover,
 .logo:focus-visible {
   color: var(--color-light-highlight);
+}
+
+@keyframes microLogoIn {
+  from {
+    opacity: 0;
+    transform: rotateZ(-84deg) scale(0.66);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotateZ(0deg) scale(1);
+  }
 }

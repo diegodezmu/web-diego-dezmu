@@ -1,34 +1,19 @@
-import { useRef } from 'react'
 import { Html } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
-import type { Group } from 'three'
 import { useAppStore } from '@/state/appStore'
 import type { StackLabelDatum } from './types'
 import styles from './StackLabels.module.css'
 
 type StackLabelsProps = {
   labels: StackLabelDatum[]
-  spin: number
+  visibility: number
 }
 
-export function StackLabels({ labels, spin }: StackLabelsProps) {
-  const groupRef = useRef<Group | null>(null)
+export function StackLabels({ labels, visibility }: StackLabelsProps) {
   const menuOpen = useAppStore((state) => state.menuOpen)
   const activeSection = useAppStore((state) => state.activeSection)
   const deviceTier = useAppStore((state) => state.capabilities.deviceTier)
-  const reducedMotion = useAppStore((state) => state.capabilities.reducedMotion)
-  const stackProgress = useAppStore((state) => state.stackProgress)
 
-  useFrame((state) => {
-    if (!groupRef.current) {
-      return
-    }
-
-    const rotationWeight = Math.max(0, Math.min(1, (stackProgress - 0.34) / 0.44))
-    groupRef.current.rotation.y = reducedMotion ? 0 : state.clock.elapsedTime * spin * rotationWeight
-  })
-
-  if (menuOpen || activeSection !== 'stack' || stackProgress < 0.42) {
+  if (menuOpen || activeSection !== 'stack' || visibility <= 0.02) {
     return null
   }
 
@@ -37,17 +22,25 @@ export function StackLabels({ labels, spin }: StackLabelsProps) {
   }
 
   return (
-    <group ref={groupRef}>
+    <group>
       {labels.map((label) => (
         <Html
           key={label.id}
           position={label.position}
           center
-          distanceFactor={9.4}
+          distanceFactor={10.2}
           transform={false}
           zIndexRange={[2, 0]}
         >
-          <span className={styles.label}>{label.text}</span>
+          <span
+            className={styles.label}
+            style={{
+              fontSize: `${10 + label.densityTier * 1.05}px`,
+              opacity: Math.min(1, visibility * (0.44 + label.densityTier * 0.12)),
+            }}
+          >
+            {label.text}
+          </span>
         </Html>
       ))}
     </group>

@@ -3,9 +3,9 @@ import {
   betaConfig,
   deltaConfig,
   frameGridConfig,
-  gammaConfig,
   menuGridConfig,
-  nebulaConfig,
+  stackBridgeConfig,
+  stackEmbeddingsConfig,
 } from '@/config/curves'
 import type { AppSection, DeviceTier, SceneMode, ScenePreset } from '@/shared/types'
 
@@ -39,21 +39,21 @@ export const scenePresets: Record<SceneMode, ScenePreset> = {
     spin: 0,
     cameraPosition: [0, 0, 11.2],
     cameraLookAt: [0, 0, 0],
-    spread: [10.6, 6.4, 0.6],
+    spread: [10.2, 6.1, 0.5],
   },
-  stackGamma: {
-    ...gammaConfig.particles,
+  stackBridge: {
+    ...stackBridgeConfig,
     spin: 0,
-    cameraPosition: [0, 0, 11.6],
+    cameraPosition: [0, 0.05, 13.2],
     cameraLookAt: [0, 0, 0],
-    spread: [7.2, 5.2, 1.9],
+    spread: [7.6, 4.8, 3.2],
   },
-  stackNebula: {
-    ...nebulaConfig,
-    spin: 0.035,
-    cameraPosition: [0, 0.08, 12.6],
+  stackEmbeddings: {
+    ...stackEmbeddingsConfig,
+    spin: 0,
+    cameraPosition: [0, 0.04, 13.9],
     cameraLookAt: [0, 0, 0],
-    spread: [10.5, 6.5, 5.4],
+    spread: [9.8, 5.2, 5.6],
   },
   contactDelta: {
     ...deltaConfig.particles,
@@ -117,7 +117,7 @@ export function sectionToSceneMode(section: AppSection): SceneMode {
     case 'about':
       return 'aboutBeta'
     case 'stack':
-      return 'stackGamma'
+      return 'stackBridge'
     case 'contact':
       return 'contactDelta'
     case 'home':

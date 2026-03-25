@@ -5,8 +5,8 @@
 }
 
 :root {
-  --color-dark: #010101;
-  --color-dark-hover: #1f1f1f;
+  --color-dark: #000000;
+  --color-dark-hover: #131313;
   --color-light-primary: #d1d1d1;
   --color-light-highlight: #ffffff;
   --color-light-secondary: #5d5d5d;
@@ -21,15 +21,23 @@
   --frame-margin: var(--frame-margin-desktop);
   --header-offset: 72px;
   --title-size: 32px;
+  --title-tracking: 0.45em;
   --menu-button-size: 24px;
-  --menu-button-hover-size: 28px;
+  --menu-button-hover-size: 24px;
+  --menu-button-tracking: 0.5em;
   --logo-display-size: 48px;
-  --role-size: 18px;
-  --body-size: 17px;
+  --logo-display-tracking: 0.5em;
+  --role-size: 16px;
+  --body-size: 15px;
   --link-size: 16px;
   --caption-size: 12px;
   --micro-logo-size: 14px;
-  --page-transition: 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  --micro-logo-tracking: 0.18em;
+  --menu-toggle-size: 18px;
+  --menu-toggle-tracking: 0.09em;
+  --page-transition: 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow-title: 0 8px 28px rgba(0, 0, 0, 0.76);
+  --shadow-soft: 0 0 24px rgba(0, 0, 0, 0.58);
   font-family: var(--font-body);
   line-height: 1.5;
   color: var(--color-light-primary);
@@ -45,6 +53,8 @@
 }
 
 html {
+  width: 100%;
+  min-height: 100%;
   background: var(--color-dark);
   color: var(--color-light-primary);
   scrollbar-color: var(--color-light-off) transparent;
@@ -57,6 +67,7 @@ html[data-cursor-mode='custom'] * {
 
 body {
   margin: 0;
+  width: 100%;
   min-width: 320px;
   min-height: 100vh;
   background: var(--color-dark);
@@ -102,6 +113,7 @@ p {
 
 #root {
   min-height: 100vh;
+  background: var(--color-dark);
 }
 
 .srOnly {
@@ -124,12 +136,13 @@ p {
 @media (max-width: 767px) {
   :root {
     --frame-margin: var(--frame-margin-mobile);
-    --title-size: 32px;
+    --title-size: 26px;
     --menu-button-size: 20px;
-    --menu-button-hover-size: 24px;
-    --logo-display-size: 42px;
-    --role-size: 18px;
-    --body-size: 16px;
+    --menu-button-hover-size: 20px;
+    --logo-display-size: 21px;
+    --logo-display-tracking: 0.5em;
+    --role-size: 16px;
+    --body-size: 15px;
     --header-offset: 40px;
   }
 }

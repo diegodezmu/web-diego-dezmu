@@ -10,7 +10,9 @@ export function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.leading}>
-        {!menuOpen && activeSection !== 'home' ? <MicroLogo /> : null}
+        {!menuOpen && activeSection !== 'home' ? (
+          <MicroLogo key={activeSection} animate={activeSection === 'about'} />
+        ) : null}
       </div>
 
       {!menuOpen ? <MenuToggle /> : null}

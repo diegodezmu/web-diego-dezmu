@@ -3,9 +3,8 @@
   white-space: nowrap;
   pointer-events: none;
   text-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
-  color: rgba(209, 209, 209, 0.84);
+  color: rgba(209, 209, 209, 0.88);
   font-family: var(--font-body);
-  font-size: 13px;
   line-height: 1.4;
-  text-transform: uppercase;
+  font-weight: 500;
 }

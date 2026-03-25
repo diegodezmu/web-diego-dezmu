@@ -18,6 +18,7 @@ type AppState = {
   contactProgress: number
   stackView: StackView
   setActiveSection: (section: AppSection) => void
+  setSceneMode: (sceneMode: SceneMode) => void
   setMenuOpen: (open: boolean) => void
   setPointer: (pointer: Partial<PointerState>) => void
   setCapabilities: (capabilities: Partial<Capabilities>) => void
@@ -66,6 +67,7 @@ export const useAppStore = create<AppState>((set) => ({
       contactProgress: 0,
       stackView: defaultStackView,
     }),
+  setSceneMode: (sceneMode) => set({ sceneMode }),
   setMenuOpen: (menuOpen) => set({ menuOpen }),
   setPointer: (pointer) =>
     set((state) => ({

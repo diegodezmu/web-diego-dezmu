@@ -31,7 +31,7 @@ export function ContactPage() {
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault()
       const current = useAppStore.getState().contactProgress
-      setContactProgress(clamp(current + event.deltaY * 0.0013, 0, 1))
+      setContactProgress(clamp(current + event.deltaY * 0.0026, 0, 1))
     }
 
     element.addEventListener('wheel', handleWheel, { passive: false })
@@ -40,6 +40,8 @@ export function ContactPage() {
       element.removeEventListener('wheel', handleWheel)
     }
   }, [setContactProgress])
+
+  const revealProgress = clamp((contactProgress - 0.01) / 0.14, 0, 1)
 
   return (
     <section
@@ -57,7 +59,7 @@ export function ContactPage() {
         const deltaY = event.clientY - pointerState.current.y
         pointerState.current = { active: true, y: event.clientY }
         const current = useAppStore.getState().contactProgress
-        setContactProgress(clamp(current + deltaY * -0.0045, 0, 1))
+        setContactProgress(clamp(current + deltaY * -0.009, 0, 1))
       }}
       onPointerUp={(event) => {
         pointerState.current.active = false
@@ -70,7 +72,7 @@ export function ContactPage() {
       <div
         className={styles.titleAnchor}
         style={{
-          transform: `translate(-50%, calc(-50% - ${contactProgress * 24}px))`,
+          transform: `translate(-50%, calc(-50% - ${contactProgress * 72}px))`,
         }}
       >
         <PageTitle title={siteContent.contactTitle} />
@@ -79,8 +81,8 @@ export function ContactPage() {
       <div
         className={styles.linksBlock}
         style={{
-          opacity: Math.max(0, (contactProgress - 0.15) / 0.75),
-          transform: `translate(-50%, ${22 - contactProgress * 22}px)`,
+          opacity: revealProgress,
+          transform: `translate(-50%, ${24 - revealProgress * 24}px)`,
         }}
       >
         <a

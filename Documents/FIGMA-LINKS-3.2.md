@@ -21,9 +21,6 @@ Información importante:
 ## Componentes
 https://www.figma.com/design/uLdnRDaa6RcUEyL0JcORrb/Portfolio---v2?node-id=194-754&t=BN5DD5qW1FMPQDHI-11
 
-## Referencias 
-https://www.figma.com/design/uLdnRDaa6RcUEyL0JcORrb/Portfolio---v2?node-id=228-374&t=BN5DD5qW1FMPQDHI-11
-
 ## Página Home
 ### Desktop
 https://www.figma.com/design/uLdnRDaa6RcUEyL0JcORrb/Portfolio---v2?node-id=174-946&t=BN5DD5qW1FMPQDHI-11
@@ -36,17 +33,11 @@ https://www.figma.com/design/uLdnRDaa6RcUEyL0JcORrb/Portfolio---v2?node-id=174-8
 ### Mobile
 https://www.figma.com/design/uLdnRDaa6RcUEyL0JcORrb/Portfolio---v2?node-id=194-403&t=BN5DD5qW1FMPQDHI-11
 
-## Página Stack 1
+## Página Stack 
 ### Desktop
 https://www.figma.com/design/uLdnRDaa6RcUEyL0JcORrb/Portfolio---v2?node-id=174-905&t=BN5DD5qW1FMPQDHI-11
 ### Mobile
 https://www.figma.com/design/uLdnRDaa6RcUEyL0JcORrb/Portfolio---v2?node-id=194-680&t=BN5DD5qW1FMPQDHI-11
-
-## Página Stack 2
-### Desktop
-https://www.figma.com/design/uLdnRDaa6RcUEyL0JcORrb/Portfolio---v2?node-id=194-660&t=BN5DD5qW1FMPQDHI-11
-### Mobile
-https://www.figma.com/design/uLdnRDaa6RcUEyL0JcORrb/Portfolio---v2?node-id=194-698&t=BN5DD5qW1FMPQDHI-11
 
 ## Página Contact 1
 ### Desktop

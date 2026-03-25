@@ -3,114 +3,228 @@
   top: 50%;
   z-index: 6;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 160px;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 158px;
   height: 372px;
-  gap: 18px;
   color: var(--color-light-off);
   background: transparent;
   transform: translateY(-50%);
-  transition: background-color var(--page-transition), color var(--page-transition);
+  overflow: hidden;
+  transition: color var(--page-transition), transform var(--page-transition);
+  animation: paginationDockIn 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  isolation: isolate;
 }
 
-.sideButton:hover,
-.sideButton:focus-visible {
+.sideButton::before,
+.mobileButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: var(--color-dark-hover);
-  color: var(--color-light-highlight);
+  transform: scaleX(0);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 0;
 }
 
 .sideButtonLeft {
   left: 0;
 }
 
+.sideButtonLeft::before,
+.mobileButtonLeft::before {
+  transform-origin: left center;
+}
+
 .sideButtonRight {
   right: 0;
-  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.sideButtonRight::before,
+.mobileButtonRight::before {
+  transform-origin: right center;
+}
+
+.sideButton:hover,
+.sideButton:focus-visible,
+.mobileButton:hover,
+.mobileButton:focus-visible {
+  color: var(--color-light-highlight);
+}
+
+.sideButton:hover::before,
+.sideButton:focus-visible::before,
+.mobileButton:hover::before,
+.mobileButton:focus-visible::before {
+  transform: scaleX(1);
+}
+
+.sideButtonInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
 .sideLabel {
+  position: absolute;
+  top: 50%;
   font-family: var(--font-display);
-  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 98px;
+  font-size: 16px;
   line-height: 1.4;
+  letter-spacing: 0;
   color: inherit;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   text-transform: uppercase;
+  text-shadow: var(--shadow-soft);
+  transform: translate(-50%, -50%);
 }
 
 .sideButtonLeft .sideLabel {
-  transform: rotate(180deg);
+  left: calc(var(--frame-margin) + 35px);
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+.sideButtonRight .sideLabel {
+  left: calc(100% - var(--frame-margin) - 35px);
 }
 
 .chevron {
-  display: inline-flex;
-  width: 18px;
-  height: 18px;
-  border-top: 1.25px solid currentColor;
-  border-right: 1.25px solid currentColor;
-  transition: transform var(--page-transition);
+  position: absolute;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  transform: translateY(-50%);
 }
 
-.chevronLeft {
-  transform: rotate(-135deg);
+.sideButtonLeft .chevron {
+  left: var(--frame-margin);
 }
 
-.chevronRight {
-  transform: rotate(45deg);
+.sideButtonRight .chevron {
+  right: var(--frame-margin);
 }
 
-.sideButtonLeft:hover .chevronLeft,
-.sideButtonLeft:focus-visible .chevronLeft {
-  transform: translateX(-4px) rotate(-135deg);
-}
-
-.sideButtonRight:hover .chevronRight,
-.sideButtonRight:focus-visible .chevronRight {
-  transform: translateX(4px) rotate(45deg);
+.mobileChevron {
+  width: 32px;
+  height: 32px;
 }
 
 .mobileNav {
   position: fixed;
-  top: clamp(128px, 18vh, 168px);
-  left: var(--frame-margin);
-  right: var(--frame-margin);
+  top: 82px;
+  left: 0;
+  right: 0;
   z-index: 6;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  pointer-events: none;
+  height: 88px;
 }
 
-.mobileArrow,
+.mobileButton,
 .mobileSpacer {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-}
-
-.mobileArrow {
-  pointer-events: auto;
+  width: 50%;
+  height: 100%;
   color: var(--color-light-primary);
-  transition: color var(--page-transition), transform var(--page-transition);
+  animation: paginationDockIn 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+  isolation: isolate;
 }
 
-.mobileArrow:hover,
-.mobileArrow:focus-visible {
-  color: var(--color-light-highlight);
-  transform: scale(1.04);
+.mobileButtonLeft {
+  justify-content: flex-start;
 }
 
-.mobileArrow .chevron {
-  width: 18px;
-  height: 18px;
+.mobileButtonRight {
+  justify-content: flex-end;
+}
+
+.mobileButtonInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.mobileButtonLeft .mobileButtonInner {
+  padding-left: 0;
+}
+
+.mobileButtonRight .mobileButtonInner {
+  padding-right: 0;
+}
+
+.mobileButtonLeft .chevron {
+  left: var(--frame-margin);
+}
+
+.mobileButtonRight .chevron {
+  right: var(--frame-margin);
+}
+
+.mobileSpacer::before {
+  display: none;
 }
 
 @media (max-width: 1200px) {
   .sideButton {
     width: 136px;
     height: 332px;
+  }
+}
+
+@keyframes paginationDockIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(var(--pagination-offset, 0));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.sideButtonLeft {
+  --pagination-offset: -24px;
+}
+
+.sideButtonRight {
+  --pagination-offset: 24px;
+}
+
+@media (max-width: 767px) {
+  .mobileButtonLeft,
+  .mobileButtonRight,
+  .mobileSpacer {
+    --pagination-offset: 0;
+  }
+
+  .mobileButton,
+  .mobileSpacer {
+    animation-name: mobilePaginationDockIn;
+  }
+}
+
+@keyframes mobilePaginationDockIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

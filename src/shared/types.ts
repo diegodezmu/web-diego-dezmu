@@ -4,8 +4,8 @@ export type SceneMode =
   | 'homeAlpha'
   | 'aboutBeta'
   | 'aboutFrame'
-  | 'stackGamma'
-  | 'stackNebula'
+  | 'stackBridge'
+  | 'stackEmbeddings'
   | 'contactDelta'
   | 'contactDeltaOut'
   | 'menuGrid'
@@ -59,6 +59,20 @@ export type StackCluster = {
   weight: number
   colorHint: string
   skills: string[]
+}
+
+export type StackSkillGroup = 'ai' | 'design' | 'engineering' | 'tooling' | 'audio'
+
+export type StackSkillSpec = {
+  label: string
+  group: StackSkillGroup
+  densityTier: 1 | 2 | 3 | 4 | 5
+}
+
+export type StackGroupLayout = {
+  slug: StackSkillGroup
+  center: [number, number, number]
+  spread: [number, number, number]
 }
 
 export type ScenePreset = ParticleTuning & {

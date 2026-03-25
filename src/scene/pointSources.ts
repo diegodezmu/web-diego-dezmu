@@ -1,10 +1,5 @@
-import type { CurveDefinition, StackCluster } from '@/shared/types'
-import type { StackLabelDatum } from './types'
-
-type StackCloudResult = {
-  points: Float32Array
-  labels: StackLabelDatum[]
-}
+import type { CurveDefinition, StackGroupLayout, StackSkillSpec } from '@/shared/types'
+import type { StackLabelDatum, StackSceneData } from './types'
 
 function mulberry32(seed: number) {
   let value = seed >>> 0
@@ -30,6 +25,17 @@ function hashUnit(seed: number) {
 
 function hashSigned(seed: number) {
   return hashUnit(seed) * 2 - 1
+}
+
+function hashString(value: string) {
+  let hash = 2166136261
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+
+  return hash >>> 0
 }
 
 function crossMod(t: number, amount: number, freqX: number, freqY: number) {
@@ -68,6 +74,34 @@ function getCurvePoint(curve: CurveDefinition, t: number, phaseOffset: number) {
   y = ringMod(y, t, curve.ringModFreq)
 
   return { x, y }
+}
+
+function toTuple(x: number, y: number, z: number): [number, number, number] {
+  return [x, y, z]
+}
+
+function createAxisSegments() {
+  return new Float32Array([
+    -3.1, 0, 0, 3.6, 0, 0,
+    0, -2.8, 0, 0, 3.2, 0,
+    0, 0, -2.8, 0, 0, 2.9,
+  ])
+}
+
+function createFloorGridSegments(width: number, depth: number, step: number, y: number) {
+  const segments: number[] = []
+  const halfWidth = width * 0.5
+  const halfDepth = depth * 0.5
+
+  for (let x = -halfWidth; x <= halfWidth + 0.0001; x += step) {
+    segments.push(x, y, -halfDepth, x, y, halfDepth)
+  }
+
+  for (let z = -halfDepth; z <= halfDepth + 0.0001; z += step) {
+    segments.push(-halfWidth, y, z, halfWidth, y, z)
+  }
+
+  return new Float32Array(segments)
 }
 
 export function fillLissajousPoints(
@@ -116,7 +150,7 @@ export function generateFrameGridPoints(
   height: number,
   cellSize: number,
   depth: number,
-): Float32Array {
+) {
   const halfWidth = width * 0.5
   const halfHeight = height * 0.5
   const columns = Math.max(2, Math.round(width / cellSize))
@@ -163,7 +197,7 @@ export function generateViewportGridPoints(
   height: number,
   cellSize: number,
   depth: number,
-): Float32Array {
+) {
   const halfWidth = width * 0.5
   const halfHeight = height * 0.5
   const columns = Math.max(2, Math.floor(width / cellSize) + 1)
@@ -206,93 +240,125 @@ export function fitPointCount(source: Float32Array, count: number) {
   return points
 }
 
-export function generateNebulaCloud(count: number, clusters: StackCluster[]): StackCloudResult {
+export function generateStackSceneData(
+  count: number,
+  skills: StackSkillSpec[],
+  layouts: StackGroupLayout[],
+): StackSceneData {
   const points = new Float32Array(count * 3)
-  const random = mulberry32(8800)
-  const totalWeight = clusters.reduce((sum, cluster) => sum + cluster.weight, 0) || 1
-  const horizontalScale = 0.76
-  const clusterPositions: Record<string, [number, number, number]> = {
-    ai: [-1.8 * horizontalScale, 0.86, 0.26],
-    design: [-4.8 * horizontalScale, -0.92, -0.44],
-    development: [2.7 * horizontalScale, 0.2, 0.38],
-    sound: [5.15 * horizontalScale, -1.1, 0.86],
-  }
-  const clusterSpreads: Record<string, [number, number, number]> = {
-    ai: [2.2 * horizontalScale, 1.4, 1.3],
-    design: [2.1 * horizontalScale, 1.35, 1.14],
-    development: [3.15 * horizontalScale, 1.7, 1.42],
-    sound: [1.8 * horizontalScale, 1.15, 1],
-  }
+  const bridgePoints = new Float32Array(count * 3)
   const labels: StackLabelDatum[] = []
-  let offset = 0
+  const connectionSegments: number[] = []
+  const clusterBudget = Math.floor(count * 0.84)
+  const totalWeight = skills.reduce((sum, skill) => sum + skill.densityTier, 0) || 1
+  const rawAllocations = skills.map((skill) => (clusterBudget * skill.densityTier) / totalWeight)
+  const allocations = rawAllocations.map((allocation) => Math.floor(allocation))
+  let remaining = clusterBudget - allocations.reduce((sum, allocation) => sum + allocation, 0)
 
-  clusters.forEach((cluster, clusterIndex) => {
-    const center = clusterPositions[cluster.slug] ?? [0, 0, 0]
-    const spread = clusterSpreads[cluster.slug] ?? [2.2, 1.2, 1]
-    const clusterCount =
-      clusterIndex === clusters.length - 1
-        ? count - offset
-        : Math.floor((count * cluster.weight) / totalWeight)
-    const skillAnchors = cluster.skills.map((skill, skillIndex) => {
-      const angle = (skillIndex / Math.max(1, cluster.skills.length)) * Math.PI * 2 + clusterIndex * 0.52
-      const radius = 0.64 + (skillIndex % 4) * 0.18
-      const position: [number, number, number] = [
-        center[0] + Math.cos(angle) * spread[0] * radius * 0.58,
-        center[1] + Math.sin(angle * 1.16) * spread[1] * 0.42,
-        center[2] + Math.sin(angle) * spread[2] * 0.55,
-      ]
-
-      labels.push({
-        id: `${cluster.slug}-${skillIndex}`,
-        text: skill,
-        position,
-        clusterSlug: cluster.slug,
-      })
-
-      return position
-    })
-
-    while (offset < count && offset < clusterCount + Math.floor((count * clusters.slice(0, clusterIndex).reduce((sum, item) => sum + item.weight, 0)) / totalWeight)) {
-      const anchor = skillAnchors[Math.floor(random() * skillAnchors.length)] ?? center
-      const x = anchor[0] + gaussian(random) * spread[0] * 0.3 + Math.sin(offset * 0.09) * 0.12
-      const y = anchor[1] + gaussian(random) * spread[1] * 0.34 + Math.cos(offset * 0.07) * 0.08
-      const z = anchor[2] + gaussian(random) * spread[2] * 0.48
-      const porous = Math.sin(x * 1.05) + Math.cos(y * 1.42) + Math.sin(z * 2.28)
-
-      if (porous > 1.74) {
-        continue
+  rawAllocations
+    .map((allocation, index) => ({
+      index,
+      remainder: allocation - Math.floor(allocation),
+    }))
+    .sort((left, right) => right.remainder - left.remainder)
+    .forEach(({ index }) => {
+      if (remaining <= 0) {
+        return
       }
 
-      points[offset * 3] = x
-      points[offset * 3 + 1] = y
-      points[offset * 3 + 2] = z
-      offset += 1
-    }
+      allocations[index] += 1
+      remaining -= 1
+    })
+
+  let cursor = 0
+  layouts.forEach((layout, groupIndex) => {
+    const groupSkills = skills.filter((skill) => skill.group === layout.slug)
+    connectionSegments.push(0, 0, 0, layout.center[0], layout.center[1], layout.center[2])
+
+    groupSkills.forEach((skill, skillIndex) => {
+      const skillGlobalIndex = skills.indexOf(skill)
+      const random = mulberry32(hashString(skill.label))
+      const angle =
+        (skillIndex / Math.max(1, groupSkills.length)) * Math.PI * 2 + groupIndex * 0.74 + random() * 0.42
+      const radial = 0.48 + (skillIndex % 3) * 0.16 + skill.densityTier * 0.04
+      const anchor = toTuple(
+        layout.center[0] + Math.cos(angle) * layout.spread[0] * radial,
+        layout.center[1] + Math.sin(angle * 1.08 + random() * 0.2) * layout.spread[1] * 0.58,
+        layout.center[2] + Math.sin(angle * 0.94 - random() * 0.16) * layout.spread[2] * 0.84,
+      )
+
+      labels.push({
+        id: `${skill.group}-${skill.label}`,
+        text: skill.label,
+        position: anchor,
+        group: skill.group,
+        densityTier: skill.densityTier,
+      })
+
+      connectionSegments.push(
+        layout.center[0],
+        layout.center[1],
+        layout.center[2],
+        anchor[0],
+        anchor[1],
+        anchor[2],
+      )
+
+      const skillCount = allocations[skillGlobalIndex]
+      const spreadX = 0.08 + skill.densityTier * 0.026
+      const spreadY = 0.06 + skill.densityTier * 0.02
+      const spreadZ = 0.08 + skill.densityTier * 0.03
+
+      for (let localIndex = 0; localIndex < skillCount && cursor < clusterBudget; localIndex += 1) {
+        const pointRandom = mulberry32(hashString(`${skill.label}-${localIndex}`))
+        const x =
+          anchor[0] + gaussian(pointRandom) * spreadX + Math.sin(localIndex * 0.12 + angle) * 0.03
+        const y =
+          anchor[1] + gaussian(pointRandom) * spreadY + Math.cos(localIndex * 0.11 + angle) * 0.025
+        const z = anchor[2] + gaussian(pointRandom) * spreadZ
+
+        points[cursor * 3] = x
+        points[cursor * 3 + 1] = y
+        points[cursor * 3 + 2] = z
+
+        const trunkMix = pointRandom() < 0.38
+        const source = trunkMix ? toTuple(0, 0, 0) : layout.center
+        const target = trunkMix ? layout.center : anchor
+        const mix = trunkMix ? 0.18 + pointRandom() * 0.84 : 0.08 + pointRandom() * 0.9
+        const bridgeJitter = 0.018 + skill.densityTier * 0.004
+
+        bridgePoints[cursor * 3] =
+          source[0] + (target[0] - source[0]) * mix + gaussian(pointRandom) * bridgeJitter
+        bridgePoints[cursor * 3 + 1] =
+          source[1] + (target[1] - source[1]) * mix + gaussian(pointRandom) * bridgeJitter
+        bridgePoints[cursor * 3 + 2] =
+          source[2] + (target[2] - source[2]) * mix + gaussian(pointRandom) * bridgeJitter
+
+        cursor += 1
+      }
+    })
   })
 
-  for (let fillIndex = offset; fillIndex < count; fillIndex += 1) {
-    const progress = fillIndex / count
-    points[fillIndex * 3] = (progress - 0.5) * 8.2
-    points[fillIndex * 3 + 1] = Math.sin(progress * Math.PI * 4.4) * 0.92
-    points[fillIndex * 3 + 2] = Math.cos(progress * Math.PI * 5.8) * 0.78
+  for (let index = cursor; index < count; index += 1) {
+    const layout = layouts[index % layouts.length]!
+    const random = mulberry32(hashString(`ambient-${index}`))
+    const x = hashSigned(index * 1.27) * 5.4 + layout.center[0] * 0.18
+    const y = hashSigned(index * 1.73) * 3.6 + layout.center[1] * 0.12
+    const z = hashSigned(index * 2.11) * 2.6
+    points[index * 3] = x
+    points[index * 3 + 1] = y
+    points[index * 3 + 2] = z
+    bridgePoints[index * 3] = x * 0.6 + gaussian(random) * 0.04
+    bridgePoints[index * 3 + 1] = y * 0.34 + gaussian(random) * 0.03
+    bridgePoints[index * 3 + 2] = z * 0.52 + gaussian(random) * 0.03
   }
 
   return {
     points,
+    bridgePoints,
     labels,
-  }
-}
-
-export function rotatePointCloudY(source: Float32Array, target: Float32Array, angle: number) {
-  const cosine = Math.cos(angle)
-  const sine = Math.sin(angle)
-
-  for (let index = 0; index < source.length; index += 3) {
-    const x = source[index]
-    const z = source[index + 2]
-
-    target[index] = x * cosine - z * sine
-    target[index + 1] = source[index + 1]
-    target[index + 2] = x * sine + z * cosine
+    connectionSegments: new Float32Array(connectionSegments),
+    floorSegments: createFloorGridSegments(10.6, 7.8, 0.55, -3.05),
+    axisSegments: createAxisSegments(),
   }
 }

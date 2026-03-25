@@ -25,8 +25,8 @@ export function MenuOverlay({ activeLabel }: MenuOverlayProps) {
       )
       gsap.fromTo(
         closeButtonRef.current,
-        { autoAlpha: 0, rotation: 0, scale: 0.84 },
-        { autoAlpha: 1, rotation: 45, scale: 1, duration: 0.42, ease: 'power3.out' },
+        { autoAlpha: 0, scale: 0.78 },
+        { autoAlpha: 1, scale: 1, duration: 0.46, ease: 'power3.out' },
       )
       gsap.fromTo(
         itemsRef.current,

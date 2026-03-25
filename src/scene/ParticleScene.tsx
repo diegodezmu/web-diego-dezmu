@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { alphaConfig, betaConfig, deltaConfig, frameGridConfig, gammaConfig, menuGridConfig } from '@/config/curves'
-import { stackClusterConfig } from '@/config/content'
+import { alphaConfig, betaConfig, deltaConfig, frameGridConfig, menuGridConfig } from '@/config/curves'
+import { stackGroupLayouts, stackSkillSpecs } from '@/config/content'
 import { getPresetForTier } from '@/config/scenePresets'
 import { useAppStore } from '@/state/appStore'
 import {
   fillLissajousPoints,
   fitPointCount,
   generateFrameGridPoints,
-  generateNebulaCloud,
+  generateStackSceneData,
   generateViewportGridPoints,
-  rotatePointCloudY,
 } from './pointSources'
 import { ParticleField } from './ParticleField'
+import { StackEnvironment } from './StackEnvironment'
 import { StackLabels } from './StackLabels'
 import type { SceneSnapshot } from './types'
 
@@ -71,8 +71,8 @@ export function ParticleScene() {
   const homePreset = getPresetForTier('homeAlpha', deviceTier)
   const aboutPreset = getPresetForTier('aboutBeta', deviceTier)
   const framePreset = getPresetForTier('aboutFrame', deviceTier)
-  const stackGammaPreset = getPresetForTier('stackGamma', deviceTier)
-  const stackNebulaPreset = getPresetForTier('stackNebula', deviceTier)
+  const stackBridgePreset = getPresetForTier('stackBridge', deviceTier)
+  const stackEmbeddingsPreset = getPresetForTier('stackEmbeddings', deviceTier)
   const contactPreset = getPresetForTier('contactDelta', deviceTier)
   const contactOutPreset = getPresetForTier('contactDeltaOut', deviceTier)
   const menuPreset = getPresetForTier('menuGrid', deviceTier)
@@ -93,11 +93,6 @@ export function ParticleScene() {
     () => getViewportWorldDimensions(size.width, size.height, framePreset.cameraPosition[2], camera.fov),
     [camera.fov, framePreset.cameraPosition, size.height, size.width],
   )
-  const stackWorld = useMemo(
-    () =>
-      getViewportWorldDimensions(size.width, size.height, stackNebulaPreset.cameraPosition[2], camera.fov),
-    [camera.fov, size.height, size.width, stackNebulaPreset.cameraPosition],
-  )
   const contactWorld = useMemo(
     () => getViewportWorldDimensions(size.width, size.height, contactPreset.cameraPosition[2], camera.fov),
     [camera.fov, contactPreset.cameraPosition, size.height, size.width],
@@ -109,15 +104,13 @@ export function ParticleScene() {
 
   const homeCount = homePreset.count
   const aboutCount = Math.max(aboutPreset.count, framePreset.count)
-  const stackCount = Math.max(stackGammaPreset.count, stackNebulaPreset.count)
+  const stackCount = Math.max(stackBridgePreset.count, stackEmbeddingsPreset.count)
   const contactCount = Math.max(contactPreset.count, contactOutPreset.count)
 
   const homeBufferRef = useRef(new Float32Array(homeCount * 3))
   const aboutBufferRef = useRef(new Float32Array(aboutCount * 3))
-  const stackBufferRef = useRef(new Float32Array(stackCount * 3))
   const contactBufferRef = useRef(new Float32Array(contactCount * 3))
   const contactOutBufferRef = useRef(new Float32Array(contactCount * 3))
-  const rotatedNebulaBufferRef = useRef(new Float32Array(stackCount * 3))
 
   const frameWidth = frameWorld.width * ((size.width - frameMarginPx * 2) / Math.max(1, size.width))
   const frameHeight =
@@ -150,13 +143,15 @@ export function ParticleScene() {
       ),
     [menuCellWorld, menuPreset.count, menuWorld.height, menuWorld.width],
   )
-  const stackSource = useMemo(() => generateNebulaCloud(stackCount, stackClusterConfig), [stackCount])
+  const stackScene = useMemo(
+    () => generateStackSceneData(stackCount, stackSkillSpecs, stackGroupLayouts),
+    [stackCount],
+  )
 
   const maxCount = Math.max(homeCount, aboutCount, stackCount, contactCount, menuPreset.count)
 
   const homePhaseRef = useRef(0)
   const aboutPhaseRef = useRef(0)
-  const stackPhaseRef = useRef(0)
   const contactPhaseRef = useRef(0)
   const modeStartedAtRef = useRef(0)
   const previousModeRef = useRef('')
@@ -187,11 +182,6 @@ export function ParticleScene() {
   }, [aboutCount])
 
   useEffect(() => {
-    stackBufferRef.current = new Float32Array(stackCount * 3)
-    rotatedNebulaBufferRef.current = new Float32Array(stackCount * 3)
-  }, [stackCount])
-
-  useEffect(() => {
     contactBufferRef.current = new Float32Array(contactCount * 3)
     contactOutBufferRef.current = new Float32Array(contactCount * 3)
   }, [contactCount])
@@ -210,15 +200,13 @@ export function ParticleScene() {
     const pointer = useAppStore.getState().pointer
     const displayMode = menuOpen ? 'menuGrid' : sceneMode
     const snapshot = snapshotRef.current
-    const stackBlend = smoothstep(0.14, 0.72, stackProgress)
-    const contactBlend = smoothstep(0.14, 0.88, contactProgress)
-    const aboutBlend = smoothstep(0.04, 0.28, aboutScrollProgress)
+    const aboutBlend = smoothstep(0.01, 0.16, aboutScrollProgress)
+    const stackBlend = smoothstep(0.03, 0.26, stackProgress)
+    const contactBlend = smoothstep(0.01, 0.16, contactProgress)
     const homeBuffer = homeBufferRef.current
     const aboutBuffer = aboutBufferRef.current
-    const stackBuffer = stackBufferRef.current
     const contactBuffer = contactBufferRef.current
     const contactOutBuffer = contactOutBufferRef.current
-    const rotatedNebulaBuffer = rotatedNebulaBufferRef.current
 
     if (displayMode !== previousModeRef.current) {
       previousModeRef.current = displayMode
@@ -228,10 +216,11 @@ export function ParticleScene() {
     const modeElapsed = state.clock.elapsedTime - modeStartedAtRef.current
     snapshot.blendTargets = null
     snapshot.blend = 0
-    snapshot.is3D = displayMode === 'stackGamma' || displayMode === 'stackNebula'
+    snapshot.is3D = displayMode === 'stackBridge' || displayMode === 'stackEmbeddings'
 
     switch (displayMode) {
-      case 'aboutBeta': {
+      case 'aboutBeta':
+      case 'aboutFrame': {
         if (!capabilities.reducedMotion) {
           aboutPhaseRef.current += delta * betaConfig.curve.speed * Math.PI * 12
         }
@@ -253,70 +242,45 @@ export function ParticleScene() {
         )
         snapshot.targets.set(aboutBuffer)
         snapshot.count = aboutCount
-        snapshot.sizePx = aboutPreset.sizePx
-        snapshot.opacity = aboutPreset.opacity
+        snapshot.sizePx = lerp(aboutPreset.sizePx, framePreset.sizePx, aboutBlend)
+        snapshot.opacity = lerp(aboutPreset.opacity, framePreset.opacity, aboutBlend)
         snapshot.orbit = aboutPreset.orbitMotion
         snapshot.drift = aboutPreset.driftMotion
-        snapshot.recovery = aboutPreset.recovery
+        snapshot.recovery = lerp(aboutPreset.recovery, framePreset.recovery, aboutBlend)
         snapshot.pointerRadiusPx = aboutPreset.pointerRadiusPx
         snapshot.pointerStrength = aboutPreset.pointerStrength
         snapshot.blendTargets = frameSource
         snapshot.blend = aboutBlend
         snapshot.cameraPosition[0] = pointer.x * 0.06
-        snapshot.cameraPosition[1] = pointer.y * 0.05
+        snapshot.cameraPosition[1] = pointer.y * 0.05 - aboutBlend * 0.04
         snapshot.cameraPosition[2] = aboutPreset.cameraPosition[2]
         snapshot.cameraLookAt[0] = 0
-        snapshot.cameraLookAt[1] = 0
+        snapshot.cameraLookAt[1] = -aboutBlend * 0.08
         snapshot.cameraLookAt[2] = 0
         break
       }
-      case 'stackGamma':
-      case 'stackNebula': {
-        if (!capabilities.reducedMotion) {
-          stackPhaseRef.current += delta * gammaConfig.curve.speed * Math.PI * 12
-        }
-
-        const thickness = pixelsToWorld(
-          gammaConfig.particles.strokeWeightPx + gammaConfig.particles.haloPx,
-          size.height,
-          stackGammaPreset.cameraPosition[2],
-          camera.fov,
-        )
-        fillLissajousPoints(
-          stackBuffer,
-          gammaConfig.curve,
-          stackPhaseRef.current,
-          stackWorld.width * 0.28,
-          stackWorld.height * 0.26,
-          0.26,
-          thickness,
-        )
-        const spinAngle = capabilities.reducedMotion ? 0 : state.clock.elapsedTime * stackNebulaPreset.spin
-        rotatePointCloudY(stackSource.points, rotatedNebulaBuffer, spinAngle)
-        snapshot.targets.set(stackBuffer)
+      case 'stackBridge':
+      case 'stackEmbeddings': {
+        snapshot.targets.set(stackScene.bridgePoints)
         snapshot.count = stackCount
-        snapshot.sizePx = lerp(stackGammaPreset.sizePx, stackNebulaPreset.sizePx, stackBlend)
-        snapshot.opacity = lerp(stackGammaPreset.opacity, stackNebulaPreset.opacity, stackBlend)
-        snapshot.orbit = lerp(stackGammaPreset.orbitMotion, stackNebulaPreset.orbitMotion, stackBlend)
-        snapshot.drift = lerp(stackGammaPreset.driftMotion, stackNebulaPreset.driftMotion, stackBlend)
-        snapshot.recovery = lerp(stackGammaPreset.recovery, stackNebulaPreset.recovery, stackBlend)
-        snapshot.pointerRadiusPx = stackNebulaPreset.pointerRadiusPx
-        snapshot.pointerStrength = lerp(
-          stackGammaPreset.pointerStrength,
-          stackNebulaPreset.pointerStrength,
-          stackBlend,
-        )
-        snapshot.blendTargets = rotatedNebulaBuffer
+        snapshot.sizePx = lerp(stackBridgePreset.sizePx, stackEmbeddingsPreset.sizePx, stackBlend)
+        snapshot.opacity = lerp(stackBridgePreset.opacity, stackEmbeddingsPreset.opacity, stackBlend)
+        snapshot.orbit = 0
+        snapshot.drift = 0
+        snapshot.recovery = lerp(stackBridgePreset.recovery, stackEmbeddingsPreset.recovery, stackBlend)
+        snapshot.pointerRadiusPx = stackEmbeddingsPreset.pointerRadiusPx
+        snapshot.pointerStrength = stackEmbeddingsPreset.pointerStrength
+        snapshot.blendTargets = stackScene.points
         snapshot.blend = stackBlend
-        snapshot.cameraPosition[0] = stackView.panX * (0.72 + stackBlend * 0.92)
-        snapshot.cameraPosition[1] = stackView.panY * (0.52 + stackBlend * 0.72)
+        snapshot.cameraPosition[0] = stackView.panX * 0.76
+        snapshot.cameraPosition[1] = stackView.panY * 0.54
         snapshot.cameraPosition[2] = lerp(
-          stackGammaPreset.cameraPosition[2],
-          stackNebulaPreset.cameraPosition[2],
+          stackBridgePreset.cameraPosition[2],
+          stackEmbeddingsPreset.cameraPosition[2],
           stackBlend,
         )
         snapshot.cameraLookAt[0] = stackView.panX * 0.18
-        snapshot.cameraLookAt[1] = stackView.panY * 0.14
+        snapshot.cameraLookAt[1] = stackView.panY * 0.12 - 0.12
         snapshot.cameraLookAt[2] = 0
         break
       }
@@ -336,13 +300,13 @@ export function ParticleScene() {
           contactBuffer,
           deltaConfig.curve,
           contactPhaseRef.current,
-          contactWorld.width * 0.3,
-          contactWorld.height * 0.31,
+          contactWorld.width * 0.28,
+          contactWorld.height * 0.29,
           0.26,
           thickness,
         )
 
-        const rise = contactBlend * contactWorld.height * 0.86
+        const rise = contactBlend * contactWorld.height * 0.54
         for (let index = 0; index < contactBuffer.length; index += 3) {
           contactOutBuffer[index] = contactBuffer[index]
           contactOutBuffer[index + 1] = contactBuffer[index + 1] + rise
@@ -361,10 +325,10 @@ export function ParticleScene() {
         snapshot.blendTargets = contactOutBuffer
         snapshot.blend = contactBlend
         snapshot.cameraPosition[0] = pointer.x * 0.04
-        snapshot.cameraPosition[1] = pointer.y * 0.04 - contactBlend * 0.12
+        snapshot.cameraPosition[1] = pointer.y * 0.04 - contactBlend * 0.08
         snapshot.cameraPosition[2] = contactPreset.cameraPosition[2]
         snapshot.cameraLookAt[0] = 0
-        snapshot.cameraLookAt[1] = 0
+        snapshot.cameraLookAt[1] = -contactBlend * 0.08
         snapshot.cameraLookAt[2] = 0
         break
       }
@@ -408,8 +372,8 @@ export function ParticleScene() {
           0.22,
           thickness,
         )
-        const moveIn = 1 - smoothstep(0, 0.84, modeElapsed)
-        const offsetY = moveIn * homeWorld.height * 0.66
+        const moveIn = 1 - smoothstep(0, 0.78, modeElapsed)
+        const offsetY = moveIn * homeWorld.height * 0.92
         for (let index = 0; index < homeBuffer.length; index += 3) {
           snapshot.targets[index] = homeBuffer[index]
           snapshot.targets[index + 1] = homeBuffer[index + 1] - offsetY
@@ -417,8 +381,8 @@ export function ParticleScene() {
         }
 
         snapshot.count = homeCount
-        snapshot.sizePx = homePreset.sizePx
-        snapshot.opacity = homePreset.opacity
+        snapshot.sizePx = homePreset.sizePx + moveIn * 2.1
+        snapshot.opacity = Math.min(1, homePreset.opacity + moveIn * 0.24)
         snapshot.orbit = homePreset.orbitMotion
         snapshot.drift = homePreset.driftMotion
         snapshot.recovery = homePreset.recovery
@@ -436,7 +400,7 @@ export function ParticleScene() {
     }
 
     const cameraEase =
-      displayMode === 'stackGamma' || displayMode === 'stackNebula' ? 0.14 + stackBlend * 0.08 : 0.08
+      displayMode === 'stackBridge' || displayMode === 'stackEmbeddings' ? 0.16 : 0.1
 
     state.camera.position.x += (snapshot.cameraPosition[0] - state.camera.position.x) * cameraEase
     state.camera.position.y += (snapshot.cameraPosition[1] - state.camera.position.y) * cameraEase
@@ -448,10 +412,20 @@ export function ParticleScene() {
     )
   })
 
+  const stackBridgeVisibility = 1 - smoothstep(0.12, 0.42, stackProgress)
+  const stackEmbeddingVisibility = smoothstep(0.06, 0.24, stackProgress)
+
   return (
     <>
+      <StackEnvironment
+        connectionSegments={stackScene.connectionSegments}
+        floorSegments={stackScene.floorSegments}
+        axisSegments={stackScene.axisSegments}
+        bridgeVisibility={stackBridgeVisibility}
+        embeddingVisibility={stackEmbeddingVisibility}
+      />
       <ParticleField key={maxCount} maxCount={maxCount} snapshotRef={snapshotRef} />
-      <StackLabels labels={stackSource.labels} spin={stackNebulaPreset.spin} />
+      <StackLabels labels={stackScene.labels} visibility={stackEmbeddingVisibility} />
     </>
   )
 }

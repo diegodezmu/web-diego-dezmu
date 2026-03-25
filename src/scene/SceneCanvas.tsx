@@ -20,7 +20,10 @@ export function SceneCanvas() {
       <Canvas
         camera={{ fov: 34, near: 0.1, far: 50, position: [0, 0, 11.5] }}
         dpr={dpr}
-        gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
+        gl={{ alpha: false, antialias: true, powerPreference: 'high-performance' }}
+        onCreated={({ gl }) => {
+          gl.setClearColor('#000000', 1)
+        }}
       >
         <ParticleScene />
       </Canvas>

@@ -28,6 +28,8 @@ export function AppShell() {
   const sceneMode = useAppStore((state) => state.sceneMode)
   const menuOpen = useAppStore((state) => state.menuOpen)
   const capabilities = useAppStore((state) => state.capabilities)
+  const aboutScrollProgress = useAppStore((state) => state.aboutScrollProgress)
+  const contactProgress = useAppStore((state) => state.contactProgress)
   const setActiveSection = useAppStore((state) => state.setActiveSection)
   const setCapabilities = useAppStore((state) => state.setCapabilities)
   const setMenuOpen = useAppStore((state) => state.setMenuOpen)
@@ -85,9 +87,25 @@ export function AppShell() {
   }, [capabilities.isTouch])
 
   const fallbackMode = menuOpen ? 'menuGrid' : sceneMode
+  const showAboutUnderlay = !menuOpen && activeSection === 'about'
+  const showContactUnderlay = !menuOpen && activeSection === 'contact'
+  const aboutUnderlayOpacity = Math.min(1, 0.24 + aboutScrollProgress * 0.9)
+  const contactUnderlayOpacity = Math.min(1, 0.4 + contactProgress * 0.52)
 
   return (
     <div className={styles.shell} data-section={activeSection}>
+      <div
+        className={`${styles.sceneUnderlay} ${showAboutUnderlay ? styles.sceneUnderlayAbout : ''} ${showContactUnderlay ? styles.sceneUnderlayContact : ''}`}
+        style={{
+          opacity: showAboutUnderlay
+            ? aboutUnderlayOpacity
+            : showContactUnderlay
+              ? contactUnderlayOpacity
+              : 0,
+        }}
+        aria-hidden="true"
+      />
+
       {capabilities.webglSupported ? (
         <SceneCanvas />
       ) : (

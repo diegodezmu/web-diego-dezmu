@@ -4,12 +4,13 @@ import styles from './MicroLogo.module.css'
 
 type MicroLogoProps = {
   className?: string
+  animate?: boolean
 }
 
-export function MicroLogo({ className = '' }: MicroLogoProps) {
+export function MicroLogo({ className = '', animate = false }: MicroLogoProps) {
   return (
     <Link
-      className={`${styles.logo} ${className}`.trim()}
+      className={`${styles.logo} ${animate ? styles.logoAnimate : ''} ${className}`.trim()}
       to="/"
       aria-label="Go to home"
       data-cursor="interactive"

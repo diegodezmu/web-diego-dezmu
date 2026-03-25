@@ -95,7 +95,8 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
       distanceToParticlePlane
     const pointerRadiusWorld =
       (snapshot.pointerRadiusPx / Math.max(1, state.size.height)) * verticalWorldSpan
-    const lerpFactor = 1 - Math.pow(1 - Math.min(snapshot.recovery, 0.96), delta * 60)
+    const lerpFactor =
+      1 - Math.pow(1 - Math.min(snapshot.recovery * 1.28, 0.96), delta * 72)
 
     if (hasPointer) {
       rayTarget.set(pointer.x, pointer.y, 0.5).unproject(camera)
@@ -196,6 +197,7 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
         alphaMap={spriteTexture}
         alphaTest={0.02}
         blending={THREE.AdditiveBlending}
+        depthTest={false}
         depthWrite={false}
         opacity={1}
         size={0.05}

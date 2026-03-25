@@ -2,6 +2,7 @@
   position: relative;
   min-height: 100vh;
   overflow: hidden;
+  background: var(--color-dark);
 }
 
 .shell::after {
@@ -10,15 +11,35 @@
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 5;
+  z-index: 6;
   height: 1px;
   background: rgba(255, 255, 255, 0.12);
   pointer-events: none;
 }
 
+.sceneUnderlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sceneUnderlayAbout {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(1, 1, 1, 0.36) 58%, rgba(1, 1, 1, 0.94) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 42%, rgba(1, 1, 1, 0.7) 100%);
+}
+
+.sceneUnderlayContact {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 52%, rgba(1, 1, 1, 0.76) 100%),
+    radial-gradient(circle at 50% 90%, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0) 32%);
+}
+
 .routeLayer {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   transition: opacity 180ms ease, visibility 180ms ease;
 }
 
@@ -69,13 +90,13 @@
     var(--color-dark);
 }
 
-.fallbackBackdrop--stackGamma,
-.fallbackBackdrop--stackNebula {
+.fallbackBackdrop--stackBridge,
+.fallbackBackdrop--stackEmbeddings {
   background:
-    radial-gradient(circle at 20% 55%, rgba(255, 255, 255, 0.08), transparent 18%),
-    radial-gradient(circle at 38% 46%, rgba(255, 255, 255, 0.11), transparent 16%),
-    radial-gradient(circle at 58% 52%, rgba(255, 255, 255, 0.08), transparent 20%),
-    radial-gradient(circle at 76% 48%, rgba(255, 255, 255, 0.1), transparent 14%),
+    radial-gradient(circle at 18% 56%, rgba(255, 255, 255, 0.07), transparent 18%),
+    radial-gradient(circle at 39% 32%, rgba(255, 255, 255, 0.08), transparent 14%),
+    radial-gradient(circle at 62% 62%, rgba(255, 255, 255, 0.06), transparent 18%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%),
     var(--color-dark);
 }
 

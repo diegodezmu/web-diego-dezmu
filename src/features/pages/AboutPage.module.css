@@ -9,12 +9,12 @@
   top: 50%;
   left: 50%;
   z-index: 4;
-  transition: opacity 220ms ease, transform 260ms ease;
+  transition: opacity 220ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
 .titleBlock {
-  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+  text-shadow: var(--shadow-title);
 }
 
 .scrollArea {
@@ -23,14 +23,19 @@
   height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 68vh var(--frame-margin) 28vh;
+  padding: 74vh var(--frame-margin) 20vh;
+  scrollbar-width: none;
+}
+
+.scrollArea::-webkit-scrollbar {
+  display: none;
 }
 
 .contentColumn {
   display: flex;
   flex-direction: column;
-  gap: 112px;
-  width: min(100%, 565px);
+  gap: 88px;
+  width: min(100%, 358px);
   margin: 0 auto;
 }
 
@@ -44,34 +49,25 @@
   font-size: var(--body-size);
   line-height: 1.4;
   color: var(--color-light-primary);
+  text-shadow: var(--shadow-soft);
 }
 
 .portraitFrame {
   position: relative;
-  width: min(100%, 565px);
+  width: min(100%, 350px);
   overflow: hidden;
 }
 
 .portrait {
   width: 100%;
-  aspect-ratio: 565 / 655;
+  aspect-ratio: 350 / 182;
   object-fit: cover;
-}
-
-.contentFade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 42vh;
-  background: linear-gradient(180deg, rgba(1, 1, 1, 0) 0%, rgba(1, 1, 1, 0.68) 44%, #010101 96%);
-  pointer-events: none;
 }
 
 @media (max-width: 767px) {
   .scrollArea {
-    padding-top: 58vh;
-    padding-bottom: 24vh;
+    padding-top: 64vh;
+    padding-bottom: 18vh;
   }
 
   .contentColumn {
@@ -84,6 +80,14 @@
   }
 
   .copyParagraph {
-    font-size: 16px;
+    font-size: 15px;
+  }
+
+  .portraitFrame {
+    width: min(100%, 322px);
+  }
+
+  .portrait {
+    aspect-ratio: 322 / 163;
   }
 }

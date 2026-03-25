@@ -9,6 +9,28 @@ type NeighborLink = {
   label: string
 }
 
+function Chevron({ side, mobile = false }: { side: 'left' | 'right'; mobile?: boolean }) {
+  const points = side === 'left' ? '32 5 0 16 32 27' : '0 5 32 16 0 27'
+
+  return (
+    <svg
+      className={`${styles.chevron} ${mobile ? styles.mobileChevron : ''}`}
+      viewBox="0 0 32 32"
+      fill="none"
+      aria-hidden="true"
+    >
+      <polyline
+        points={points}
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="butt"
+        strokeLinejoin="miter"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  )
+}
+
 function buildNeighbor(
   activeSection: AppSection,
   direction: -1 | 1,
@@ -29,33 +51,32 @@ function buildNeighbor(
   }
 }
 
-function Chevron({ side }: { side: 'left' | 'right' }) {
-  return (
-    <span
-      className={`${styles.chevron} ${side === 'left' ? styles.chevronLeft : styles.chevronRight}`}
-      aria-hidden="true"
-    />
-  )
-}
-
 function SideButton({
   href,
   label,
   side,
+  mobile = false,
 }: {
   href: string
   label: string
   side: 'left' | 'right'
+  mobile?: boolean
 }) {
   return (
     <Link
-      className={`${styles.sideButton} ${side === 'left' ? styles.sideButtonLeft : styles.sideButtonRight}`}
+      className={
+        mobile
+          ? `${styles.mobileButton} ${side === 'left' ? styles.mobileButtonLeft : styles.mobileButtonRight}`
+          : `${styles.sideButton} ${side === 'left' ? styles.sideButtonLeft : styles.sideButtonRight}`
+      }
       to={href}
       aria-label={`Go to ${label}`}
       data-cursor="interactive"
     >
-      <Chevron side={side} />
-      <span className={styles.sideLabel}>{label}</span>
+      <span className={mobile ? styles.mobileButtonInner : styles.sideButtonInner}>
+        <Chevron side={side} mobile={mobile} />
+        {mobile ? null : <span className={styles.sideLabel}>{label}</span>}
+      </span>
     </Link>
   )
 }
@@ -72,39 +93,26 @@ export function PaginationControls() {
 
   const previous = buildNeighbor(activeSection, -1, isMobile)
   const next = buildNeighbor(activeSection, 1, isMobile)
+  const navKey = `${activeSection}-${isMobile ? 'mobile' : 'desktop'}`
 
   return isMobile ? (
-    <nav className={styles.mobileNav} aria-label="Section navigation">
+    <nav key={navKey} className={styles.mobileNav} aria-label="Section navigation">
       {previous ? (
-        <Link
-          className={styles.mobileArrow}
-          to={previous.href}
-          aria-label={`Go to ${previous.label}`}
-          data-cursor="interactive"
-        >
-          <Chevron side="left" />
-        </Link>
+        <SideButton href={previous.href} label={previous.label} side="left" mobile />
       ) : (
-        <span className={styles.mobileSpacer} />
+        <span className={`${styles.mobileButton} ${styles.mobileSpacer}`} />
       )}
 
       {next ? (
-        <Link
-          className={styles.mobileArrow}
-          to={next.href}
-          aria-label={`Go to ${next.label}`}
-          data-cursor="interactive"
-        >
-          <Chevron side="right" />
-        </Link>
+        <SideButton href={next.href} label={next.label} side="right" mobile />
       ) : (
-        <span className={styles.mobileSpacer} />
+        <span className={`${styles.mobileButton} ${styles.mobileSpacer}`} />
       )}
     </nav>
   ) : (
     <>
-      {previous ? <SideButton href={previous.href} label={previous.label} side="left" /> : null}
-      {next ? <SideButton href={next.href} label={next.label} side="right" /> : null}
+      {previous ? <SideButton key={`${navKey}-prev`} href={previous.href} label={previous.label} side="left" /> : null}
+      {next ? <SideButton key={`${navKey}-next`} href={next.href} label={next.label} side="right" /> : null}
     </>
   )
 }

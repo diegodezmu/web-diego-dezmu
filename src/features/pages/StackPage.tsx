@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { siteContent, stackPreviewText } from '@/config/content'
+import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
 import { useAppStore } from '@/state/appStore'
 import styles from './StackPage.module.css'
@@ -17,6 +17,7 @@ export function StackPage() {
   const interactionRef = useRef<HTMLDivElement | null>(null)
   const stackProgress = useAppStore((state) => state.stackProgress)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
+  const setSceneMode = useAppStore((state) => state.setSceneMode)
   const setStackView = useAppStore((state) => state.setStackView)
   const resetStackView = useAppStore((state) => state.resetStackView)
   const setStackProgress = useAppStore((state) => state.setStackProgress)
@@ -24,7 +25,12 @@ export function StackPage() {
   useEffect(() => {
     resetStackView()
     setStackProgress(0)
-  }, [resetStackView, setStackProgress])
+    setSceneMode('stackBridge')
+  }, [resetStackView, setSceneMode, setStackProgress])
+
+  useEffect(() => {
+    setSceneMode(stackProgress > 0.22 ? 'stackEmbeddings' : 'stackBridge')
+  }, [setSceneMode, stackProgress])
 
   useEffect(() => {
     const element = interactionRef.current
@@ -35,7 +41,7 @@ export function StackPage() {
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault()
       const current = useAppStore.getState().stackProgress
-      setStackProgress(clamp(current + event.deltaY * 0.0012, 0, 1))
+      setStackProgress(clamp(current + event.deltaY * 0.0022, 0, 1))
     }
 
     element.addEventListener('wheel', handleWheel, { passive: false })
@@ -45,7 +51,7 @@ export function StackPage() {
     }
   }, [setStackProgress])
 
-  const titleShiftClass = stackProgress > 0.46 ? styles.titleTop : styles.titleCenter
+  const titleShiftClass = stackProgress > 0.18 ? styles.titleTop : styles.titleCenter
 
   return (
     <section className={styles.page}>
@@ -80,7 +86,7 @@ export function StackPage() {
 
           if (isTouch) {
             const currentProgress = useAppStore.getState().stackProgress
-            setStackProgress(clamp(currentProgress + deltaY * -0.004, 0, 1))
+            setStackProgress(clamp(currentProgress + deltaY * -0.008, 0, 1))
             return
           }
 
@@ -98,17 +104,6 @@ export function StackPage() {
           pointerState.current.active = false
         }}
       />
-
-      <div
-        className={styles.previewBand}
-        style={{
-          opacity: 1 - Math.min(1, stackProgress * 2.1),
-          transform: `translateY(${stackProgress * 40}px)`,
-        }}
-        aria-hidden={stackProgress > 0.5}
-      >
-        <p className={styles.previewText}>{stackPreviewText}</p>
-      </div>
     </section>
   )
 }

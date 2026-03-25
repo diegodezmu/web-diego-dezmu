@@ -16,18 +16,18 @@ export function AboutPage() {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         `.${styles.titleBlock}`,
-        { autoAlpha: 0, y: '10vh' },
-        { autoAlpha: 1, y: 0, duration: 0.72, ease: 'power3.out' },
+        { autoAlpha: 0, y: '15vh' },
+        { autoAlpha: 1, y: 0, duration: 1.08, ease: 'power3.out' },
       )
       gsap.fromTo(
         `.${styles.copyParagraph}`,
-        { autoAlpha: 0, y: 18 },
-        { autoAlpha: 1, y: 0, duration: 0.46, stagger: 0.06, ease: 'power2.out', delay: 0.14 },
+        { autoAlpha: 0, y: 28 },
+        { autoAlpha: 1, y: 0, duration: 0.6, stagger: 0.06, ease: 'power2.out', delay: 0.18 },
       )
       gsap.fromTo(
         `.${styles.portraitFrame}`,
-        { autoAlpha: 0, y: 28 },
-        { autoAlpha: 1, y: 0, duration: 0.54, ease: 'power2.out', delay: 0.24 },
+        { autoAlpha: 0, y: 36 },
+        { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power2.out', delay: 0.28 },
       )
     }, shellRef)
 
@@ -56,7 +56,7 @@ export function AboutPage() {
   }, [setAboutScrollProgress])
 
   const titleOpacity = 1 - Math.min(1, aboutScrollProgress * 1.8)
-  const titleShift = Math.min(aboutScrollProgress * 64, 64)
+  const titleShift = Math.min(aboutScrollProgress * 220, 220)
 
   return (
     <section ref={shellRef} className={styles.page}>
@@ -81,16 +81,17 @@ export function AboutPage() {
           </div>
 
           <div className={styles.portraitFrame}>
-            <img
-              className={styles.portrait}
-              src={window.innerWidth <= 767 ? assets.portraitMobileUrl : assets.portraitDesktopUrl}
-              alt="Portrait of Diego Dezmu"
-            />
+            <picture>
+              <source media="(max-width: 767px)" srcSet={assets.portraitMobileUrl} />
+              <img
+                className={styles.portrait}
+                src={assets.portraitDesktopUrl}
+                alt="Portrait of Diego Dezmu"
+              />
+            </picture>
           </div>
         </div>
       </div>
-
-      <div className={styles.contentFade} aria-hidden="true" />
     </section>
   )
 }

@@ -2,7 +2,8 @@ export type StackLabelDatum = {
   id: string
   text: string
   position: [number, number, number]
-  clusterSlug: string
+  group: string
+  densityTier: number
 }
 
 export type SceneSnapshot = {
@@ -20,4 +21,13 @@ export type SceneSnapshot = {
   is3D: boolean
   cameraPosition: [number, number, number]
   cameraLookAt: [number, number, number]
+}
+
+export type StackSceneData = {
+  points: Float32Array
+  bridgePoints: Float32Array
+  labels: StackLabelDatum[]
+  connectionSegments: Float32Array
+  floorSegments: Float32Array
+  axisSegments: Float32Array
 }
