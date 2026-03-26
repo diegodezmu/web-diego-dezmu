@@ -1,5 +1,5 @@
-import type { CurveDefinition, StackGroupLayout, StackSkillSpec } from '@/shared/types'
-import type { StackLabelDatum, StackSceneData } from './types'
+import type { CurveDefinition, StackSkillGroup, StackSkillSpec } from '@/shared/types'
+import type { StackSceneData, StackSkillDatum } from './types'
 
 function mulberry32(seed: number) {
   let value = seed >>> 0
@@ -80,28 +80,244 @@ function toTuple(x: number, y: number, z: number): [number, number, number] {
   return [x, y, z]
 }
 
-function createAxisSegments() {
-  return new Float32Array([
-    -3.1, 0, 0, 3.6, 0, 0,
-    0, -2.8, 0, 0, 3.2, 0,
-    0, 0, -2.8, 0, 0, 2.9,
-  ])
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
 }
 
-function createFloorGridSegments(width: number, depth: number, step: number, y: number) {
+const STACK_CUBE_SIZE = 10
+const STACK_CUBE_HALF = STACK_CUBE_SIZE * 0.5
+export const STACK_CUBE_CENTER_Y = STACK_CUBE_HALF * 0.5 + 0.5
+const STACK_CUBE_DIVISIONS = 8
+const STACK_PARTICLE_COUNT_BY_TIER = {
+  1: 30,
+  2: 46,
+  3: 62,
+  4: 84,
+  5: 108,
+} as const
+const STACK_RADIUS_BY_TIER = {
+  1: 0.18,
+  2: 0.24,
+  3: 0.31,
+  4: 0.4,
+  5: 0.5,
+} as const
+const STACK_LABEL_SCALE_BY_TIER = {
+  1: 0.72,
+  2: 0.84,
+  3: 0.98,
+  4: 1.12,
+  5: 1.26,
+} as const
+const STACK_CLUSTER_LAYOUTS: Record<
+  StackSkillGroup,
+  { center: [number, number, number]; spread: [number, number, number] }
+> = {
+  engineering: {
+    center: [-2.45, 3.1, -2.2],
+    spread: [1.38, 0.92, 1.08],
+  },
+  design: {
+    center: [2.2, 3.2, -1.9],
+    spread: [1.26, 0.92, 1.02],
+  },
+  ai: {
+    center: [2.45, 0.9, 2.15],
+    spread: [1.34, 0.98, 1.08],
+  },
+  tooling: {
+    center: [-2.35, 1.0, 2.35],
+    spread: [1.44, 0.96, 1.12],
+  },
+  audio: {
+    center: [0.08, 1.95, 0.2],
+    spread: [1.14, 0.72, 0.98],
+  },
+}
+
+function fillBufferPoint(buffer: Float32Array, index: number, point: [number, number, number]) {
+  const offset = index * 3
+  buffer[offset] = point[0]
+  buffer[offset + 1] = point[1]
+  buffer[offset + 2] = point[2]
+}
+
+function appendSegment(segments: number[], start: [number, number, number], end: [number, number, number]) {
+  segments.push(start[0], start[1], start[2], end[0], end[1], end[2])
+}
+
+function createCubeSegments(size: number, centerY: number) {
+  void size
+  void centerY
+  return new Float32Array(0)
+}
+
+function createGridSegments(size: number, centerY: number, divisions: number) {
+  const half = size * 0.5
+  const step = size / divisions
+  const bottom = centerY - half
   const segments: number[] = []
-  const halfWidth = width * 0.5
-  const halfDepth = depth * 0.5
 
-  for (let x = -halfWidth; x <= halfWidth + 0.0001; x += step) {
-    segments.push(x, y, -halfDepth, x, y, halfDepth)
-  }
+  for (let index = 1; index < divisions; index += 1) {
+    const t = -half + index * step
 
-  for (let z = -halfDepth; z <= halfDepth + 0.0001; z += step) {
-    segments.push(-halfWidth, y, z, halfWidth, y, z)
+    appendSegment(segments, [t, bottom, -half], [t, bottom, half])
+    appendSegment(segments, [-half, bottom, t], [half, bottom, t])
   }
 
   return new Float32Array(segments)
+}
+
+function allocateSkillParticleCounts(skills: StackSkillSpec[], budget: number) {
+  const raw = skills.map((skill) => STACK_PARTICLE_COUNT_BY_TIER[skill.densityTier])
+  const totalBase = raw.reduce((sum, value) => sum + value, 0) || 1
+  const scaled = raw.map((value) => (value / totalBase) * budget)
+  const counts = scaled.map((value) => Math.floor(value))
+  let remaining = budget - counts.reduce((sum, value) => sum + value, 0)
+
+  scaled
+    .map((value, index) => ({ index, remainder: value - Math.floor(value) }))
+    .sort((left, right) => right.remainder - left.remainder)
+    .forEach(({ index }) => {
+      if (remaining <= 0) {
+        return
+      }
+
+      counts[index] += 1
+      remaining -= 1
+    })
+
+  return counts
+}
+
+function clampPointToCube(point: [number, number, number], margin: number) {
+  return toTuple(
+    clamp(point[0], -STACK_CUBE_HALF + margin, STACK_CUBE_HALF - margin),
+    clamp(point[1], STACK_CUBE_CENTER_Y - STACK_CUBE_HALF + margin, STACK_CUBE_CENTER_Y + STACK_CUBE_HALF - margin),
+    clamp(point[2], -STACK_CUBE_HALF + margin, STACK_CUBE_HALF - margin),
+  )
+}
+
+function createCandidatePoint(
+  group: StackSkillGroup,
+  seed: string,
+  radius: number,
+) {
+  const layout = STACK_CLUSTER_LAYOUTS[group]
+  const random = mulberry32(hashString(seed))
+  const point = toTuple(
+    layout.center[0] + gaussian(random) * layout.spread[0],
+    layout.center[1] + gaussian(random) * layout.spread[1],
+    layout.center[2] + gaussian(random) * layout.spread[2],
+  )
+
+  return clampPointToCube(point, radius + 0.25)
+}
+
+function getAnchorDistance(left: [number, number, number], right: [number, number, number]) {
+  return Math.hypot(left[0] - right[0], left[1] - right[1], left[2] - right[2])
+}
+
+function createLabelAnchor(position: [number, number, number], radius: number, text: string) {
+  const sideOffset = clamp(position[0] * 0.06, -0.18, 0.18)
+  const depthOffset = clamp(position[2] * 0.035, -0.12, 0.12)
+  const vertical = 0.22 + radius * 0.9 + text.length * 0.002
+
+  return toTuple(
+    position[0] + sideOffset,
+    position[1] + vertical,
+    position[2] + depthOffset,
+  )
+}
+
+function createSkillAnchors(skills: StackSkillSpec[], counts: number[]) {
+  const skillsByGroup = new Map<StackSkillGroup, Array<{ skill: StackSkillSpec; index: number }>>()
+
+  skills.forEach((skill, index) => {
+    const bucket = skillsByGroup.get(skill.group) ?? []
+    bucket.push({ skill, index })
+    skillsByGroup.set(skill.group, bucket)
+  })
+
+  const anchors: StackSkillDatum[] = new Array(skills.length)
+
+  skillsByGroup.forEach((groupSkills, group) => {
+    const placed: StackSkillDatum[] = []
+
+    groupSkills
+      .sort((left, right) => right.skill.densityTier - left.skill.densityTier || left.index - right.index)
+      .forEach(({ skill, index }) => {
+        const radius = STACK_RADIUS_BY_TIER[skill.densityTier]
+        let bestPoint = createCandidatePoint(group, `${skill.label}-fallback`, radius)
+        let bestDistance = Number.NEGATIVE_INFINITY
+
+        for (let attempt = 0; attempt < 56; attempt += 1) {
+          const candidate = createCandidatePoint(group, `${skill.label}-${attempt}`, radius)
+          const minDistance = placed.length
+            ? Math.min(...placed.map((placedSkill) => getAnchorDistance(placedSkill.position, candidate)))
+            : 99
+          const center = STACK_CLUSTER_LAYOUTS[group].center
+          const toCenter = getAnchorDistance(candidate, center)
+          const score = minDistance * 1.8 - toCenter * 0.42
+
+          if (score > bestDistance) {
+            bestDistance = score
+            bestPoint = candidate
+          }
+        }
+
+        const skillDatum: StackSkillDatum = {
+          id: `${skill.group}-${skill.label}`,
+          text: skill.label,
+          group: skill.group,
+          densityTier: skill.densityTier,
+          position: bestPoint,
+          labelAnchor: createLabelAnchor(bestPoint, radius, skill.label),
+          radius,
+          particleCount: counts[index] ?? STACK_PARTICLE_COUNT_BY_TIER[skill.densityTier],
+          pointRange: [0, 0],
+          labelScale: STACK_LABEL_SCALE_BY_TIER[skill.densityTier],
+        }
+
+        placed.push(skillDatum)
+        anchors[index] = skillDatum
+      })
+  })
+
+  return anchors.filter(Boolean)
+}
+
+function fillSkillSpherePoints(
+  buffer: Float32Array,
+  startIndex: number,
+  skill: StackSkillDatum,
+) {
+  let cursor = startIndex
+
+  for (let localIndex = 0; localIndex < skill.particleCount; localIndex += 1) {
+    const random = mulberry32(hashString(`${skill.id}-${localIndex}`))
+    const azimuth = random() * Math.PI * 2
+    const cosTheta = clamp(hashSigned((localIndex + 1) * 0.37), -1, 1)
+    const sinTheta = Math.sqrt(1 - cosTheta * cosTheta)
+    const radius = Math.pow(random(), 0.62) * skill.radius
+    const x =
+      skill.position[0] +
+      Math.cos(azimuth) * sinTheta * radius +
+      gaussian(random) * skill.radius * 0.035
+    const y =
+      skill.position[1] +
+      Math.sin(azimuth) * sinTheta * radius +
+      gaussian(random) * skill.radius * 0.03
+    const z =
+      skill.position[2] +
+      cosTheta * radius +
+      gaussian(random) * skill.radius * 0.04
+
+    fillBufferPoint(buffer, cursor, toTuple(x, y, z))
+    cursor += 1
+  }
+
+  return cursor
 }
 
 export function fillLissajousPoints(
@@ -219,6 +435,41 @@ export function generateViewportGridPoints(
   return points
 }
 
+export function generateMarginGridPoints(
+  width: number,
+  height: number,
+  cellSize: number,
+  marginX: number,
+  marginY: number,
+  depth: number,
+) {
+  const halfWidth = width * 0.5
+  const halfHeight = height * 0.5
+  const columns = Math.max(2, Math.floor(width / cellSize) + 1)
+  const rows = Math.max(2, Math.floor(height / cellSize) + 1)
+  const innerHalfWidth = Math.max(0, halfWidth - marginX)
+  const innerHalfHeight = Math.max(0, halfHeight - marginY)
+  const points: number[] = []
+  let offset = 0
+
+  for (let row = 0; row < rows; row += 1) {
+    const y = halfHeight - (row / Math.max(1, rows - 1)) * height
+
+    for (let column = 0; column < columns; column += 1) {
+      const x = -halfWidth + (column / Math.max(1, columns - 1)) * width
+
+      if (Math.abs(x) < innerHalfWidth && Math.abs(y) < innerHalfHeight) {
+        continue
+      }
+
+      points.push(x, y, hashSigned(offset * 0.93) * depth)
+      offset += 1
+    }
+  }
+
+  return new Float32Array(points)
+}
+
 export function fitPointCount(source: Float32Array, count: number) {
   const sourceCount = source.length / 3
 
@@ -240,125 +491,101 @@ export function fitPointCount(source: Float32Array, count: number) {
   return points
 }
 
+type StackTransitionMappingOptions = {
+  scaleX: number
+  scaleY: number
+  scaleZ: number
+  depthJitter: number
+  lateralJitter: number
+  verticalJitter: number
+}
+
+export function flattenStackPointsForTransition(source: Float32Array, count: number) {
+  const fitted = fitPointCount(source, count)
+  const flattened = new Float32Array(count * 3)
+
+  for (let index = 0; index < count; index += 1) {
+    const offset = index * 3
+    const centeredY = fitted[offset + 1] - STACK_CUBE_CENTER_Y
+
+    flattened[offset] =
+      fitted[offset] * 0.56 + hashSigned((index + 1) * 0.77) * 0.042
+    flattened[offset + 1] =
+      centeredY * 0.46 + hashSigned((index + 1) * 1.11) * 0.034
+    flattened[offset + 2] =
+      fitted[offset + 2] * 0.18 + hashSigned((index + 1) * 1.49) * 0.072
+  }
+
+  return flattened
+}
+
+export function mapTransitionPointsToStack(
+  source: Float32Array,
+  count: number,
+  options: Partial<StackTransitionMappingOptions> = {},
+) {
+  const fitted = fitPointCount(source, count)
+  const mapped = new Float32Array(count * 3)
+  const settings: StackTransitionMappingOptions = {
+    scaleX: 2.08,
+    scaleY: 2.26,
+    scaleZ: 0.84,
+    depthJitter: 1.28,
+    lateralJitter: 0.09,
+    verticalJitter: 0.08,
+    ...options,
+  }
+
+  for (let index = 0; index < count; index += 1) {
+    const offset = index * 3
+    const x =
+      fitted[offset] * settings.scaleX +
+      hashSigned((index + 1) * 0.71) * settings.lateralJitter
+    const y =
+      STACK_CUBE_CENTER_Y +
+      fitted[offset + 1] * settings.scaleY +
+      hashSigned((index + 1) * 1.07) * settings.verticalJitter
+    const z =
+      fitted[offset + 2] * settings.scaleZ +
+      hashSigned((index + 1) * 1.39) * settings.depthJitter
+
+    mapped[offset] = clamp(x, -STACK_CUBE_HALF + 0.14, STACK_CUBE_HALF - 0.14)
+    mapped[offset + 1] = clamp(
+      y,
+      STACK_CUBE_CENTER_Y - STACK_CUBE_HALF + 0.14,
+      STACK_CUBE_CENTER_Y + STACK_CUBE_HALF - 0.14,
+    )
+    mapped[offset + 2] = clamp(z, -STACK_CUBE_HALF + 0.14, STACK_CUBE_HALF - 0.14)
+  }
+
+  return mapped
+}
+
 export function generateStackSceneData(
   count: number,
   skills: StackSkillSpec[],
-  layouts: StackGroupLayout[],
 ): StackSceneData {
-  const points = new Float32Array(count * 3)
-  const bridgePoints = new Float32Array(count * 3)
-  const labels: StackLabelDatum[] = []
-  const connectionSegments: number[] = []
-  const clusterBudget = Math.floor(count * 0.84)
-  const totalWeight = skills.reduce((sum, skill) => sum + skill.densityTier, 0) || 1
-  const rawAllocations = skills.map((skill) => (clusterBudget * skill.densityTier) / totalWeight)
-  const allocations = rawAllocations.map((allocation) => Math.floor(allocation))
-  let remaining = clusterBudget - allocations.reduce((sum, allocation) => sum + allocation, 0)
-
-  rawAllocations
-    .map((allocation, index) => ({
-      index,
-      remainder: allocation - Math.floor(allocation),
-    }))
-    .sort((left, right) => right.remainder - left.remainder)
-    .forEach(({ index }) => {
-      if (remaining <= 0) {
-        return
-      }
-
-      allocations[index] += 1
-      remaining -= 1
-    })
+  const skillBudget = count
+  const ambientPoints = new Float32Array(0)
+  const skillPoints = new Float32Array(skillBudget * 3)
+  const skillCounts = allocateSkillParticleCounts(skills, skillBudget)
+  const skillData = createSkillAnchors(skills, skillCounts)
 
   let cursor = 0
-  layouts.forEach((layout, groupIndex) => {
-    const groupSkills = skills.filter((skill) => skill.group === layout.slug)
-    connectionSegments.push(0, 0, 0, layout.center[0], layout.center[1], layout.center[2])
-
-    groupSkills.forEach((skill, skillIndex) => {
-      const skillGlobalIndex = skills.indexOf(skill)
-      const random = mulberry32(hashString(skill.label))
-      const angle =
-        (skillIndex / Math.max(1, groupSkills.length)) * Math.PI * 2 + groupIndex * 0.74 + random() * 0.42
-      const radial = 0.48 + (skillIndex % 3) * 0.16 + skill.densityTier * 0.04
-      const anchor = toTuple(
-        layout.center[0] + Math.cos(angle) * layout.spread[0] * radial,
-        layout.center[1] + Math.sin(angle * 1.08 + random() * 0.2) * layout.spread[1] * 0.58,
-        layout.center[2] + Math.sin(angle * 0.94 - random() * 0.16) * layout.spread[2] * 0.84,
-      )
-
-      labels.push({
-        id: `${skill.group}-${skill.label}`,
-        text: skill.label,
-        position: anchor,
-        group: skill.group,
-        densityTier: skill.densityTier,
-      })
-
-      connectionSegments.push(
-        layout.center[0],
-        layout.center[1],
-        layout.center[2],
-        anchor[0],
-        anchor[1],
-        anchor[2],
-      )
-
-      const skillCount = allocations[skillGlobalIndex]
-      const spreadX = 0.08 + skill.densityTier * 0.026
-      const spreadY = 0.06 + skill.densityTier * 0.02
-      const spreadZ = 0.08 + skill.densityTier * 0.03
-
-      for (let localIndex = 0; localIndex < skillCount && cursor < clusterBudget; localIndex += 1) {
-        const pointRandom = mulberry32(hashString(`${skill.label}-${localIndex}`))
-        const x =
-          anchor[0] + gaussian(pointRandom) * spreadX + Math.sin(localIndex * 0.12 + angle) * 0.03
-        const y =
-          anchor[1] + gaussian(pointRandom) * spreadY + Math.cos(localIndex * 0.11 + angle) * 0.025
-        const z = anchor[2] + gaussian(pointRandom) * spreadZ
-
-        points[cursor * 3] = x
-        points[cursor * 3 + 1] = y
-        points[cursor * 3 + 2] = z
-
-        const trunkMix = pointRandom() < 0.38
-        const source = trunkMix ? toTuple(0, 0, 0) : layout.center
-        const target = trunkMix ? layout.center : anchor
-        const mix = trunkMix ? 0.18 + pointRandom() * 0.84 : 0.08 + pointRandom() * 0.9
-        const bridgeJitter = 0.018 + skill.densityTier * 0.004
-
-        bridgePoints[cursor * 3] =
-          source[0] + (target[0] - source[0]) * mix + gaussian(pointRandom) * bridgeJitter
-        bridgePoints[cursor * 3 + 1] =
-          source[1] + (target[1] - source[1]) * mix + gaussian(pointRandom) * bridgeJitter
-        bridgePoints[cursor * 3 + 2] =
-          source[2] + (target[2] - source[2]) * mix + gaussian(pointRandom) * bridgeJitter
-
-        cursor += 1
-      }
-    })
+  skillData.forEach((skill, skillIndex) => {
+    const start = cursor
+    cursor = fillSkillSpherePoints(skillPoints, cursor, skill)
+    skillData[skillIndex] = {
+      ...skill,
+      pointRange: [start, cursor],
+    }
   })
 
-  for (let index = cursor; index < count; index += 1) {
-    const layout = layouts[index % layouts.length]!
-    const random = mulberry32(hashString(`ambient-${index}`))
-    const x = hashSigned(index * 1.27) * 5.4 + layout.center[0] * 0.18
-    const y = hashSigned(index * 1.73) * 3.6 + layout.center[1] * 0.12
-    const z = hashSigned(index * 2.11) * 2.6
-    points[index * 3] = x
-    points[index * 3 + 1] = y
-    points[index * 3 + 2] = z
-    bridgePoints[index * 3] = x * 0.6 + gaussian(random) * 0.04
-    bridgePoints[index * 3 + 1] = y * 0.34 + gaussian(random) * 0.03
-    bridgePoints[index * 3 + 2] = z * 0.52 + gaussian(random) * 0.03
-  }
-
   return {
-    points,
-    bridgePoints,
-    labels,
-    connectionSegments: new Float32Array(connectionSegments),
-    floorSegments: createFloorGridSegments(10.6, 7.8, 0.55, -3.05),
-    axisSegments: createAxisSegments(),
+    ambientPoints,
+    skillPoints,
+    skills: skillData,
+    cubeSegments: createCubeSegments(STACK_CUBE_SIZE, STACK_CUBE_CENTER_Y),
+    gridSegments: createGridSegments(STACK_CUBE_SIZE, STACK_CUBE_CENTER_Y, STACK_CUBE_DIVISIONS),
   }
 }

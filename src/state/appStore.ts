@@ -2,31 +2,39 @@ import { create } from 'zustand'
 import { sectionToSceneMode } from '@/config/scenePresets'
 import type { AppSection, Capabilities, PointerState, SceneMode } from '@/shared/types'
 
-type StackView = {
-  panX: number
-  panY: number
+export const DEFAULT_STACK_THETA = Math.PI * 0.5
+export const DEFAULT_STACK_PHI = Math.PI * 0.5
+export const DEFAULT_STACK_RADIUS = 25
+
+type StackCameraState = {
+  thetaTarget: number
+  phiTarget: number
+  radiusTarget: number
+  hasInteracted: boolean
+  resetNonce: number
 }
 
 type AppState = {
   activeSection: AppSection
   sceneMode: SceneMode
   menuOpen: boolean
+  contentRevealKey: number
   pointer: PointerState
   capabilities: Capabilities
   aboutScrollProgress: number
-  stackProgress: number
   contactProgress: number
-  stackView: StackView
+  stackCamera: StackCameraState
   setActiveSection: (section: AppSection) => void
   setSceneMode: (sceneMode: SceneMode) => void
   setMenuOpen: (open: boolean) => void
+  bumpContentRevealKey: () => void
   setPointer: (pointer: Partial<PointerState>) => void
   setCapabilities: (capabilities: Partial<Capabilities>) => void
   setAboutScrollProgress: (progress: number) => void
-  setStackProgress: (progress: number) => void
   setContactProgress: (progress: number) => void
-  setStackView: (view: Partial<StackView>) => void
-  resetStackView: () => void
+  setStackCamera: (camera: Partial<StackCameraState>) => void
+  markStackCameraInteracted: () => void
+  resetStackCamera: () => void
 }
 
 const defaultPointer: PointerState = {
@@ -43,32 +51,35 @@ const defaultCapabilities: Capabilities = {
   isTouch: false,
 }
 
-const defaultStackView: StackView = {
-  panX: 0,
-  panY: 0,
+const defaultStackCamera: StackCameraState = {
+  thetaTarget: DEFAULT_STACK_THETA,
+  phiTarget: DEFAULT_STACK_PHI,
+  radiusTarget: DEFAULT_STACK_RADIUS,
+  hasInteracted: false,
+  resetNonce: 0,
 }
 
 export const useAppStore = create<AppState>((set) => ({
   activeSection: 'home',
   sceneMode: 'homeAlpha',
   menuOpen: false,
+  contentRevealKey: 0,
   pointer: defaultPointer,
   capabilities: defaultCapabilities,
   aboutScrollProgress: 0,
-  stackProgress: 0,
   contactProgress: 0,
-  stackView: defaultStackView,
+  stackCamera: defaultStackCamera,
   setActiveSection: (section) =>
     set({
       activeSection: section,
       sceneMode: sectionToSceneMode(section),
       aboutScrollProgress: 0,
-      stackProgress: 0,
       contactProgress: 0,
-      stackView: defaultStackView,
+      stackCamera: defaultStackCamera,
     }),
   setSceneMode: (sceneMode) => set({ sceneMode }),
   setMenuOpen: (menuOpen) => set({ menuOpen }),
+  bumpContentRevealKey: () => set((state) => ({ contentRevealKey: state.contentRevealKey + 1 })),
   setPointer: (pointer) =>
     set((state) => ({
       pointer: {
@@ -84,14 +95,27 @@ export const useAppStore = create<AppState>((set) => ({
       },
     })),
   setAboutScrollProgress: (aboutScrollProgress) => set({ aboutScrollProgress }),
-  setStackProgress: (stackProgress) => set({ stackProgress }),
   setContactProgress: (contactProgress) => set({ contactProgress }),
-  setStackView: (view) =>
+  setStackCamera: (camera) =>
     set((state) => ({
-      stackView: {
-        ...state.stackView,
-        ...view,
+      stackCamera: {
+        ...state.stackCamera,
+        ...camera,
       },
     })),
-  resetStackView: () => set({ stackView: defaultStackView }),
+  markStackCameraInteracted: () =>
+    set((state) => ({
+      stackCamera: {
+        ...state.stackCamera,
+        hasInteracted: true,
+      },
+    })),
+  resetStackCamera: () =>
+    set((state) => ({
+      stackCamera: {
+        ...defaultStackCamera,
+        hasInteracted: state.stackCamera.hasInteracted,
+        resetNonce: state.stackCamera.resetNonce + 1,
+      },
+    })),
 }))

@@ -8,12 +8,17 @@
   color: var(--color-light-primary);
   text-shadow: var(--shadow-soft);
   text-transform: uppercase;
+  transform-origin: left center;
   transition: color var(--page-transition), opacity var(--page-transition);
+  will-change: transform, opacity;
 }
 
-.logoAnimate {
-  animation: microLogoIn 760ms cubic-bezier(0.22, 1, 0.36, 1);
-  transform-origin: center;
+.logoMotionEnter {
+  animation: microLogoEnter var(--nav-enter-duration) var(--nav-enter-ease);
+}
+
+.logoMotionExit {
+  animation: microLogoExit var(--nav-enter-duration) var(--nav-enter-ease) forwards;
 }
 
 .logo:hover,
@@ -21,14 +26,26 @@
   color: var(--color-light-highlight);
 }
 
-@keyframes microLogoIn {
+@keyframes microLogoEnter {
   from {
     opacity: 0;
-    transform: rotateZ(-84deg) scale(0.66);
+    transform: translate3d(-24px, 0, 0);
   }
 
   to {
     opacity: 1;
-    transform: rotateZ(0deg) scale(1);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes microLogoExit {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate3d(-24px, 0, 0);
   }
 }

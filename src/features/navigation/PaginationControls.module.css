@@ -12,7 +12,7 @@
   transform: translateY(-50%);
   overflow: hidden;
   transition: color var(--page-transition), transform var(--page-transition);
-  animation: paginationDockIn 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: paginationDockIn var(--nav-enter-duration) var(--nav-enter-ease);
   isolation: isolate;
 }
 
@@ -39,6 +39,7 @@
 .sideButtonRight {
   right: 0;
   justify-content: flex-end;
+  animation-duration: var(--nav-enter-duration);
 }
 
 .sideButtonRight::before,
@@ -76,7 +77,7 @@
   justify-content: center;
   width: 22px;
   height: 98px;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.4;
   letter-spacing: 0;
   color: inherit;
@@ -101,15 +102,34 @@
   top: 50%;
   width: 32px;
   height: 32px;
+  color: var(--color-light-primary);
   transform: translateY(-50%);
+  transition: transform var(--page-transition);
+}
+
+.chevron :global(svg) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.chevron :global(path) {
+  fill: currentColor;
+}
+
+.sideButton:hover .chevron,
+.sideButton:focus-visible .chevron,
+.mobileButton:hover .chevron,
+.mobileButton:focus-visible .chevron {
+  color: var(--color-light-highlight);
 }
 
 .sideButtonLeft .chevron {
-  left: var(--frame-margin);
+  left: calc(var(--frame-margin) - 11.93px);
 }
 
 .sideButtonRight .chevron {
-  right: var(--frame-margin);
+  right: calc(var(--frame-margin) - 11.93px);
 }
 
 .mobileChevron {
@@ -137,7 +157,7 @@
   width: 50%;
   height: 100%;
   color: var(--color-light-primary);
-  animation: paginationDockIn 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: paginationDockIn var(--nav-enter-duration) var(--nav-enter-ease);
   overflow: hidden;
   isolation: isolate;
 }
@@ -166,11 +186,25 @@
 }
 
 .mobileButtonLeft .chevron {
-  left: var(--frame-margin);
+  left: calc(var(--frame-margin) - 11.93px);
 }
 
 .mobileButtonRight .chevron {
-  right: var(--frame-margin);
+  right: calc(var(--frame-margin) - 11.93px);
+}
+
+.sideButtonLeft:hover .chevron,
+.sideButtonLeft:focus-visible .chevron,
+.mobileButtonLeft:hover .chevron,
+.mobileButtonLeft:focus-visible .chevron {
+  transform: translate(-16px, -50%);
+}
+
+.sideButtonRight:hover .chevron,
+.sideButtonRight:focus-visible .chevron,
+.mobileButtonRight:hover .chevron,
+.mobileButtonRight:focus-visible .chevron {
+  transform: translate(16px, -50%);
 }
 
 .mobileSpacer::before {
@@ -205,6 +239,7 @@
 }
 
 @media (max-width: 767px) {
+
   .mobileButtonLeft,
   .mobileButtonRight,
   .mobileSpacer {

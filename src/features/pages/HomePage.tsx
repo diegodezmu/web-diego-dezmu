@@ -1,27 +1,29 @@
 import { useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { siteContent } from '@/config/content'
+import { useAppStore } from '@/state/appStore'
 import styles from './HomePage.module.css'
 
 export function HomePage() {
   const shellRef = useRef<HTMLElement | null>(null)
+  const contentRevealKey = useAppStore((state) => state.contentRevealKey)
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         `.${styles.wordmark}`,
         { autoAlpha: 0, y: '15vh' },
-        { autoAlpha: 1, y: 0, duration: 1.38, ease: 'power2.out' },
+        { autoAlpha: 1, y: 0, duration: 3, ease: 'power2.out' },
       )
       gsap.fromTo(
         `.${styles.roleGroup}`,
-        { autoAlpha: 0, y: '8vh' },
-        { autoAlpha: 1, y: 0, duration: 1.28, ease: 'power2.out', delay: 0.18 },
+        { autoAlpha: 0, y: '10vh' },
+        { autoAlpha: 1, y: 0, duration: 2.5, ease: 'power2.out', delay: 0.14 },
       )
     }, shellRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [contentRevealKey])
 
   return (
     <section ref={shellRef} className={styles.page}>

@@ -120,35 +120,7 @@ export const frameGridConfig = {
   recovery: 0.012,
 }
 
-export const stackBridgeConfig: ParticleTuning = {
-  count: 4600,
-  sizePx: 3.1,
-  opacity: 0.66,
-  strokeWeightPx: 1,
-  jitterPx: 6,
-  haloPx: 8,
-  pointerRadiusPx: 60,
-  pointerStrength: 0.12,
-  driftMotion: 0,
-  orbitMotion: 0,
-  recovery: 0.012,
-}
-
-export const stackEmbeddingsConfig: ParticleTuning = {
-  count: 4800,
-  sizePx: 3.3,
-  opacity: 0.72,
-  strokeWeightPx: 1,
-  jitterPx: 4,
-  haloPx: 10,
-  pointerRadiusPx: 60,
-  pointerStrength: 0.12,
-  driftMotion: 0,
-  orbitMotion: 0,
-  recovery: 0.014,
-}
-
-export const menuGridConfig = {
+export const aboutMarginGridConfig = {
   cellPx: 18,
   count: 4200,
   sizePx: 3.1,
@@ -157,4 +129,29 @@ export const menuGridConfig = {
   pointerRadiusPx: 60,
   pointerStrength: 0.1,
   recovery: 0.012,
+}
+
+export const stackEmbeddingMapConfig: ParticleTuning = {
+  count: 5600,
+  sizePx: 3.2,
+  opacity: 0.78,
+  strokeWeightPx: 1,
+  jitterPx: 0,
+  haloPx: 9,
+  pointerRadiusPx: 0,
+  pointerStrength: 0,
+  driftMotion: 0,
+  orbitMotion: 0,
+  recovery: 0.018,
+}
+
+export const menuGridConfig = {
+  cellPx: 18,
+  count: 4200,
+  sizePx: 3.1,
+  opacity: 0.48,
+  haloPx: 6,
+  pointerRadiusPx: 192,
+  pointerStrength: 0.1,
+  recovery: 0.008,
 }

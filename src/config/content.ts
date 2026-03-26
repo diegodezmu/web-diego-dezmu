@@ -1,4 +1,4 @@
-import type { AppSection, StackGroupLayout, StackSkillSpec } from '@/shared/types'
+import type { AppSection, StackSkillGroup, StackSkillSpec } from '@/shared/types'
 
 export const sectionOrder: AppSection[] = ['home', 'about', 'stack', 'contact']
 
@@ -17,8 +17,8 @@ export const siteContent = {
   aboutTitle: 'ABOUT',
   aboutParagraphs: [
     'Diego is an AI builder with a foundation in software development, product design and audio engineering.',
-    '"My multidisciplinary background taught me to think in systems: optimize signals, remove noise, and ensure the output is clean". For over a decade of career I applied that same logic to every framework, from designing mobile apps to immersive audiovisual experiences, audio interfaces, workflows or any kind of solution.',
-    '"Today I am currently specialized in generative AI, working at the intersection of solution design and intelligent systems, agent architectures, and automations that connect work ecosystems."',
+    '"My multidisciplinary background taught me to think in systems: optimize signals, remove noise, and ensure the output is clean. For over a decade of career I applied that same logic to every framework, from designing mobile apps to immersive audiovisual experiences, audio interfaces, workflows or any kind of solution.',
+    '"Today I am currently specialized in generative AI, working at the intersection of solution design and intelligent systems, agentic architectures, and automations that connect work ecosystems."',
     '"I combine design thinking with the technical ability to build with AI. I do not need to translate between teams. I speak both languages."',
   ],
   stackTitle: 'STACK',
@@ -28,33 +28,21 @@ export const siteContent = {
   menuCaption: '\u00a9 COPYWRIGHT DIEGO DEZMU 2026',
 }
 
-export const stackGroupLayouts: StackGroupLayout[] = [
-  {
-    slug: 'design',
-    center: [-1.82, 1.62, -0.22],
-    spread: [1.88, 1.18, 1.02],
-  },
-  {
-    slug: 'ai',
-    center: [1.88, 1.18, 0.56],
-    spread: [1.62, 1.08, 1.08],
-  },
-  {
-    slug: 'engineering',
-    center: [1.42, -1.58, -0.66],
-    spread: [2.16, 1.26, 1.24],
-  },
-  {
-    slug: 'tooling',
-    center: [-1.08, -1.74, 0.34],
-    spread: [1.62, 1.06, 0.86],
-  },
-  {
-    slug: 'audio',
-    center: [-3.98, -0.12, -0.16],
-    spread: [0.98, 0.72, 0.58],
-  },
-]
+export const stackGroupPalette: Record<StackSkillGroup, string> = {
+  engineering: '#b8bec8',
+  design: '#d0cbc5',
+  ai: '#e1e4ea',
+  tooling: '#9b9faa',
+  audio: '#b7b2ac',
+}
+
+export const stackGroupLabels: Record<StackSkillGroup, string> = {
+  ai: 'AI',
+  design: 'Design',
+  engineering: 'Engineering',
+  tooling: 'Tooling',
+  audio: 'Audio',
+}
 
 export const stackSkillSpecs: StackSkillSpec[] = [
   { label: 'LLM', group: 'ai', densityTier: 5 },

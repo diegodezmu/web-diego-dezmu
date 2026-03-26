@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { assets } from '@/shared/assets'
 import { siteContent } from '@/config/content'
@@ -9,6 +9,8 @@ import styles from './AboutPage.module.css'
 export function AboutPage() {
   const shellRef = useRef<HTMLElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  const [aboutScrollTop, setAboutScrollTop] = useState(0)
+  const contentRevealKey = useAppStore((state) => state.contentRevealKey)
   const aboutScrollProgress = useAppStore((state) => state.aboutScrollProgress)
   const setAboutScrollProgress = useAppStore((state) => state.setAboutScrollProgress)
 
@@ -17,12 +19,12 @@ export function AboutPage() {
       gsap.fromTo(
         `.${styles.titleBlock}`,
         { autoAlpha: 0, y: '15vh' },
-        { autoAlpha: 1, y: 0, duration: 1.08, ease: 'power3.out' },
+        { autoAlpha: 1, y: 0, duration: 3, ease: 'power3.out' },
       )
       gsap.fromTo(
         `.${styles.copyParagraph}`,
         { autoAlpha: 0, y: 28 },
-        { autoAlpha: 1, y: 0, duration: 0.6, stagger: 0.06, ease: 'power2.out', delay: 0.18 },
+        { autoAlpha: 1, y: 0, duration: 3, stagger: 0.06, ease: 'power2.out', delay: 0.18 },
       )
       gsap.fromTo(
         `.${styles.portraitFrame}`,
@@ -35,6 +37,22 @@ export function AboutPage() {
   }, [])
 
   useLayoutEffect(() => {
+    if (contentRevealKey === 0) {
+      return
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        `.${styles.titleBlock}`,
+        { autoAlpha: 0, y: 32 },
+        { autoAlpha: 1, y: 0, duration: 0.72, ease: 'power2.out' },
+      )
+    }, shellRef)
+
+    return () => ctx.revert()
+  }, [contentRevealKey])
+
+  useLayoutEffect(() => {
     const element = scrollRef.current
     if (!element) {
       return
@@ -42,6 +60,7 @@ export function AboutPage() {
 
     const updateScroll = () => {
       const max = Math.max(1, element.scrollHeight - element.clientHeight)
+      setAboutScrollTop(element.scrollTop)
       setAboutScrollProgress(element.scrollTop / max)
     }
 
@@ -51,12 +70,13 @@ export function AboutPage() {
 
     return () => {
       element.removeEventListener('scroll', updateScroll)
+      setAboutScrollTop(0)
       setAboutScrollProgress(0)
     }
   }, [setAboutScrollProgress])
 
   const titleOpacity = 1 - Math.min(1, aboutScrollProgress * 1.8)
-  const titleShift = Math.min(aboutScrollProgress * 220, 220)
+  const titleShift = aboutScrollTop
 
   return (
     <section ref={shellRef} className={styles.page}>

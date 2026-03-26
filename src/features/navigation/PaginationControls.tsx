@@ -3,31 +3,28 @@ import { sectionLabels, sectionOrder } from '@/config/content'
 import type { AppSection } from '@/shared/types'
 import { useAppStore } from '@/state/appStore'
 import styles from './PaginationControls.module.css'
+import chevronLeftSvg from '../../../Material/icon-chevron-left.svg?raw'
+import chevronRightSvg from '../../../Material/icon-chevron-right.svg?raw'
 
 type NeighborLink = {
   href: string
   label: string
 }
 
+const CHEVRON_MARKUP = {
+  left: chevronLeftSvg,
+  right: chevronRightSvg,
+} as const
+
 function Chevron({ side, mobile = false }: { side: 'left' | 'right'; mobile?: boolean }) {
-  const points = side === 'left' ? '32 5 0 16 32 27' : '0 5 32 16 0 27'
+  const markup = side === 'left' ? CHEVRON_MARKUP.left : CHEVRON_MARKUP.right
 
   return (
-    <svg
+    <span
       className={`${styles.chevron} ${mobile ? styles.mobileChevron : ''}`}
-      viewBox="0 0 32 32"
-      fill="none"
       aria-hidden="true"
-    >
-      <polyline
-        points={points}
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="butt"
-        strokeLinejoin="miter"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
+      dangerouslySetInnerHTML={{ __html: markup }}
+    />
   )
 }
 

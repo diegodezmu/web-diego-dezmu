@@ -27,10 +27,12 @@
 .roleGroup {
   position: absolute;
   left: 50%;
-  bottom: 34px;
+  bottom: var(--frame-margin-desktop);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
+  width: calc(100% - var(--frame-margin-desktop) * 2);
   transform: translateX(-50%);
 }
 
@@ -58,9 +60,11 @@
   }
 
   .roleGroup {
+    left: 50%;
     bottom: 48px;
     flex-direction: column;
     gap: 16px;
+    transform: translateX(-50%);
   }
 
   .roleText {

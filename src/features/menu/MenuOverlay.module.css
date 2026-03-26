@@ -23,17 +23,25 @@
   transform: rotate(45deg);
 }
 
+.closeButtonEnter {
+  animation: closeToggleEnter var(--nav-enter-duration) var(--nav-enter-ease);
+}
+
+.closeButtonExit {
+  animation: closeToggleExit var(--nav-enter-duration) var(--nav-enter-ease) forwards;
+}
+
 .closeButton:hover,
 .closeButton:focus-visible {
   color: var(--color-light-highlight);
-  transform: rotate(45deg) scale(1.5);
+  transform: rotate(45deg) scale(1.1667);
 }
 
 .closeLine {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 32px;
+  width: 28px;
   height: 1px;
   background: currentColor;
   transform-origin: center;
@@ -54,7 +62,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   transform: translate(-50%, -50%);
   pointer-events: auto;
 }
@@ -70,7 +78,10 @@
   text-align: center;
   text-shadow: var(--shadow-soft);
   text-transform: uppercase;
-  transition: color var(--page-transition), transform var(--page-transition);
+  transition:
+    color var(--page-transition),
+    transform var(--page-transition),
+    font-size var(--page-transition);
 }
 
 .nav:has(.linkButton:hover) .linkButton:not(:hover) {
@@ -85,6 +96,7 @@
 
 .linkButton:hover,
 .linkButton:focus-visible {
+  font-size: var(--menu-button-hover-size);
   transform: translateY(-2px);
 }
 
@@ -99,6 +111,36 @@
   pointer-events: auto;
 }
 
+.exitHidden {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+@keyframes closeToggleEnter {
+  from {
+    opacity: 0;
+    transform: translate3d(24px, 0, 0) rotate(45deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(45deg);
+  }
+}
+
+@keyframes closeToggleExit {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(45deg);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate3d(24px, 0, 0) rotate(45deg);
+  }
+}
+
 @media (max-width: 767px) {
   .closeButton {
     left: 50%;
@@ -108,7 +150,15 @@
 
   .closeButton:hover,
   .closeButton:focus-visible {
-    transform: translateX(-50%) rotate(45deg) scale(1.5);
+    transform: translateX(-50%) rotate(45deg) scale(1.1667);
+  }
+
+  .closeButtonEnter {
+    animation: closeToggleEnterMobile var(--nav-enter-duration) var(--nav-enter-ease);
+  }
+
+  .closeButtonExit {
+    animation: closeToggleExitMobile var(--nav-enter-duration) var(--nav-enter-ease) forwards;
   }
 
   .nav {
@@ -118,11 +168,34 @@
   .linkButton {
     min-width: 308px;
     padding: 24px;
-    font-size: 20px;
+    font-size: var(--menu-button-size);
   }
 
   .caption {
-    bottom: 32px;
     white-space: nowrap;
+  }
+}
+
+@keyframes closeToggleEnterMobile {
+  from {
+    opacity: 0;
+    transform: translateX(calc(-50% + 24px)) rotate(45deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) rotate(45deg);
+  }
+}
+
+@keyframes closeToggleExitMobile {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(calc(-50% + 24px)) rotate(45deg);
   }
 }

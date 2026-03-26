@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
+import { gsap } from 'gsap'
 import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
 import { useAppStore } from '@/state/appStore'
@@ -14,6 +15,7 @@ export function ContactPage() {
     active: false,
     y: 0,
   })
+  const contentRevealKey = useAppStore((state) => state.contentRevealKey)
   const contactProgress = useAppStore((state) => state.contactProgress)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
   const setContactProgress = useAppStore((state) => state.setContactProgress)
@@ -21,6 +23,22 @@ export function ContactPage() {
   useEffect(() => {
     setContactProgress(0)
   }, [setContactProgress])
+
+  useLayoutEffect(() => {
+    if (contentRevealKey === 0) {
+      return
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        `.${styles.titleBlock}`,
+        { autoAlpha: 0, y: 28 },
+        { autoAlpha: 1, y: 0, duration: 0.68, ease: 'power2.out' },
+      )
+    }, shellRef)
+
+    return () => ctx.revert()
+  }, [contentRevealKey])
 
   useEffect(() => {
     const element = shellRef.current
@@ -72,17 +90,20 @@ export function ContactPage() {
       <div
         className={styles.titleAnchor}
         style={{
-          transform: `translate(-50%, calc(-50% - ${contactProgress * 72}px))`,
+          transform: `translate(-50%, -50%)`,
         }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => setContactProgress(contactProgress < 0.5 ? 1 : 0)}
+        data-cursor="interactive"
       >
-        <PageTitle title={siteContent.contactTitle} />
+        <PageTitle className={styles.titleBlock} title={siteContent.contactTitle} />
       </div>
 
       <div
         className={styles.linksBlock}
         style={{
           opacity: revealProgress,
-          transform: `translate(-50%, ${24 - revealProgress * 24}px)`,
+          transform: `translate(-50%, ${10 - revealProgress * 10}vh)`,
         }}
       >
         <a

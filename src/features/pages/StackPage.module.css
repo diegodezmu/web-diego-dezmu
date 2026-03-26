@@ -7,33 +7,102 @@
 .titleAnchor {
   position: absolute;
   left: 50%;
-  z-index: 4;
+  top: calc(var(--frame-margin) + 8px);
+  z-index: 5;
   transform: translateX(-50%);
-  transition:
-    top 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
-.titleCenter {
-  top: 50%;
-  transform: translate(-50%, -50%);
+.titleBlock {
+  text-shadow: var(--shadow-title);
 }
 
-.titleTop {
-  top: calc(var(--frame-margin) + 8px);
-  transform: translateX(-50%);
+.hint,
+.resetButton {
+  z-index: 5;
+  animation: stackChromeIn 640ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hint {
+  position: absolute;
+  left: var(--frame-margin);
+  bottom: calc(var(--frame-margin) + env(safe-area-inset-bottom, 0px));
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(209, 209, 209, 0.42);
+  background: rgba(11, 11, 11, 0.72);
+  backdrop-filter: blur(6px);
+  font-size: 11px;
+  font-family: var(--font-body);
+  line-height: 1;
+  pointer-events: none;
+  transition: opacity 800ms ease;
+}
+
+.resetButton {
+  position: absolute;
+  right: var(--frame-margin);
+  bottom: calc(var(--frame-margin) + env(safe-area-inset-bottom, 0px));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: rgba(235, 235, 235, 0.94);
+  background: rgba(11, 11, 11, 0.78);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.resetButton:hover,
+.resetButton:focus-visible {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(19, 19, 19, 0.9);
+  transform: scale(1.04);
+}
+
+.resetButton svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .interactionLayer {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 4;
   touch-action: none;
 }
 
+@keyframes stackChromeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 767px) {
-  .titleTop {
+  .titleAnchor {
     top: 132px;
+  }
+
+  .hint {
+    bottom: calc(var(--frame-margin) + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100vw - var(--frame-margin) * 2 - 48px);
   }
 }

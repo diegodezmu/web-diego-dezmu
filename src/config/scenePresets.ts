@@ -1,11 +1,10 @@
 import {
   alphaConfig,
+  aboutMarginGridConfig,
   betaConfig,
   deltaConfig,
-  frameGridConfig,
   menuGridConfig,
-  stackBridgeConfig,
-  stackEmbeddingsConfig,
+  stackEmbeddingMapConfig,
 } from '@/config/curves'
 import type { AppSection, DeviceTier, SceneMode, ScenePreset } from '@/shared/types'
 
@@ -25,35 +24,28 @@ export const scenePresets: Record<SceneMode, ScenePreset> = {
     spread: [6.6, 4.5, 1.6],
   },
   aboutFrame: {
-    count: frameGridConfig.count,
-    sizePx: frameGridConfig.sizePx,
-    opacity: frameGridConfig.opacity,
+    count: aboutMarginGridConfig.count,
+    sizePx: aboutMarginGridConfig.sizePx,
+    opacity: aboutMarginGridConfig.opacity,
     strokeWeightPx: 1,
     jitterPx: 0,
-    haloPx: frameGridConfig.haloPx,
-    pointerRadiusPx: frameGridConfig.pointerRadiusPx,
-    pointerStrength: frameGridConfig.pointerStrength,
+    haloPx: aboutMarginGridConfig.haloPx,
+    pointerRadiusPx: aboutMarginGridConfig.pointerRadiusPx,
+    pointerStrength: aboutMarginGridConfig.pointerStrength,
     driftMotion: 0,
     orbitMotion: 0,
-    recovery: frameGridConfig.recovery,
+    recovery: aboutMarginGridConfig.recovery,
     spin: 0,
     cameraPosition: [0, 0, 11.2],
     cameraLookAt: [0, 0, 0],
     spread: [10.2, 6.1, 0.5],
   },
-  stackBridge: {
-    ...stackBridgeConfig,
+  stackEmbeddingMap: {
+    ...stackEmbeddingMapConfig,
     spin: 0,
-    cameraPosition: [0, 0.05, 13.2],
-    cameraLookAt: [0, 0, 0],
-    spread: [7.6, 4.8, 3.2],
-  },
-  stackEmbeddings: {
-    ...stackEmbeddingsConfig,
-    spin: 0,
-    cameraPosition: [0, 0.04, 13.9],
-    cameraLookAt: [0, 0, 0],
-    spread: [9.8, 5.2, 5.6],
+    cameraPosition: [7.4, 16.8, 5.8],
+    cameraLookAt: [0, 1.5, 0],
+    spread: [10, 10, 10],
   },
   contactDelta: {
     ...deltaConfig.particles,
@@ -117,7 +109,7 @@ export function sectionToSceneMode(section: AppSection): SceneMode {
     case 'about':
       return 'aboutBeta'
     case 'stack':
-      return 'stackBridge'
+      return 'stackEmbeddingMap'
     case 'contact':
       return 'contactDelta'
     case 'home':

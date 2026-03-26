@@ -27,8 +27,18 @@
 
 .sceneUnderlayAbout {
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(1, 1, 1, 0.36) 58%, rgba(1, 1, 1, 0.94) 100%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0) 42%, rgba(1, 1, 1, 0.7) 100%);
+    linear-gradient(180deg,
+      rgb(0, 0, 0) 0,
+      rgb(0, 0, 0) 16px,
+      rgba(0, 0, 0, 0.72) 72px,
+      rgba(0, 0, 0, 0.22) 144px,
+      rgba(0, 0, 0, 0) 240px),
+    linear-gradient(0deg,
+      rgb(0, 0, 0) 0,
+      rgb(0, 0, 0) 16px,
+      rgba(0, 0, 0, 0.8) 72px,
+      rgba(0, 0, 0, 0.3) 144px,
+      rgba(0, 0, 0, 0) 240px);
 }
 
 .sceneUnderlayContact {
@@ -37,13 +47,23 @@
     radial-gradient(circle at 50% 90%, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0) 32%);
 }
 
-.routeLayer {
+.contentLayer {
   position: relative;
   z-index: 4;
   transition: opacity 180ms ease, visibility 180ms ease;
 }
 
-.routeLayerHidden {
+.contentLayerBelowScene {
+  z-index: 0;
+}
+
+.chromeLayer {
+  position: relative;
+  z-index: 6;
+  transition: opacity 180ms ease, visibility 180ms ease;
+}
+
+.layerHidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -79,24 +99,18 @@
 
 .fallbackBackdrop--aboutFrame {
   background:
-    linear-gradient(var(--color-light-off), var(--color-light-off)) top 10vh left 5vw / calc(100% - 10vw)
-      1px no-repeat,
-    linear-gradient(var(--color-light-off), var(--color-light-off)) bottom 10vh left 5vw /
-      calc(100% - 10vw) 1px no-repeat,
-    linear-gradient(var(--color-light-off), var(--color-light-off)) top 10vh left 5vw / 1px
-      calc(100% - 20vh) no-repeat,
-    linear-gradient(var(--color-light-off), var(--color-light-off)) top 10vh right 5vw / 1px
-      calc(100% - 20vh) no-repeat,
+    linear-gradient(var(--color-light-off), var(--color-light-off)) top 10vh left 5vw / calc(100% - 10vw) 1px no-repeat,
+    linear-gradient(var(--color-light-off), var(--color-light-off)) bottom 10vh left 5vw / calc(100% - 10vw) 1px no-repeat,
+    linear-gradient(var(--color-light-off), var(--color-light-off)) top 10vh left 5vw / 1px calc(100% - 20vh) no-repeat,
+    linear-gradient(var(--color-light-off), var(--color-light-off)) top 10vh right 5vw / 1px calc(100% - 20vh) no-repeat,
     var(--color-dark);
 }
 
-.fallbackBackdrop--stackBridge,
-.fallbackBackdrop--stackEmbeddings {
+.fallbackBackdrop--stackEmbeddingMap {
   background:
-    radial-gradient(circle at 18% 56%, rgba(255, 255, 255, 0.07), transparent 18%),
-    radial-gradient(circle at 39% 32%, rgba(255, 255, 255, 0.08), transparent 14%),
-    radial-gradient(circle at 62% 62%, rgba(255, 255, 255, 0.06), transparent 18%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%),
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px) center / 160px 160px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) center / 160px 160px,
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08), transparent 18%),
     var(--color-dark);
 }
 

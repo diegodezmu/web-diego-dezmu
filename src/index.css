@@ -9,7 +9,7 @@
   --color-dark-hover: #131313;
   --color-light-primary: #d1d1d1;
   --color-light-highlight: #ffffff;
-  --color-light-secondary: #5d5d5d;
+  --color-light-secondary: #808080;
   --color-light-off: #3e3e3e;
   --color-line: rgba(209, 209, 209, 0.82);
   --color-border: rgba(255, 255, 255, 0.06);
@@ -22,7 +22,7 @@
   --header-offset: 72px;
   --title-size: 32px;
   --title-tracking: 0.45em;
-  --menu-button-size: 24px;
+  --menu-button-size: 20px;
   --menu-button-hover-size: 24px;
   --menu-button-tracking: 0.5em;
   --logo-display-size: 48px;
@@ -31,12 +31,14 @@
   --body-size: 15px;
   --link-size: 16px;
   --caption-size: 12px;
-  --micro-logo-size: 14px;
-  --micro-logo-tracking: 0.18em;
+  --micro-logo-size: 10px;
+  --micro-logo-tracking: 1px;
   --menu-toggle-size: 18px;
   --menu-toggle-tracking: 0.09em;
   --page-transition: 420ms cubic-bezier(0.22, 1, 0.36, 1);
-  --shadow-title: 0 8px 28px rgba(0, 0, 0, 0.76);
+  --nav-enter-duration: 1500ms;
+  --nav-enter-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --shadow-title: 0 16px 28px rgba(0, 0, 0, 0.90);
   --shadow-soft: 0 0 24px rgba(0, 0, 0, 0.58);
   font-family: var(--font-body);
   line-height: 1.5;
@@ -137,7 +139,7 @@ p {
   :root {
     --frame-margin: var(--frame-margin-mobile);
     --title-size: 26px;
-    --menu-button-size: 20px;
+    --menu-button-size: 16px;
     --menu-button-hover-size: 20px;
     --logo-display-size: 21px;
     --logo-display-tracking: 0.5em;

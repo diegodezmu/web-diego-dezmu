@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useAppStore } from '@/state/appStore'
@@ -59,25 +59,55 @@ function createSpriteTexture() {
 type ParticleFieldProps = {
   maxCount: number
   snapshotRef: React.MutableRefObject<SceneSnapshot>
+  baseColors?: Float32Array
+  initialPositions?: Float32Array | null
+  livePositionsRef?: React.MutableRefObject<Float32Array | null>
 }
 
-export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
+export function ParticleField({
+  maxCount,
+  snapshotRef,
+  baseColors,
+  initialPositions,
+  livePositionsRef,
+}: ParticleFieldProps) {
   const geometryRef = useRef<THREE.BufferGeometry | null>(null)
   const materialRef = useRef<THREE.PointsMaterial | null>(null)
-  const positions = useMemo(() => createInitialPositions(maxCount), [maxCount])
+  const positions = useMemo(() => {
+    if (initialPositions && initialPositions.length === maxCount * 3) {
+      return new Float32Array(initialPositions)
+    }
+
+    return createInitialPositions(maxCount)
+  }, [initialPositions, maxCount])
   const colors = useMemo(() => createInitialColors(maxCount), [maxCount])
+  const baseColorsRef = useRef(baseColors ?? createInitialColors(maxCount))
   const positionsRef = useRef(positions)
   const colorsRef = useRef(colors)
   const spriteTexture = useMemo(() => createSpriteTexture(), [])
   const pointerWorld = useMemo(() => new THREE.Vector3(), [])
   const rayTarget = useMemo(() => new THREE.Vector3(), [])
   const rayDirection = useMemo(() => new THREE.Vector3(), [])
+  const focusTarget = useMemo(() => new THREE.Vector3(), [])
   const { camera } = useThree()
+
+  useEffect(() => {
+    baseColorsRef.current = baseColors ?? createInitialColors(maxCount)
+  }, [baseColors, maxCount])
+
+  useEffect(() => {
+    if (!livePositionsRef) {
+      return
+    }
+
+    livePositionsRef.current = positionsRef.current
+  }, [livePositionsRef])
 
   useFrame((state, delta) => {
     const snapshot = snapshotRef.current
     const positions = positionsRef.current
     const colors = colorsRef.current
+    const baseColors = baseColorsRef.current
     const geometry = geometryRef.current
     const material = materialRef.current
     const { pointer, capabilities } = useAppStore.getState()
@@ -89,7 +119,12 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
     const blendTargets = snapshot.blendTargets
     const blend = snapshot.blend
     const hasPointer = pointer.inside && !capabilities.isTouch
-    const distanceToParticlePlane = Math.max(0.1, Math.abs(camera.position.z))
+    focusTarget.set(
+      snapshot.cameraLookAt[0],
+      snapshot.cameraLookAt[1],
+      snapshot.cameraLookAt[2],
+    )
+    const distanceToParticlePlane = Math.max(0.1, camera.position.distanceTo(focusTarget))
     const verticalWorldSpan =
       2 * Math.tan(THREE.MathUtils.degToRad((camera as THREE.PerspectiveCamera).fov * 0.5)) *
       distanceToParticlePlane
@@ -97,6 +132,14 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
       (snapshot.pointerRadiusPx / Math.max(1, state.size.height)) * verticalWorldSpan
     const lerpFactor =
       1 - Math.pow(1 - Math.min(snapshot.recovery * 1.28, 0.96), delta * 72)
+    const hasSceneRotation =
+      snapshot.rotationX !== 0 || snapshot.rotationY !== 0 || snapshot.rotationZ !== 0
+    const cosX = Math.cos(snapshot.rotationX)
+    const sinX = Math.sin(snapshot.rotationX)
+    const cosY = Math.cos(snapshot.rotationY)
+    const sinY = Math.sin(snapshot.rotationY)
+    const cosZ = Math.cos(snapshot.rotationZ)
+    const sinZ = Math.sin(snapshot.rotationZ)
 
     if (hasPointer) {
       rayTarget.set(pointer.x, pointer.y, 0.5).unproject(camera)
@@ -135,6 +178,19 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
         }
       }
 
+      if (hasSceneRotation) {
+        const rotatedY = targetY * cosX - targetZ * sinX
+        const rotatedZAfterX = targetY * sinX + targetZ * cosX
+        const rotatedXAfterY = targetX * cosY + rotatedZAfterX * sinY
+        const rotatedZAfterY = -targetX * sinY + rotatedZAfterX * cosY
+        const rotatedX = rotatedXAfterY * cosZ - rotatedY * sinZ
+        const rotatedYFinal = rotatedXAfterY * sinZ + rotatedY * cosZ
+
+        targetX = rotatedX
+        targetY = rotatedYFinal
+        targetZ = rotatedZAfterY
+      }
+
       let currentX = positions[offset]
       let currentY = positions[offset + 1]
       let currentZ = positions[offset + 2]
@@ -165,9 +221,9 @@ export function ParticleField({ maxCount, snapshotRef }: ParticleFieldProps) {
       positions[offset + 2] = currentZ
 
       const intensity = snapshot.opacity + (1 - snapshot.opacity) * glow
-      colors[offset] = intensity
-      colors[offset + 1] = intensity
-      colors[offset + 2] = intensity
+      colors[offset] = baseColors[offset] * intensity
+      colors[offset + 1] = baseColors[offset + 1] * intensity
+      colors[offset + 2] = baseColors[offset + 2] * intensity
     }
 
     geometry.attributes.position.needsUpdate = true

@@ -7,14 +7,16 @@ import styles from './MenuOverlay.module.css'
 
 type MenuOverlayProps = {
   activeLabel: string
+  motion: 'enter' | 'exit'
 }
 
-export function MenuOverlay({ activeLabel }: MenuOverlayProps) {
+export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
   const navigate = useNavigate()
   const panelRef = useRef<HTMLDivElement | null>(null)
   const closeButtonRef = useRef<HTMLButtonElement | null>(null)
   const itemsRef = useRef<Array<HTMLButtonElement | null>>([])
   const setMenuOpen = useAppStore((state) => state.setMenuOpen)
+  const exitClass = motion === 'exit' ? styles.exitHidden : ''
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -24,14 +26,9 @@ export function MenuOverlay({ activeLabel }: MenuOverlayProps) {
         { autoAlpha: 1, duration: 0.24, ease: 'power2.out' },
       )
       gsap.fromTo(
-        closeButtonRef.current,
-        { autoAlpha: 0, scale: 0.78 },
-        { autoAlpha: 1, scale: 1, duration: 0.46, ease: 'power3.out' },
-      )
-      gsap.fromTo(
         itemsRef.current,
-        { autoAlpha: 0, y: 20 },
-        { autoAlpha: 1, y: 0, duration: 0.36, stagger: 0.06, ease: 'power2.out', delay: 0.08 },
+        { autoAlpha: 0, y: 56 },
+        { autoAlpha: 1, y: 0, duration: 3, stagger: 0.06, ease: 'power2.out', delay: 0.08 },
       )
     }, panelRef)
 
@@ -43,7 +40,7 @@ export function MenuOverlay({ activeLabel }: MenuOverlayProps) {
       <div ref={panelRef} className={styles.panel}>
         <button
           ref={closeButtonRef}
-          className={styles.closeButton}
+          className={`${styles.closeButton} ${motion === 'enter' ? styles.closeButtonEnter : styles.closeButtonExit}`}
           type="button"
           aria-label="Close menu"
           data-cursor="interactive"
@@ -53,7 +50,7 @@ export function MenuOverlay({ activeLabel }: MenuOverlayProps) {
           <span className={styles.closeLine} />
         </button>
 
-        <nav className={styles.nav} aria-label="Site menu">
+        <nav className={`${styles.nav} ${exitClass}`.trim()} aria-label="Site menu">
           {sectionOrder.map((section, index) => {
             const label = sectionLabels[section]
             const isActive = label === activeLabel
@@ -78,7 +75,7 @@ export function MenuOverlay({ activeLabel }: MenuOverlayProps) {
           })}
         </nav>
 
-        <p className={styles.caption}>{siteContent.menuCaption}</p>
+        <p className={`${styles.caption} ${exitClass}`.trim()}>{siteContent.menuCaption}</p>
       </div>
     </aside>
   )
