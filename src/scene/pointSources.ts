@@ -89,25 +89,40 @@ const STACK_CUBE_HALF = STACK_CUBE_SIZE * 0.5
 export const STACK_CUBE_CENTER_Y = STACK_CUBE_HALF * 0.5 + 0.5
 const STACK_CUBE_DIVISIONS = 8
 const STACK_PARTICLE_COUNT_BY_TIER = {
-  1: 30,
-  2: 46,
-  3: 62,
-  4: 84,
-  5: 108,
+  1: 22,
+  2: 30,
+  3: 38,
+  4: 46,
+  5: 54,
+  6: 62,
+  7: 73,
+  8: 84,
+  9: 96,
+  10: 108,
 } as const
 const STACK_RADIUS_BY_TIER = {
-  1: 0.18,
-  2: 0.24,
-  3: 0.31,
-  4: 0.4,
-  5: 0.5,
+  1: 0.15,
+  2: 0.18,
+  3: 0.21,
+  4: 0.24,
+  5: 0.28,
+  6: 0.31,
+  7: 0.36,
+  8: 0.4,
+  9: 0.45,
+  10: 0.5,
 } as const
 const STACK_LABEL_SCALE_BY_TIER = {
-  1: 0.72,
-  2: 0.84,
-  3: 0.98,
-  4: 1.12,
-  5: 1.26,
+  1: 0.66,
+  2: 0.72,
+  3: 0.78,
+  4: 0.84,
+  5: 0.91,
+  6: 0.98,
+  7: 1.05,
+  8: 1.12,
+  9: 1.19,
+  10: 1.26,
 } as const
 const STACK_CLUSTER_LAYOUTS: Record<
   StackSkillGroup,
@@ -219,12 +234,11 @@ function getAnchorDistance(left: [number, number, number], right: [number, numbe
 }
 
 function createLabelAnchor(position: [number, number, number], radius: number, text: string) {
-  const sideOffset = clamp(position[0] * 0.06, -0.18, 0.18)
   const depthOffset = clamp(position[2] * 0.035, -0.12, 0.12)
   const vertical = 0.22 + radius * 0.9 + text.length * 0.002
 
   return toTuple(
-    position[0] + sideOffset,
+    position[0] - 0.35,
     position[1] + vertical,
     position[2] + depthOffset,
   )

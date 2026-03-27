@@ -3,6 +3,7 @@ import {
   aboutMarginGridConfig,
   betaConfig,
   deltaConfig,
+  gammaConfig,
   menuGridConfig,
   stackEmbeddingMapConfig,
 } from '@/config/curves'
@@ -39,6 +40,13 @@ export const scenePresets: Record<SceneMode, ScenePreset> = {
     cameraPosition: [0, 0, 11.2],
     cameraLookAt: [0, 0, 0],
     spread: [10.2, 6.1, 0.5],
+  },
+  stackGamma: {
+    ...gammaConfig.particles,
+    spin: 0,
+    cameraPosition: [0, 0, 11.2],
+    cameraLookAt: [0, 0, 0],
+    spread: [6.6, 4.8, 1.8],
   },
   stackEmbeddingMap: {
     ...stackEmbeddingMapConfig,
@@ -109,7 +117,7 @@ export function sectionToSceneMode(section: AppSection): SceneMode {
     case 'about':
       return 'aboutBeta'
     case 'stack':
-      return 'stackEmbeddingMap'
+      return 'stackGamma'
     case 'contact':
       return 'contactDelta'
     case 'home':

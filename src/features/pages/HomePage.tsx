@@ -12,13 +12,13 @@ export function HomePage() {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         `.${styles.wordmark}`,
-        { autoAlpha: 0, y: '15vh' },
-        { autoAlpha: 1, y: 0, duration: 3, ease: 'power2.out' },
+        { autoAlpha: 0, y: '15vh', xPercent: -50, yPercent: -50 },
+        { autoAlpha: 1, y: 0, xPercent: -50, yPercent: -50, duration: 3, ease: 'power2.out' },
       )
       gsap.fromTo(
         `.${styles.roleGroup}`,
-        { autoAlpha: 0, y: '10vh' },
-        { autoAlpha: 1, y: 0, duration: 2.5, ease: 'power2.out', delay: 0.14 },
+        { autoAlpha: 0, y: '10vh', xPercent: -50 },
+        { autoAlpha: 1, y: 0, xPercent: -50, duration: 2.5, ease: 'power2.out', delay: 0.14 },
       )
     }, shellRef)
 

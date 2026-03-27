@@ -1,11 +1,6 @@
 export function supportsWebGL(): boolean {
   try {
-    const canvas = document.createElement('canvas')
-    return Boolean(
-      canvas.getContext('webgl2') ||
-        canvas.getContext('webgl') ||
-        canvas.getContext('experimental-webgl'),
-    )
+    return Boolean(window.WebGL2RenderingContext || window.WebGLRenderingContext)
   } catch {
     return false
   }

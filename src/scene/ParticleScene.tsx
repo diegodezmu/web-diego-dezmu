@@ -1,20 +1,43 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { aboutMarginGridConfig, alphaConfig, betaConfig, deltaConfig, menuGridConfig } from '@/config/curves'
+import {
+  aboutMarginGridConfig,
+  alphaConfig,
+  betaConfig,
+  type CurveSceneConfig,
+  deltaConfig,
+  gammaConfig,
+  menuGridConfig,
+} from '@/config/curves'
 import { stackGroupPalette, stackSkillSpecs } from '@/config/content'
 import { getPresetForTier } from '@/config/scenePresets'
-import { useAppStore } from '@/state/appStore'
+import type { ScenePreset } from '@/shared/types'
+import {
+  DEFAULT_STACK_PHI,
+  DEFAULT_STACK_RADIUS,
+  DEFAULT_STACK_THETA,
+  useAppStore,
+} from '@/state/appStore'
+import { resolveLfoSceneParameters } from './lfo'
 import {
   fillLissajousPoints,
   fitPointCount,
-  generateStackSceneData,
   generateMarginGridPoints,
+  generateStackSceneData,
   generateViewportGridPoints,
+  STACK_CUBE_CENTER_Y,
 } from './pointSources'
 import { ParticleField } from './ParticleField'
 import { StackEmbeddingMap } from './StackEmbeddingMap'
-import type { SceneSnapshot } from './types'
+import type { SceneSnapshot, StackSceneData } from './types'
+
+type StackSceneResources = {
+  sceneData: StackSceneData
+  particleColors: Float32Array
+  particleTargets: Float32Array
+  pointCloudMetrics: ReturnType<typeof getPointCloudMetrics>
+}
 
 function smoothstep(min: number, max: number, value: number) {
   const t = Math.min(1, Math.max(0, (value - min) / (max - min)))
@@ -23,6 +46,35 @@ function smoothstep(min: number, max: number, value: number) {
 
 function lerp(a: number, b: number, amount: number) {
   return a + (b - a) * amount
+}
+
+function getAmplitudeRatio(baseAmplitude: number, modulatedAmplitude: number) {
+  return Math.abs(baseAmplitude) <= 1e-6 ? 1 : modulatedAmplitude / baseAmplitude
+}
+
+function resolveCurveSceneState(
+  sceneKey: string,
+  config: CurveSceneConfig,
+  particles: ScenePreset,
+  elapsedTime: number,
+  reducedMotion: boolean,
+) {
+  return resolveLfoSceneParameters({
+    sceneKey,
+    curve: config.curve,
+    particles,
+    lfos: config.lfos,
+    elapsedTime,
+    reducedMotion,
+  })
+}
+
+function sphericalToCartesian(theta: number, phi: number, radius: number) {
+  return new THREE.Vector3(
+    radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta),
+  )
 }
 
 function hexToFloatColor(hex: string) {
@@ -69,6 +121,16 @@ function createStackColorBuffer(
   return colors
 }
 
+function blendColorBuffers(source: Float32Array, target: Float32Array, amount: number) {
+  const colors = new Float32Array(source.length)
+
+  for (let index = 0; index < source.length; index += 1) {
+    colors[index] = source[index] + (target[index] - source[index]) * amount
+  }
+
+  return colors
+}
+
 function fillFittedTriplets(target: Float32Array, source: Float32Array, count: number) {
   const sourceCount = source.length / 3
 
@@ -89,6 +151,86 @@ function fillFittedTriplets(target: Float32Array, source: Float32Array, count: n
     target[targetOffset] = source[sourceOffset]
     target[targetOffset + 1] = source[sourceOffset + 1]
     target[targetOffset + 2] = source[sourceOffset + 2]
+  }
+}
+
+function pushPointsOutsideViewport(
+  source: Float32Array,
+  width: number,
+  height: number,
+  overscanX: number,
+  overscanY: number,
+) {
+  const points = new Float32Array(source.length)
+  const halfWidth = Math.max(width * 0.5, 1e-6)
+  const halfHeight = Math.max(height * 0.5, 1e-6)
+  const exitX = halfWidth + overscanX
+  const exitY = halfHeight + overscanY
+
+  for (let index = 0; index < source.length; index += 3) {
+    const x = source[index]
+    const y = source[index + 1]
+    const z = source[index + 2]
+    const horizontalWeight = Math.abs(x) / halfWidth
+    const verticalWeight = Math.abs(y) / halfHeight
+
+    if (horizontalWeight >= verticalWeight) {
+      points[index] = (Math.sign(x) || 1) * exitX
+      points[index + 1] = y
+    } else {
+      points[index] = x
+      points[index + 1] = (Math.sign(y) || 1) * exitY
+    }
+
+    points[index + 2] = z
+  }
+
+  return points
+}
+
+function getPointCloudMetrics(points: Float32Array) {
+  if (points.length < 3) {
+    return {
+      center: [0, STACK_CUBE_CENTER_Y, 0] as const,
+      radius: DEFAULT_STACK_RADIUS,
+    }
+  }
+
+  let minX = Number.POSITIVE_INFINITY
+  let minY = Number.POSITIVE_INFINITY
+  let minZ = Number.POSITIVE_INFINITY
+  let maxX = Number.NEGATIVE_INFINITY
+  let maxY = Number.NEGATIVE_INFINITY
+  let maxZ = Number.NEGATIVE_INFINITY
+
+  for (let index = 0; index < points.length; index += 3) {
+    const x = points[index]
+    const y = points[index + 1]
+    const z = points[index + 2]
+
+    if (x < minX) minX = x
+    if (y < minY) minY = y
+    if (z < minZ) minZ = z
+    if (x > maxX) maxX = x
+    if (y > maxY) maxY = y
+    if (z > maxZ) maxZ = z
+  }
+
+  const centerX = (minX + maxX) * 0.5
+  const centerY = (minY + maxY) * 0.5
+  const centerZ = (minZ + maxZ) * 0.5
+  let radius = 0
+
+  for (let index = 0; index < points.length; index += 3) {
+    const dx = points[index] - centerX
+    const dy = points[index + 1] - centerY
+    const dz = points[index + 2] - centerZ
+    radius = Math.max(radius, Math.hypot(dx, dy, dz))
+  }
+
+  return {
+    center: [centerX, centerY, centerZ] as const,
+    radius,
   }
 }
 
@@ -128,22 +270,22 @@ export function ParticleScene() {
   const capabilities = useAppStore((state) => state.capabilities)
   const deviceTier = capabilities.deviceTier
   const menuOpen = useAppStore((state) => state.menuOpen)
+  const menuOverlayActive = useAppStore((state) => state.menuOverlayActive)
   const sceneMode = useAppStore((state) => state.sceneMode)
   const aboutScrollProgress = useAppStore((state) => state.aboutScrollProgress)
   const contactProgress = useAppStore((state) => state.contactProgress)
-  const displayMode = menuOpen ? 'menuGrid' : sceneMode
+  const stackProgress = useAppStore((state) => state.stackProgress)
+  const displayMode = (menuOpen || menuOverlayActive) ? 'menuGrid' : sceneMode
+  const isStackMode = displayMode === 'stackGamma' || displayMode === 'stackEmbeddingMap'
 
   const homePreset = getPresetForTier('homeAlpha', deviceTier)
   const aboutPreset = getPresetForTier('aboutBeta', deviceTier)
   const framePreset = getPresetForTier('aboutFrame', deviceTier)
-  const stackPreset = getPresetForTier('stackEmbeddingMap', deviceTier)
+  const stackGammaPreset = getPresetForTier('stackGamma', deviceTier)
+  const stackMapPreset = getPresetForTier('stackEmbeddingMap', deviceTier)
   const contactPreset = getPresetForTier('contactDelta', deviceTier)
   const contactOutPreset = getPresetForTier('contactDeltaOut', deviceTier)
   const menuPreset = getPresetForTier('menuGrid', deviceTier)
-  const stackSceneData = useMemo(
-    () => generateStackSceneData(stackPreset.count, stackSkillSpecs),
-    [stackPreset.count],
-  )
 
   const size = useThree((state) => state.size)
   const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera
@@ -161,6 +303,16 @@ export function ParticleScene() {
     () => getViewportWorldDimensions(size.width, size.height, framePreset.cameraPosition[2], camera.fov),
     [camera.fov, framePreset.cameraPosition, size.height, size.width],
   )
+  const stackGammaWorld = useMemo(
+    () =>
+      getViewportWorldDimensions(
+        size.width,
+        size.height,
+        stackGammaPreset.cameraPosition[2],
+        camera.fov,
+      ),
+    [camera.fov, size.height, size.width, stackGammaPreset.cameraPosition],
+  )
   const contactWorld = useMemo(
     () => getViewportWorldDimensions(size.width, size.height, contactPreset.cameraPosition[2], camera.fov),
     [camera.fov, contactPreset.cameraPosition, size.height, size.width],
@@ -172,28 +324,18 @@ export function ParticleScene() {
 
   const homeCount = homePreset.count
   const aboutCount = Math.max(aboutPreset.count, framePreset.count)
+  const stackCount = Math.max(stackGammaPreset.count, stackMapPreset.count)
   const contactCount = Math.max(contactPreset.count, contactOutPreset.count)
-  const maxCount = Math.max(homeCount, aboutCount, contactCount, menuPreset.count, stackPreset.count)
-  const stackColorSource = useMemo(
-    () => createStackColorBuffer(stackSceneData.skillPoints.length / 3, stackSceneData.skills),
-    [stackSceneData.skillPoints.length, stackSceneData.skills],
-  )
-  const stackParticleTargets = useMemo(
-    () => fitPointCount(stackSceneData.skillPoints, maxCount),
-    [maxCount, stackSceneData.skillPoints],
-  )
+  const maxCount = Math.max(homeCount, aboutCount, stackCount, contactCount, menuPreset.count)
   const neutralParticleColors = useMemo(
     () => createSolidColorBuffer(maxCount, '#bfbfbf'),
     [maxCount],
   )
-  const stackParticleColors = useMemo(
-    () => fitPointCount(stackColorSource, maxCount),
-    [maxCount, stackColorSource],
-  )
-  const particleColors = displayMode === 'stackEmbeddingMap' ? stackParticleColors : neutralParticleColors
+  const stackColorBlend = stackProgress
 
   const homeBufferRef = useRef(new Float32Array(homeCount * 3))
   const aboutBufferRef = useRef(new Float32Array(aboutCount * 3))
+  const stackBufferRef = useRef(new Float32Array(stackGammaPreset.count * 3))
   const contactBufferRef = useRef(new Float32Array(contactCount * 3))
   const contactOutBufferRef = useRef(new Float32Array(contactCount * 3))
   const blendBufferRef = useRef(new Float32Array(maxCount * 3))
@@ -212,21 +354,63 @@ export function ParticleScene() {
     menuPreset.cameraPosition[2],
     camera.fov,
   )
-  const aboutMarginSource = useMemo(
-    () =>
-      fitPointCount(
-        generateMarginGridPoints(
-          frameWorld.width,
-          frameWorld.height,
-          aboutMarginCellWorld,
-          aboutMarginWorldX,
-          aboutMarginWorldY,
-          0.04,
-        ),
-        maxCount,
+  const homePhaseRef = useRef(0)
+  const aboutPhaseRef = useRef(0)
+  const stackPhaseRef = useRef(0)
+  const contactPhaseRef = useRef(0)
+  const stackZoom = useAppStore((state) => state.stackZoom)
+  const stackZoomRef = useRef(stackZoom)
+  const stackThetaRef = useRef(DEFAULT_STACK_THETA)
+  const stackPhiRef = useRef(DEFAULT_STACK_PHI)
+  const modeStartedAtRef = useRef(0)
+  const previousModeRef = useRef('')
+  const stackResources = useMemo(() => {
+    const sceneData = generateStackSceneData(stackMapPreset.count, stackSkillSpecs)
+    const stackColorSource = createStackColorBuffer(
+      sceneData.skillPoints.length / 3,
+      sceneData.skills,
+    )
+
+    return {
+      sceneData,
+      particleColors: fitPointCount(stackColorSource, maxCount),
+      particleTargets: fitPointCount(sceneData.skillPoints, maxCount),
+      pointCloudMetrics: getPointCloudMetrics(sceneData.skillPoints),
+    } satisfies StackSceneResources
+  }, [maxCount, stackMapPreset.count])
+
+  const aboutTransitionResources = useMemo(() => {
+    const marginSource = fitPointCount(
+      generateMarginGridPoints(
+        frameWorld.width,
+        frameWorld.height,
+        aboutMarginCellWorld,
+        aboutMarginWorldX,
+        aboutMarginWorldY,
+        0.04,
       ),
-    [aboutMarginCellWorld, aboutMarginWorldX, aboutMarginWorldY, frameWorld.height, frameWorld.width, maxCount],
-  )
+      maxCount,
+    )
+
+    return {
+      marginSource,
+      exitSource: pushPointsOutsideViewport(
+        marginSource,
+        frameWorld.width,
+        frameWorld.height,
+        aboutMarginWorldX + aboutMarginCellWorld * 4,
+        aboutMarginWorldY + aboutMarginCellWorld * 4,
+      ),
+    }
+  }, [
+    aboutMarginCellWorld,
+    aboutMarginWorldX,
+    aboutMarginWorldY,
+    frameWorld.height,
+    frameWorld.width,
+    maxCount,
+  ])
+
   const menuSource = useMemo(
     () =>
       fitPointCount(
@@ -236,11 +420,13 @@ export function ParticleScene() {
     [maxCount, menuCellWorld, menuWorld.height, menuWorld.width],
   )
 
-  const homePhaseRef = useRef(0)
-  const aboutPhaseRef = useRef(0)
-  const contactPhaseRef = useRef(0)
-  const modeStartedAtRef = useRef(0)
-  const previousModeRef = useRef('')
+  const particleColors = useMemo(() => {
+    if (!isStackMode) {
+      return neutralParticleColors
+    }
+
+    return blendColorBuffers(neutralParticleColors, stackResources.particleColors, stackColorBlend)
+  }, [isStackMode, neutralParticleColors, stackColorBlend, stackResources])
 
   const snapshotRef = useRef<SceneSnapshot>({
     count: maxCount,
@@ -271,9 +457,17 @@ export function ParticleScene() {
   }, [aboutCount])
 
   useEffect(() => {
+    stackBufferRef.current = new Float32Array(stackGammaPreset.count * 3)
+  }, [stackGammaPreset.count])
+
+  useEffect(() => {
     contactBufferRef.current = new Float32Array(contactCount * 3)
     contactOutBufferRef.current = new Float32Array(contactCount * 3)
   }, [contactCount])
+
+  useEffect(() => {
+    stackZoomRef.current = stackZoom
+  }, [stackZoom])
 
   useEffect(() => {
     snapshotRef.current = {
@@ -290,21 +484,26 @@ export function ParticleScene() {
   }, [maxCount])
 
   useFrame((state, delta) => {
-    const pointer = useAppStore.getState().pointer
+    const store = useAppStore.getState()
+    const pointer = store.pointer
+    const stackCamera = store.stackCamera
+    const elapsedTime = state.clock.elapsedTime
     const snapshot = snapshotRef.current
     const aboutBlend = smoothstep(0.01, 0.16, aboutScrollProgress)
+    const stackBlend = stackProgress
     const contactBlend = smoothstep(0.01, 0.16, contactProgress)
     const homeBuffer = homeBufferRef.current
     const aboutBuffer = aboutBufferRef.current
+    const stackBuffer = stackBufferRef.current
     const contactBuffer = contactBufferRef.current
     const contactOutBuffer = contactOutBufferRef.current
 
     if (displayMode !== previousModeRef.current) {
       previousModeRef.current = displayMode
-      modeStartedAtRef.current = state.clock.elapsedTime
+      modeStartedAtRef.current = elapsedTime
     }
 
-    const modeElapsed = state.clock.elapsedTime - modeStartedAtRef.current
+    const modeElapsed = elapsedTime - modeStartedAtRef.current
     snapshot.blendTargets = null
     snapshot.blend = 0
     snapshot.is3D = false
@@ -312,56 +511,126 @@ export function ParticleScene() {
     snapshot.rotationY = 0
     snapshot.rotationZ = 0
 
-    if (displayMode === 'stackEmbeddingMap') {
-      snapshot.targets.set(stackParticleTargets)
+    if (isStackMode) {
+      const stackSceneResources = stackResources
+      const gammaScene = resolveCurveSceneState(
+        'stackGamma',
+        gammaConfig,
+        stackGammaPreset,
+        elapsedTime,
+        capabilities.reducedMotion,
+      )
+
+      if (!capabilities.reducedMotion && gammaScene.curve.animate) {
+        stackPhaseRef.current += delta * gammaScene.curve.speed * Math.PI * 12
+      }
+
+      const thickness = pixelsToWorld(
+        gammaScene.particles.strokeWeightPx + gammaScene.particles.haloPx,
+        size.height,
+        stackGammaPreset.cameraPosition[2],
+        camera.fov,
+      )
+      fillLissajousPoints(
+        stackBuffer,
+        gammaScene.curve,
+        stackPhaseRef.current,
+        stackGammaWorld.width *
+        0.3 *
+        getAmplitudeRatio(gammaConfig.curve.ampX, gammaScene.curve.ampX),
+        stackGammaWorld.height *
+        0.26 *
+        getAmplitudeRatio(gammaConfig.curve.ampY, gammaScene.curve.ampY),
+        0.22,
+        thickness,
+      )
+
+      fillFittedTriplets(snapshot.targets, stackBuffer, maxCount)
       snapshot.count = maxCount
-      snapshot.sizePx = stackPreset.sizePx
-      snapshot.opacity = stackPreset.opacity
-      snapshot.orbit = capabilities.reducedMotion ? 0 : 0.018
-      snapshot.drift = capabilities.reducedMotion ? 0 : 0.008
-      snapshot.recovery = stackPreset.recovery
-      snapshot.pointerRadiusPx = 0
-      snapshot.pointerStrength = 0
-      snapshot.is3D = true
-      snapshot.cameraPosition[0] = state.camera.position.x
-      snapshot.cameraPosition[1] = state.camera.position.y
-      snapshot.cameraPosition[2] = state.camera.position.z
-      snapshot.cameraLookAt[0] = stackPreset.cameraLookAt[0]
-      snapshot.cameraLookAt[1] = stackPreset.cameraLookAt[1]
-      snapshot.cameraLookAt[2] = stackPreset.cameraLookAt[2]
+      snapshot.sizePx = lerp(gammaScene.particles.sizePx, stackMapPreset.sizePx, stackBlend)
+      snapshot.opacity = lerp(gammaScene.particles.opacity, stackMapPreset.opacity, stackBlend)
+      snapshot.orbit = lerp(
+        gammaScene.particles.orbitMotion,
+        capabilities.reducedMotion ? 0 : 0.045,
+        stackBlend,
+      )
+      snapshot.drift = lerp(
+        gammaScene.particles.driftMotion,
+        capabilities.reducedMotion ? 0 : 0.040,
+        stackBlend,
+      )
+      snapshot.recovery = lerp(gammaScene.particles.recovery, stackMapPreset.recovery, stackBlend)
+      snapshot.pointerRadiusPx = lerp(gammaScene.particles.pointerRadiusPx, 0, stackBlend)
+      snapshot.pointerStrength = lerp(gammaScene.particles.pointerStrength, 0, stackBlend)
+      snapshot.blendTargets = stackSceneResources.particleTargets
+      snapshot.blend = stackBlend
+      snapshot.is3D = stackBlend > 0.04
+
+      const orbitSmoothing = capabilities.reducedMotion ? 0.2 : 0.1
+      stackThetaRef.current += (stackCamera.thetaTarget - stackThetaRef.current) * orbitSmoothing
+      stackPhiRef.current += (stackCamera.phiTarget - stackPhiRef.current) * orbitSmoothing
+
+      const orbitPosition = sphericalToCartesian(
+        stackThetaRef.current,
+        stackPhiRef.current,
+        Math.max(DEFAULT_STACK_RADIUS, stackSceneResources.pointCloudMetrics.radius * 3.35) *
+          stackZoomRef.current,
+      )
+      const gammaCameraX = pointer.x * 0.035
+      const gammaCameraY = pointer.y * 0.028
+      const mapCameraX = stackSceneResources.pointCloudMetrics.center[0] + orbitPosition.x
+      const mapCameraY = stackSceneResources.pointCloudMetrics.center[1] + orbitPosition.y
+      const mapCameraZ = stackSceneResources.pointCloudMetrics.center[2] + orbitPosition.z
+
+      snapshot.cameraPosition[0] = lerp(gammaCameraX, mapCameraX, stackBlend)
+      snapshot.cameraPosition[1] = lerp(gammaCameraY, mapCameraY, stackBlend)
+      snapshot.cameraPosition[2] = lerp(stackGammaPreset.cameraPosition[2], mapCameraZ, stackBlend)
+      snapshot.cameraLookAt[0] = lerp(0, stackSceneResources.pointCloudMetrics.center[0], stackBlend)
+      snapshot.cameraLookAt[1] = lerp(0, stackSceneResources.pointCloudMetrics.center[1], stackBlend)
+      snapshot.cameraLookAt[2] = lerp(0, stackSceneResources.pointCloudMetrics.center[2], stackBlend)
     } else {
       switch (displayMode) {
         case 'aboutBeta':
         case 'aboutFrame': {
-          if (!capabilities.reducedMotion) {
-            aboutPhaseRef.current += delta * betaConfig.curve.speed * Math.PI * 12
+          const aboutScene = resolveCurveSceneState(
+            'aboutBeta',
+            betaConfig,
+            aboutPreset,
+            elapsedTime,
+            capabilities.reducedMotion,
+          )
+
+          if (!capabilities.reducedMotion && aboutScene.curve.animate) {
+            aboutPhaseRef.current += delta * aboutScene.curve.speed * Math.PI * 12
           }
 
           const thickness = pixelsToWorld(
-            betaConfig.particles.strokeWeightPx + betaConfig.particles.haloPx,
+            aboutScene.particles.strokeWeightPx + aboutScene.particles.haloPx,
             size.height,
             aboutPreset.cameraPosition[2],
             camera.fov,
           )
           fillLissajousPoints(
             aboutBuffer,
-            betaConfig.curve,
+            aboutScene.curve,
             aboutPhaseRef.current,
-            aboutWorld.width * 0.32,
-            aboutWorld.height * 0.22,
+            aboutWorld.width * 0.32 * getAmplitudeRatio(betaConfig.curve.ampX, aboutScene.curve.ampX),
+            aboutWorld.height *
+            0.22 *
+            getAmplitudeRatio(betaConfig.curve.ampY, aboutScene.curve.ampY),
             0.22,
             thickness,
           )
           fillFittedTriplets(snapshot.targets, aboutBuffer, maxCount)
           snapshot.count = maxCount
-          snapshot.sizePx = lerp(aboutPreset.sizePx, framePreset.sizePx, aboutBlend)
-          snapshot.opacity = lerp(aboutPreset.opacity, framePreset.opacity, aboutBlend)
-          snapshot.orbit = aboutPreset.orbitMotion
-          snapshot.drift = aboutPreset.driftMotion
-          snapshot.recovery = lerp(aboutPreset.recovery, framePreset.recovery, aboutBlend)
-          snapshot.pointerRadiusPx = aboutPreset.pointerRadiusPx
-          snapshot.pointerStrength = aboutPreset.pointerStrength
-          snapshot.blendTargets = aboutMarginSource
+          snapshot.sizePx = lerp(aboutScene.particles.sizePx, framePreset.sizePx, aboutBlend)
+          snapshot.opacity = lerp(aboutScene.particles.opacity, framePreset.opacity, aboutBlend)
+          snapshot.orbit = aboutScene.particles.orbitMotion
+          snapshot.drift = aboutScene.particles.driftMotion
+          snapshot.recovery = lerp(aboutScene.particles.recovery, framePreset.recovery, aboutBlend)
+          snapshot.pointerRadiusPx = aboutScene.particles.pointerRadiusPx
+          snapshot.pointerStrength = aboutScene.particles.pointerStrength
+          snapshot.blendTargets = aboutTransitionResources.exitSource
           snapshot.blend = aboutBlend
           snapshot.cameraPosition[0] = pointer.x * 0.06
           snapshot.cameraPosition[1] = pointer.y * 0.05 - aboutBlend * 0.04
@@ -373,22 +642,34 @@ export function ParticleScene() {
         }
         case 'contactDelta':
         case 'contactDeltaOut': {
-          if (!capabilities.reducedMotion) {
-            contactPhaseRef.current += delta * deltaConfig.curve.speed * Math.PI * 12
+          const contactScene = resolveCurveSceneState(
+            'contactDelta',
+            deltaConfig,
+            contactPreset,
+            elapsedTime,
+            capabilities.reducedMotion,
+          )
+
+          if (!capabilities.reducedMotion && contactScene.curve.animate) {
+            contactPhaseRef.current += delta * contactScene.curve.speed * Math.PI * 12
           }
 
           const thickness = pixelsToWorld(
-            deltaConfig.particles.strokeWeightPx + deltaConfig.particles.haloPx,
+            contactScene.particles.strokeWeightPx + contactScene.particles.haloPx,
             size.height,
             contactPreset.cameraPosition[2],
             camera.fov,
           )
           fillLissajousPoints(
             contactBuffer,
-            deltaConfig.curve,
+            contactScene.curve,
             contactPhaseRef.current,
-            contactWorld.width * 0.26,
-            contactWorld.height * 0.26,
+            contactWorld.width *
+            0.26 *
+            getAmplitudeRatio(deltaConfig.curve.ampX, contactScene.curve.ampX),
+            contactWorld.height *
+            0.26 *
+            getAmplitudeRatio(deltaConfig.curve.ampY, contactScene.curve.ampY),
             0.26,
             thickness,
           )
@@ -403,13 +684,13 @@ export function ParticleScene() {
           fillFittedTriplets(snapshot.targets, contactBuffer, maxCount)
           fillFittedTriplets(blendBufferRef.current, contactOutBuffer, maxCount)
           snapshot.count = maxCount
-          snapshot.sizePx = contactPreset.sizePx
-          snapshot.opacity = contactPreset.opacity
-          snapshot.orbit = contactPreset.orbitMotion
-          snapshot.drift = contactPreset.driftMotion
-          snapshot.recovery = contactPreset.recovery
-          snapshot.pointerRadiusPx = contactPreset.pointerRadiusPx
-          snapshot.pointerStrength = contactPreset.pointerStrength
+          snapshot.sizePx = contactScene.particles.sizePx
+          snapshot.opacity = contactScene.particles.opacity
+          snapshot.orbit = contactScene.particles.orbitMotion
+          snapshot.drift = contactScene.particles.driftMotion
+          snapshot.recovery = contactScene.particles.recovery
+          snapshot.pointerRadiusPx = contactScene.particles.pointerRadiusPx
+          snapshot.pointerStrength = contactScene.particles.pointerStrength
           snapshot.blendTargets = blendBufferRef.current
           snapshot.blend = contactBlend
           snapshot.cameraPosition[0] = pointer.x * 0.04
@@ -436,27 +717,34 @@ export function ParticleScene() {
           snapshot.cameraLookAt[0] = 0
           snapshot.cameraLookAt[1] = 0
           snapshot.cameraLookAt[2] = 0
-          snapshot.is3D = false
           break
         }
         case 'homeAlpha':
         default: {
-          if (!capabilities.reducedMotion) {
-            homePhaseRef.current += delta * alphaConfig.curve.speed * Math.PI * 12
+          const homeScene = resolveCurveSceneState(
+            'homeAlpha',
+            alphaConfig,
+            homePreset,
+            elapsedTime,
+            capabilities.reducedMotion,
+          )
+
+          if (!capabilities.reducedMotion && homeScene.curve.animate) {
+            homePhaseRef.current += delta * homeScene.curve.speed * Math.PI * 12
           }
 
           const thickness = pixelsToWorld(
-            alphaConfig.particles.strokeWeightPx + alphaConfig.particles.haloPx,
+            homeScene.particles.strokeWeightPx + homeScene.particles.haloPx,
             size.height,
             homePreset.cameraPosition[2],
             camera.fov,
           )
           fillLissajousPoints(
             homeBuffer,
-            alphaConfig.curve,
+            homeScene.curve,
             homePhaseRef.current,
-            homeWorld.width * 0.25,
-            homeWorld.height * 0.17,
+            homeWorld.width * 0.25 * getAmplitudeRatio(alphaConfig.curve.ampX, homeScene.curve.ampX),
+            homeWorld.height * 0.17 * getAmplitudeRatio(alphaConfig.curve.ampY, homeScene.curve.ampY),
             0.22,
             thickness,
           )
@@ -468,24 +756,24 @@ export function ParticleScene() {
 
           fillFittedTriplets(snapshot.targets, homeBuffer, maxCount)
           snapshot.count = maxCount
-          snapshot.sizePx = homePreset.sizePx + moveIn * 2.1
-          snapshot.opacity = Math.min(1, homePreset.opacity + moveIn * 0.24)
-          snapshot.orbit = homePreset.orbitMotion
-          snapshot.drift = homePreset.driftMotion
-          snapshot.recovery = homePreset.recovery
-          snapshot.pointerRadiusPx = homePreset.pointerRadiusPx
-          snapshot.pointerStrength = homePreset.pointerStrength
+          snapshot.sizePx = homeScene.particles.sizePx + moveIn * 2.1
+          snapshot.opacity = Math.min(1, homeScene.particles.opacity + moveIn * 0.24)
+          snapshot.orbit = homeScene.particles.orbitMotion
+          snapshot.drift = homeScene.particles.driftMotion
+          snapshot.recovery = homeScene.particles.recovery
+          snapshot.pointerRadiusPx = homeScene.particles.pointerRadiusPx
+          snapshot.pointerStrength = homeScene.particles.pointerStrength
           snapshot.cameraPosition[0] = pointer.x * 0.03
           snapshot.cameraPosition[1] = pointer.y * 0.022
           snapshot.cameraPosition[2] = homePreset.cameraPosition[2]
           snapshot.cameraLookAt[0] = 0
           snapshot.cameraLookAt[1] = 0
           snapshot.cameraLookAt[2] = 0
-          snapshot.is3D = false
           break
         }
       }
     }
+
     const cameraEase = 0.1
 
     state.camera.position.x += (snapshot.cameraPosition[0] - state.camera.position.x) * cameraEase
@@ -501,7 +789,11 @@ export function ParticleScene() {
   return (
     <>
       <ParticleField key={maxCount} maxCount={maxCount} snapshotRef={snapshotRef} baseColors={particleColors} />
-      <StackEmbeddingMap active={displayMode === 'stackEmbeddingMap'} />
+      <StackEmbeddingMap
+        active={isStackMode}
+        sceneData={isStackMode && stackProgress > 0.001 ? stackResources?.sceneData ?? null : null}
+        visibility={stackProgress}
+      />
     </>
   )
 }

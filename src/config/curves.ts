@@ -1,8 +1,9 @@
-import type { CurveDefinition, ParticleTuning } from '@/shared/types'
+import type { CurveDefinition, LfoBank, LfoConfig, LfoSlotId, ParticleTuning } from '@/shared/types'
 
-type CurveSceneConfig = {
+export type CurveSceneConfig = {
   curve: CurveDefinition
   particles: ParticleTuning
+  lfos: LfoBank
 }
 
 type ParticleSpec = {
@@ -35,6 +36,31 @@ function createParticleTuning(spec: ParticleSpec): ParticleTuning {
   }
 }
 
+function createInactiveLfo(id: LfoSlotId): LfoConfig {
+  return {
+    id,
+    enabled: false,
+    ratio: 0,
+    wave: 'sine',
+    amountPct: 0,
+    target: {
+      scope: 'curve',
+      key: 'phase',
+    },
+  }
+}
+
+function createLfoBank(firstLfo?: Partial<LfoConfig>): LfoBank {
+  const lfo1: LfoConfig = {
+    ...createInactiveLfo('lfo1'),
+    ...firstLfo,
+    id: 'lfo1',
+    target: firstLfo?.target ?? createInactiveLfo('lfo1').target,
+  }
+
+  return [lfo1, createInactiveLfo('lfo2'), createInactiveLfo('lfo3')]
+}
+
 const sharedCurveParticles = createParticleTuning({
   count: 4500,
   sizePx: 3.3,
@@ -63,6 +89,7 @@ export const alphaConfig: CurveSceneConfig = {
     animate: true,
   },
   particles: sharedCurveParticles,
+  lfos: createLfoBank(),
 }
 
 export const betaConfig: CurveSceneConfig = {
@@ -79,6 +106,33 @@ export const betaConfig: CurveSceneConfig = {
     animate: true,
   },
   particles: sharedCurveParticles,
+  lfos: createLfoBank(),
+}
+
+export const gammaConfig: CurveSceneConfig = {
+  curve: {
+    freqX: 2,
+    freqY: 6,
+    ampX: 0.38,
+    ampY: 0.5,
+    phase: 0,
+    crossModAmount: Math.PI * 1.5,
+    foldAmount: 0,
+    ringModFreq: 0,
+    speed: 0.005,
+    animate: true,
+  },
+  particles: sharedCurveParticles,
+  lfos: createLfoBank({
+    enabled: true,
+    ratio: 0.25,
+    wave: 'triangle',
+    amountPct: 45,
+    target: {
+      scope: 'curve',
+      key: 'ringModFreq',
+    },
+  }),
 }
 
 export const deltaConfig: CurveSceneConfig = {
@@ -107,6 +161,7 @@ export const deltaConfig: CurveSceneConfig = {
     orbitMotionPct: 20,
     recovery: 0.008,
   }),
+  lfos: createLfoBank(),
 }
 
 export const frameGridConfig = {
@@ -132,17 +187,17 @@ export const aboutMarginGridConfig = {
 }
 
 export const stackEmbeddingMapConfig: ParticleTuning = {
-  count: 5600,
-  sizePx: 3.2,
-  opacity: 0.78,
+  count: 15000,
+  sizePx: 3.5,
+  opacity: 0.8,
   strokeWeightPx: 1,
   jitterPx: 0,
-  haloPx: 9,
+  haloPx: 10,
   pointerRadiusPx: 0,
   pointerStrength: 0,
-  driftMotion: 0,
-  orbitMotion: 0,
-  recovery: 0.018,
+  driftMotion: 50,
+  orbitMotion: 50,
+  recovery: 0.020,
 }
 
 export const menuGridConfig = {

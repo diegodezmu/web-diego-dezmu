@@ -5,8 +5,8 @@
   display: inline-flex;
   align-items: stretch;
   justify-content: flex-start;
-  width: 158px;
-  height: 372px;
+  width: 160px;
+  height: 200px;
   color: var(--color-light-off);
   background: transparent;
   transform: translateY(-50%);
@@ -84,7 +84,7 @@
   writing-mode: vertical-rl;
   text-orientation: mixed;
   text-transform: uppercase;
-  text-shadow: var(--shadow-soft);
+  text-shadow: var(--shadow-title);
   transform: translate(-50%, -50%);
 }
 
@@ -104,7 +104,9 @@
   height: 32px;
   color: var(--color-light-primary);
   transform: translateY(-50%);
-  transition: transform var(--page-transition);
+  transition: transform var(--page-transition), background var(--page-transition);
+  background: rgb(0 0 0 / 1);
+  border-radius: 100%;
 }
 
 .chevron :global(svg) {
@@ -122,6 +124,7 @@
 .mobileButton:hover .chevron,
 .mobileButton:focus-visible .chevron {
   color: var(--color-light-highlight);
+  background: transparent;
 }
 
 .sideButtonLeft .chevron {
@@ -197,14 +200,14 @@
 .sideButtonLeft:focus-visible .chevron,
 .mobileButtonLeft:hover .chevron,
 .mobileButtonLeft:focus-visible .chevron {
-  transform: translate(-16px, -50%);
+  transform: translate(-12px, -50%);
 }
 
 .sideButtonRight:hover .chevron,
 .sideButtonRight:focus-visible .chevron,
 .mobileButtonRight:hover .chevron,
 .mobileButtonRight:focus-visible .chevron {
-  transform: translate(16px, -50%);
+  transform: translate(12px, -50%);
 }
 
 .mobileSpacer::before {

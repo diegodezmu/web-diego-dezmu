@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 import { Html } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { stackGroupPalette } from '@/config/content'
+
 import { useAppStore } from '@/state/appStore'
 import type { StackSkillDatum } from './types'
 import styles from './StackLabels.module.css'
@@ -21,8 +21,15 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
 }
 
+const FADE_DURATION = 0.9    // s
+const FADE_IN_DELAY = 1.8   // s
+const FADE_OUT_DELAY = 0   // s
+
 function ProjectedLabel({ skill, visibility }: ProjectedLabelProps) {
   const labelRef = useRef<HTMLSpanElement | null>(null)
+  const smoothOpacityRef = useRef(0)
+  const delayRef = useRef(0)
+  const lastDirectionRef = useRef<'in' | 'out' | 'stable'>('stable')
   const camera = useThree((state) => state.camera)
   const projected = useMemo(() => new THREE.Vector3(), [])
   const anchor = useMemo(
@@ -30,7 +37,7 @@ function ProjectedLabel({ skill, visibility }: ProjectedLabelProps) {
     [skill.labelAnchor],
   )
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const element = labelRef.current
     if (!element) {
       return
@@ -40,23 +47,46 @@ function ProjectedLabel({ skill, visibility }: ProjectedLabelProps) {
     const distance = projected.distanceTo(camera.position)
     projected.project(camera)
 
+    let targetOpacity = 0
     if (
-      projected.x < -1.18 ||
-      projected.x > 1.18 ||
-      projected.y < -1.18 ||
-      projected.y > 1.18 ||
-      projected.z > 1
+      projected.x >= -1.18 &&
+      projected.x <= 1.18 &&
+      projected.y >= -1.18 &&
+      projected.y <= 1.18 &&
+      projected.z <= 1
     ) {
-      element.style.opacity = '0'
-      return
+      const depthScale = clamp(12 / distance, 0.34, 1.48)
+      const fontSize = Math.max(8, Math.round(12 * depthScale * skill.labelScale))
+      element.style.fontSize = `${fontSize}px`
+      targetOpacity = Math.min(1, visibility)
     }
 
-    const depthScale = clamp(12 / distance, 0.34, 1.48)
-    const fontSize = Math.max(7, Math.round(12 * depthScale * skill.labelScale))
-    const opacity = Math.min(1, depthScale * 0.76 * visibility)
+    const current = smoothOpacityRef.current
+    const diff = targetOpacity - current
 
-    element.style.fontSize = `${fontSize}px`
-    element.style.opacity = opacity < 0.1 ? '0' : String(opacity)
+    if (Math.abs(diff) < 0.001) {
+      smoothOpacityRef.current = targetOpacity
+      lastDirectionRef.current = 'stable'
+    } else {
+      const direction = diff > 0 ? 'in' : 'out'
+
+      if (direction !== lastDirectionRef.current) {
+        lastDirectionRef.current = direction
+        delayRef.current = direction === 'in' ? FADE_IN_DELAY : FADE_OUT_DELAY
+      }
+
+      if (delayRef.current > 0) {
+        delayRef.current = Math.max(0, delayRef.current - delta)
+      } else {
+        const step = delta / FADE_DURATION
+        smoothOpacityRef.current =
+          diff > 0
+            ? Math.min(targetOpacity, current + step)
+            : Math.max(targetOpacity, current - step)
+      }
+    }
+
+    element.style.opacity = smoothOpacityRef.current < 0.04 ? '0' : String(smoothOpacityRef.current)
   })
 
   return (
@@ -64,7 +94,7 @@ function ProjectedLabel({ skill, visibility }: ProjectedLabelProps) {
       <span
         ref={labelRef}
         className={styles.label}
-        style={{ color: stackGroupPalette[skill.group] }}
+        style={{ color: 'var(--color-light-secondary)' }}
       >
         {skill.text}
       </span>

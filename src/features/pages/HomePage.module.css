@@ -14,13 +14,12 @@
   top: 50%;
   left: 50%;
   font-family: var(--font-display);
-  font-size: 40px;
+  font-size: 36px;
   line-height: 1.2;
   letter-spacing: var(--logo-display-tracking);
   color: var(--color-light-primary);
   text-shadow: var(--shadow-title);
   text-transform: uppercase;
-  transform: translate(-50%, -50%);
   white-space: nowrap;
 }
 
@@ -33,7 +32,6 @@
   justify-content: center;
   gap: 16px;
   width: calc(100% - var(--frame-margin-desktop) * 2);
-  transform: translateX(-50%);
 }
 
 .roleText {
@@ -64,11 +62,10 @@
     bottom: 48px;
     flex-direction: column;
     gap: 16px;
-    transform: translateX(-50%);
   }
 
   .roleText {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .roleLine {

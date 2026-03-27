@@ -2,55 +2,92 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
-import { useAppStore } from '@/state/appStore'
+import {
+  DEFAULT_STACK_PHI,
+  useAppStore,
+} from '@/state/appStore'
+import zoomInSvg from '../../../Material/icon-zoom-in.svg?raw'
+import zoomOutSvg from '../../../Material/icon-zoom-out.svg?raw'
+
+// ─── Zoom limits — adjust these to taste ────────────────────────────────────
+const ZOOM_MIN = 0.4   // most zoomed in  (camera closest)
+const ZOOM_MAX = 1.0   // default view — zoom out not allowed beyond this
+const ZOOM_STEP = 0.2
+// ────────────────────────────────────────────────────────────────────────────
 import styles from './StackPage.module.css'
 
-const PHI_MIN = 0.1
-const PHI_MAX = Math.PI - 0.1
-const RADIUS_MIN = 10
-const RADIUS_MAX = 35
+const STACK_TRANSITION_DURATION_S = 2
+const THETA_MIN = -Infinity
+const THETA_MAX = Infinity
+const PHI_MIN = Math.max(Math.PI * 0.2, DEFAULT_STACK_PHI - 0.7)
+const PHI_MAX = Math.min(Math.PI * 0.7, DEFAULT_STACK_PHI + 0.6)
 const ORBIT_SPEED = 0.006
-const DAMPING = 0.90
+const TOUCH_ORBIT_SPEED = 0.0048
+const DAMPING = 0.9
+const GESTURE_THRESHOLD = 8
 
-type TouchPointList = {
-  length: number
-  [index: number]: { clientX: number; clientY: number }
+type GestureMode = 'idle' | 'pending' | 'vertical' | 'orbit'
+
+type InteractionState = {
+  active: boolean
+  pointerType: string
+  mode: GestureMode
+  lastX: number
+  lastY: number
+  startX: number
+  startY: number
+}
+
+type TitleInteractionState = {
+  active: boolean
+  moved: boolean
+  pointerType: string
+  startY: number
+  lastY: number
 }
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
 }
 
-function getTouchDistance(touches: TouchPointList) {
-  if (touches.length < 2) {
-    return 0
-  }
-
-  const deltaX = touches[0]!.clientX - touches[1]!.clientX
-  const deltaY = touches[0]!.clientY - touches[1]!.clientY
-  return Math.hypot(deltaX, deltaY)
-}
-
 export function StackPage() {
   const shellRef = useRef<HTMLElement | null>(null)
   const interactionRef = useRef<HTMLDivElement | null>(null)
-  const dragStateRef = useRef({
+  const titleInteractionRef = useRef<TitleInteractionState>({
     active: false,
+    moved: false,
+    pointerType: '',
+    startY: 0,
+    lastY: 0,
+  })
+  const interactionStateRef = useRef<InteractionState>({
+    active: false,
+    pointerType: '',
+    mode: 'idle',
     lastX: 0,
     lastY: 0,
-    touchDistance: 0,
+    startX: 0,
+    startY: 0,
   })
   const velocityRef = useRef({
     theta: 0,
     phi: 0,
   })
   const inertiaFrameRef = useRef<number | null>(null)
+  const stackProgressTweenRef = useRef<gsap.core.Tween | null>(null)
+  const stackProgressValueRef = useRef({ value: 0 })
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
+  const stackStateTarget = useAppStore((state) => state.stackStateTarget)
+  const stackProgress = useAppStore((state) => state.stackProgress)
   const stackCamera = useAppStore((state) => state.stackCamera)
+  const isTouch = useAppStore((state) => state.capabilities.isTouch)
   const setSceneMode = useAppStore((state) => state.setSceneMode)
+  const setStackStateTarget = useAppStore((state) => state.setStackStateTarget)
+  const setStackProgress = useAppStore((state) => state.setStackProgress)
   const setStackCamera = useAppStore((state) => state.setStackCamera)
   const markStackCameraInteracted = useAppStore((state) => state.markStackCameraInteracted)
-  const resetStackCamera = useAppStore((state) => state.resetStackCamera)
+  const stackZoom = useAppStore((state) => state.stackZoom)
+  const setStackZoom = useAppStore((state) => state.setStackZoom)
 
   const stopInertia = () => {
     if (inertiaFrameRef.current !== null) {
@@ -60,8 +97,47 @@ export function StackPage() {
   }
 
   useEffect(() => {
-    setSceneMode('stackEmbeddingMap')
-  }, [setSceneMode])
+    stackProgressValueRef.current.value = stackProgress
+  }, [stackProgress])
+
+  useEffect(() => {
+    const nextMode = stackProgress > 0.001 ? 'stackEmbeddingMap' : 'stackGamma'
+
+    if (useAppStore.getState().sceneMode !== nextMode) {
+      setSceneMode(nextMode)
+    }
+  }, [setSceneMode, stackProgress])
+
+  useEffect(() => {
+    const current = useAppStore.getState().stackProgress
+
+    if (Math.abs(current - stackStateTarget) < 0.0001) {
+      return
+    }
+
+    setStackZoom(1)
+
+    if (stackStateTarget === 1) {
+      setStackCamera({ hasInteracted: false })
+    }
+
+    stackProgressTweenRef.current?.kill()
+    stackProgressValueRef.current.value = current
+    stackProgressTweenRef.current = gsap.to(stackProgressValueRef.current, {
+      value: stackStateTarget,
+      duration: STACK_TRANSITION_DURATION_S,
+      ease: 'power2.inOut',
+      overwrite: true,
+      onUpdate: () => {
+        setStackProgress(stackProgressValueRef.current.value)
+      },
+    })
+
+    return () => {
+      stackProgressTweenRef.current?.kill()
+      stackProgressTweenRef.current = null
+    }
+  }, [setStackCamera, setStackProgress, setStackZoom, stackStateTarget])
 
   useLayoutEffect(() => {
     if (contentRevealKey === 0) {
@@ -70,9 +146,9 @@ export function StackPage() {
 
     const ctx = gsap.context(() => {
       gsap.fromTo(
-        [`.${styles.titleBlock}`, `.${styles.hint}`, `.${styles.resetButton}`],
-        { autoAlpha: 0, y: 16 },
-        { autoAlpha: 1, y: 0, duration: 0.72, ease: 'power2.out', stagger: 0.04 },
+        `.${styles.titleBlock}`,
+        { autoAlpha: 0, y: 20 },
+        { autoAlpha: 1, y: 0, duration: 0.72, ease: 'power2.out' },
       )
     }, shellRef)
 
@@ -87,16 +163,11 @@ export function StackPage() {
 
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault()
-      stopInertia()
-      markStackCameraInteracted()
-      const current = useAppStore.getState().stackCamera
-      setStackCamera({
-        radiusTarget: clamp(
-          current.radiusTarget + (event.deltaY > 0 ? 0.8 : -0.8),
-          RADIUS_MIN,
-          RADIUS_MAX,
-        ),
-      })
+      if (event.deltaY === 0) {
+        return
+      }
+
+      setStackStateTarget(event.deltaY > 0 ? 1 : 0)
     }
 
     layer.addEventListener('wheel', handleWheel, { passive: false })
@@ -104,15 +175,32 @@ export function StackPage() {
     return () => {
       layer.removeEventListener('wheel', handleWheel)
     }
-  }, [markStackCameraInteracted, setStackCamera])
+  }, [setStackStateTarget])
 
-  useEffect(() => {
+  useEffect(
+    () => () => {
+      stopInertia()
+      stackProgressTweenRef.current?.kill()
+    },
+    [],
+  )
+
+  const applyOrbit = (deltaX: number, deltaY: number, horizontalOnly = false) => {
     stopInertia()
-    velocityRef.current.theta = 0
-    velocityRef.current.phi = 0
-  }, [stackCamera.resetNonce])
+    markStackCameraInteracted()
 
-  useEffect(() => () => stopInertia(), [])
+    const current = useAppStore.getState().stackCamera
+    const thetaVelocity = deltaX * (horizontalOnly ? TOUCH_ORBIT_SPEED : ORBIT_SPEED)
+    const phiVelocity = horizontalOnly ? 0 : -deltaY * ORBIT_SPEED
+
+    velocityRef.current.theta = thetaVelocity
+    velocityRef.current.phi = phiVelocity
+
+    setStackCamera({
+      thetaTarget: clamp(current.thetaTarget + thetaVelocity, THETA_MIN, THETA_MAX),
+      phiTarget: clamp(current.phiTarget + phiVelocity, PHI_MIN, PHI_MAX),
+    })
+  }
 
   const startInertia = () => {
     stopInertia()
@@ -133,7 +221,7 @@ export function StackPage() {
 
       const current = useAppStore.getState().stackCamera
       setStackCamera({
-        thetaTarget: current.thetaTarget + velocityRef.current.theta,
+        thetaTarget: clamp(current.thetaTarget + velocityRef.current.theta, THETA_MIN, THETA_MAX),
         phiTarget: clamp(current.phiTarget + velocityRef.current.phi, PHI_MIN, PHI_MAX),
       })
 
@@ -143,119 +231,293 @@ export function StackPage() {
     inertiaFrameRef.current = window.requestAnimationFrame(tick)
   }
 
+  const revealProgress = stackProgress
+  const titleOpacity = 1 - Math.min(1, revealProgress * 1.24)
+  const titleShift = revealProgress * 16
+  const hintOpacity =
+    !isTouch && revealProgress > 0.5 && !stackCamera.hasInteracted
+      ? Math.min(1, (revealProgress - 0.5) * 4)
+      : 0
+  const zoomOpacity = Math.min(1, Math.max(0, (revealProgress - 0.5) * 4))
+
   return (
     <section ref={shellRef} className={styles.page}>
-      <div className={styles.titleAnchor}>
-        <PageTitle className={styles.titleBlock} title={siteContent.stackTitle} />
-      </div>
-
-      <div className={styles.hint} style={{ opacity: stackCamera.hasInteracted ? 0 : 1 }}>
-        Drag to orbit · Scroll to zoom
-      </div>
-
       <button
+        className={styles.titleAnchor}
         type="button"
-        className={styles.resetButton}
-        title="Reset view"
-        data-cursor="interactive"
-        onClick={() => {
-          stopInertia()
-          velocityRef.current.theta = 0
-          velocityRef.current.phi = 0
-          resetStackCamera()
+        style={{
+          opacity: titleOpacity,
+          transform: `translate(-50%, calc(-50% - ${titleShift}vh))`,
         }}
-      >
-        <svg viewBox="0 -960 960 960" aria-hidden="true">
-          <path d="M460-80v-183.92l-59.38 59.15-28.31-28.31L480-340.77l107.69 107.69-28.31 28.31L500-263.92V-80h-40ZM233.08-372.31l-28.31-28.31L263.92-460H80v-40h183.92l-59.15-59.38 28.31-28.31L340.77-480 233.08-372.31Zm493.84 0L619.23-480l107.69-107.69 28.31 28.31L696.08-500H880v40H696.08l59.15 59.38-28.31 28.31ZM480-440.77q-16.54 0-27.88-11.35-11.35-11.34-11.35-27.88t11.35-27.88q11.34-11.35 27.88-11.35t27.88 11.35q11.35 11.34 11.35 27.88t-11.35 27.88q-11.34 11.35-27.88 11.35Zm0-178.46L372.31-726.92l28.31-28.31L460-696.08V-880h40v183.92l59.38-59.15 28.31 28.31L480-619.23Z" />
-        </svg>
-      </button>
-
-      <div
-        ref={interactionRef}
-        className={styles.interactionLayer}
-        data-cursor="interactive"
-        onPointerDown={(event) => {
-          if ((event.target as HTMLElement | null)?.closest(`.${styles.resetButton}`)) {
+        onWheel={(event) => {
+          event.stopPropagation()
+          event.preventDefault()
+          if (event.deltaY === 0) {
             return
           }
 
-          stopInertia()
-          markStackCameraInteracted()
-          dragStateRef.current.active = true
-          dragStateRef.current.lastX = event.clientX
-          dragStateRef.current.lastY = event.clientY
-          velocityRef.current.theta = 0
-          velocityRef.current.phi = 0
+          setStackStateTarget(event.deltaY > 0 ? 1 : 0)
+        }}
+        onPointerDown={(event) => {
+          titleInteractionRef.current = {
+            active: true,
+            moved: false,
+            pointerType: event.pointerType,
+            startY: event.clientY,
+            lastY: event.clientY,
+          }
+          event.stopPropagation()
           event.currentTarget.setPointerCapture(event.pointerId)
         }}
         onPointerMove={(event) => {
-          if (!dragStateRef.current.active) {
+          const interaction = titleInteractionRef.current
+          if (!interaction.active || interaction.pointerType !== 'touch') {
             return
           }
 
-          const deltaX = event.clientX - dragStateRef.current.lastX
-          const deltaY = event.clientY - dragStateRef.current.lastY
-          dragStateRef.current.lastX = event.clientX
-          dragStateRef.current.lastY = event.clientY
+          const deltaY = event.clientY - interaction.lastY
+          interaction.lastY = event.clientY
 
-          const current = useAppStore.getState().stackCamera
-          const thetaVelocity = -deltaX * ORBIT_SPEED
-          const phiVelocity = deltaY * ORBIT_SPEED
-
-          velocityRef.current.theta = thetaVelocity
-          velocityRef.current.phi = phiVelocity
-          setStackCamera({
-            thetaTarget: current.thetaTarget + thetaVelocity,
-            phiTarget: clamp(current.phiTarget + phiVelocity, PHI_MIN, PHI_MAX),
-          })
-        }}
-        onPointerUp={(event) => {
-          dragStateRef.current.active = false
-          event.currentTarget.releasePointerCapture(event.pointerId)
-          startInertia()
-        }}
-        onPointerCancel={() => {
-          dragStateRef.current.active = false
-          startInertia()
-        }}
-        onPointerLeave={() => {
-          if (!dragStateRef.current.active) {
-            return
+          if (!interaction.moved && Math.abs(event.clientY - interaction.startY) >= GESTURE_THRESHOLD) {
+            interaction.moved = true
           }
 
-          dragStateRef.current.active = false
-          startInertia()
-        }}
-        onTouchStart={(event) => {
-          if (event.touches.length === 2) {
-            stopInertia()
-            markStackCameraInteracted()
-            dragStateRef.current.touchDistance = getTouchDistance(event.touches)
-          }
-        }}
-        onTouchMove={(event) => {
-          if (event.touches.length !== 2) {
+          if (!interaction.moved || Math.abs(deltaY) < 1) {
             return
           }
 
           event.preventDefault()
-          const distance = getTouchDistance(event.touches)
-          if (dragStateRef.current.touchDistance > 0) {
-            const current = useAppStore.getState().stackCamera
-            setStackCamera({
-              radiusTarget: clamp(
-                current.radiusTarget + (dragStateRef.current.touchDistance - distance) * 0.06,
-                RADIUS_MIN,
-                RADIUS_MAX,
-              ),
-            })
-          }
-          dragStateRef.current.touchDistance = distance
+          event.stopPropagation()
+          setStackStateTarget(deltaY < 0 ? 1 : 0)
         }}
-        onTouchEnd={() => {
-          dragStateRef.current.touchDistance = 0
+        onPointerUp={(event) => {
+          const interaction = titleInteractionRef.current
+          const shouldToggle = interaction.active && !interaction.moved
+
+          titleInteractionRef.current = {
+            active: false,
+            moved: false,
+            pointerType: '',
+            startY: 0,
+            lastY: 0,
+          }
+
+          event.stopPropagation()
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId)
+          }
+
+          if (!shouldToggle) {
+            return
+          }
+
+          setStackStateTarget(stackProgress < 0.5 ? 1 : 0)
+        }}
+        onPointerCancel={(event) => {
+          titleInteractionRef.current = {
+            active: false,
+            moved: false,
+            pointerType: '',
+            startY: 0,
+            lastY: 0,
+          }
+
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId)
+          }
+        }}
+        data-cursor="interactive"
+      >
+        <PageTitle as="span" className={styles.titleBlock} title={siteContent.stackTitle} />
+      </button>
+
+      <div className={styles.hint} style={{ opacity: hintOpacity }}>
+        Drag to orbit
+      </div>
+
+      <div
+        ref={interactionRef}
+        className={styles.interactionLayer}
+        onPointerDown={(event) => {
+          const stackActive = useAppStore.getState().stackProgress > 0.001
+          const isTouchInput = event.pointerType === 'touch'
+
+          if (!isTouchInput && !stackActive) {
+            return
+          }
+
+          stopInertia()
+          interactionStateRef.current = {
+            active: true,
+            pointerType: event.pointerType,
+            mode: isTouchInput ? 'pending' : 'orbit',
+            lastX: event.clientX,
+            lastY: event.clientY,
+            startX: event.clientX,
+            startY: event.clientY,
+          }
+
+          if (!isTouchInput) {
+            markStackCameraInteracted()
+          }
+
+          event.currentTarget.setPointerCapture(event.pointerId)
+        }}
+        onPointerMove={(event) => {
+          const interaction = interactionStateRef.current
+          if (!interaction.active) {
+            return
+          }
+
+          if (interaction.pointerType === 'touch') {
+            event.preventDefault()
+
+            if (interaction.mode === 'pending') {
+              const deltaX = event.clientX - interaction.startX
+              const deltaY = event.clientY - interaction.startY
+
+              if (
+                Math.abs(deltaX) < GESTURE_THRESHOLD &&
+                Math.abs(deltaY) < GESTURE_THRESHOLD
+              ) {
+                return
+              }
+
+              if (
+                useAppStore.getState().stackProgress > 0.001 &&
+                Math.abs(deltaX) > Math.abs(deltaY)
+              ) {
+                interaction.mode = 'orbit'
+                interaction.lastX = event.clientX
+                interaction.lastY = event.clientY
+                markStackCameraInteracted()
+                return
+              }
+
+              interaction.mode = 'vertical'
+              interaction.lastY = event.clientY
+            }
+
+            if (interaction.mode === 'vertical') {
+              const deltaY = event.clientY - interaction.lastY
+              interaction.lastY = event.clientY
+              if (Math.abs(deltaY) < 1) {
+                return
+              }
+
+              setStackStateTarget(deltaY < 0 ? 1 : 0)
+              return
+            }
+
+            if (interaction.mode === 'orbit') {
+              const deltaX = event.clientX - interaction.lastX
+              interaction.lastX = event.clientX
+              applyOrbit(deltaX, 0, true)
+            }
+
+            return
+          }
+
+          if (interaction.mode !== 'orbit') {
+            return
+          }
+
+          const deltaX = event.clientX - interaction.lastX
+          const deltaY = event.clientY - interaction.lastY
+          interaction.lastX = event.clientX
+          interaction.lastY = event.clientY
+          applyOrbit(deltaX, deltaY)
+        }}
+        onPointerUp={(event) => {
+          const interaction = interactionStateRef.current
+          const shouldInertia = interaction.active && interaction.mode === 'orbit'
+
+          interactionStateRef.current = {
+            active: false,
+            pointerType: '',
+            mode: 'idle',
+            lastX: 0,
+            lastY: 0,
+            startX: 0,
+            startY: 0,
+          }
+
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId)
+          }
+
+          if (shouldInertia) {
+            startInertia()
+          }
+        }}
+        onPointerCancel={(event) => {
+          const interaction = interactionStateRef.current
+          const shouldInertia = interaction.active && interaction.mode === 'orbit'
+
+          interactionStateRef.current = {
+            active: false,
+            pointerType: '',
+            mode: 'idle',
+            lastX: 0,
+            lastY: 0,
+            startX: 0,
+            startY: 0,
+          }
+
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId)
+          }
+
+          if (shouldInertia) {
+            startInertia()
+          }
+        }}
+        onPointerLeave={() => {
+          const interaction = interactionStateRef.current
+          if (!interaction.active) {
+            return
+          }
+
+          const shouldInertia = interaction.mode === 'orbit'
+          interactionStateRef.current = {
+            active: false,
+            pointerType: '',
+            mode: 'idle',
+            lastX: 0,
+            lastY: 0,
+            startX: 0,
+            startY: 0,
+          }
+
+          if (shouldInertia) {
+            startInertia()
+          }
         }}
       />
+
+      <div className={styles.zoomControls} style={{ opacity: zoomOpacity }}>
+        <button
+          className={styles.zoomButton}
+          type="button"
+          aria-label="Zoom out"
+          data-cursor="interactive"
+          disabled={stackZoom >= ZOOM_MAX}
+          onClick={() => setStackZoom(clamp(stackZoom + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX))}
+        >
+          <span className={styles.zoomButtonInner} dangerouslySetInnerHTML={{ __html: zoomOutSvg }} />
+        </button>
+
+        <button
+          className={styles.zoomButton}
+          type="button"
+          aria-label="Zoom in"
+          data-cursor="interactive"
+          disabled={stackZoom <= ZOOM_MIN}
+          onClick={() => setStackZoom(clamp(stackZoom - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX))}
+        >
+          <span className={styles.zoomButtonInner} dangerouslySetInnerHTML={{ __html: zoomInSvg }} />
+        </button>
+      </div>
     </section>
   )
 }

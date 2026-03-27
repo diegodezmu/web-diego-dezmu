@@ -21,6 +21,8 @@
   transition: color var(--page-transition), transform var(--page-transition);
   pointer-events: auto;
   transform: rotate(45deg);
+  background: rgb(0 0 0 / 1);
+  border-radius: 100%;
 }
 
 .closeButtonEnter {
@@ -28,7 +30,7 @@
 }
 
 .closeButtonExit {
-  animation: closeToggleExit var(--nav-enter-duration) var(--nav-enter-ease) forwards;
+  animation: closeToggleExit 220ms ease forwards;
 }
 
 .closeButton:hover,
@@ -158,7 +160,7 @@
   }
 
   .closeButtonExit {
-    animation: closeToggleExitMobile var(--nav-enter-duration) var(--nav-enter-ease) forwards;
+    animation: closeToggleExitMobile 220ms ease forwards;
   }
 
   .nav {

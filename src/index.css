@@ -27,7 +27,7 @@
   --menu-button-tracking: 0.5em;
   --logo-display-size: 48px;
   --logo-display-tracking: 0.5em;
-  --role-size: 16px;
+  --role-size: 15px;
   --body-size: 15px;
   --link-size: 16px;
   --caption-size: 12px;
@@ -38,7 +38,7 @@
   --page-transition: 420ms cubic-bezier(0.22, 1, 0.36, 1);
   --nav-enter-duration: 1500ms;
   --nav-enter-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --shadow-title: 0 16px 28px rgba(0, 0, 0, 0.90);
+  --shadow-title: 0 0 2px rgba(0, 0, 0, 1), 0 0 4px rgba(0, 0, 0, 1), 0 0 8px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 1), 0 0 16px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 0, 0, 0.9), 0 0 24px rgba(0, 0, 0, 0.9), 0 0 32px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.7), 0 0 80px rgba(0, 0, 0, 0.6), 0 0 140px rgba(0, 0, 0, 0.5);
   --shadow-soft: 0 0 24px rgba(0, 0, 0, 0.58);
   font-family: var(--font-body);
   line-height: 1.5;
@@ -77,8 +77,8 @@ body {
   overflow: hidden;
 }
 
-body::selection {
-  background: rgba(255, 255, 255, 0.16);
+::selection {
+  background: transparent;
 }
 
 a,

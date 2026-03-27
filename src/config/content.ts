@@ -1,5 +1,12 @@
 import type { AppSection, StackSkillGroup, StackSkillSpec } from '@/shared/types'
 
+type ContactSocialLink = {
+  label: string
+  href?: string
+}
+
+const contactSocialLinks: ContactSocialLink[] = [{ label: 'Instagram' }, { label: 'Twitter' }]
+
 export const sectionOrder: AppSection[] = ['home', 'about', 'stack', 'contact']
 
 export const sectionLabels: Record<AppSection, string> = {
@@ -24,7 +31,7 @@ export const siteContent = {
   stackTitle: 'STACK',
   contactTitle: 'CONTACT',
   contactEmail: 'diego.dezmu@gmail.com',
-  contactSocialLabel: 'Instagram / Twitter',
+  contactSocialLinks,
   menuCaption: '\u00a9 COPYWRIGHT DIEGO DEZMU 2026',
 }
 
@@ -45,44 +52,44 @@ export const stackGroupLabels: Record<StackSkillGroup, string> = {
 }
 
 export const stackSkillSpecs: StackSkillSpec[] = [
-  { label: 'LLM', group: 'ai', densityTier: 5 },
-  { label: 'n8n', group: 'ai', densityTier: 3 },
-  { label: 'Workflows', group: 'ai', densityTier: 3 },
-  { label: 'Agentic flows', group: 'ai', densityTier: 4 },
-  { label: 'Context engineering', group: 'ai', densityTier: 5 },
-  { label: 'Prompting', group: 'ai', densityTier: 5 },
-  { label: 'MCP', group: 'ai', densityTier: 4 },
-  { label: 'API', group: 'ai', densityTier: 4 },
-  { label: 'RAG', group: 'ai', densityTier: 3 },
-  { label: 'Fine-tuning', group: 'ai', densityTier: 2 },
-  { label: 'Embeddings', group: 'ai', densityTier: 2 },
-  { label: 'Design systems', group: 'design', densityTier: 5 },
-  { label: 'UX', group: 'design', densityTier: 5 },
-  { label: 'Design thinking', group: 'design', densityTier: 3 },
-  { label: 'UI', group: 'design', densityTier: 5 },
-  { label: 'Product', group: 'design', densityTier: 3 },
-  { label: 'Figma', group: 'design', densityTier: 5 },
-  { label: 'Prototyping', group: 'design', densityTier: 4 },
-  { label: 'Touch designer', group: 'design', densityTier: 1 },
-  { label: 'Motion design', group: 'design', densityTier: 1 },
-  { label: 'VSCode', group: 'tooling', densityTier: 4 },
-  { label: 'Claude Code', group: 'tooling', densityTier: 3 },
-  { label: 'Codex', group: 'tooling', densityTier: 4 },
-  { label: 'Python', group: 'tooling', densityTier: 1 },
-  { label: 'React', group: 'engineering', densityTier: 2 },
-  { label: 'Next.js', group: 'engineering', densityTier: 1 },
-  { label: 'Node.js', group: 'engineering', densityTier: 1 },
-  { label: 'Git', group: 'tooling', densityTier: 3 },
-  { label: 'WebGL', group: 'engineering', densityTier: 2 },
-  { label: 'Three.js', group: 'engineering', densityTier: 3 },
-  { label: 'GSAP', group: 'engineering', densityTier: 2 },
+  { label: 'LLM', group: 'ai', densityTier: 10 },
+  { label: 'n8n', group: 'ai', densityTier: 6 },
+  { label: 'Workflows', group: 'ai', densityTier: 6 },
+  { label: 'Agentic flows', group: 'ai', densityTier: 8 },
+  { label: 'Context engineering', group: 'ai', densityTier: 9 },
+  { label: 'Prompting', group: 'ai', densityTier: 10 },
+  { label: 'MCP', group: 'ai', densityTier: 8 },
+  { label: 'API', group: 'ai', densityTier: 7 },
+  { label: 'RAG', group: 'ai', densityTier: 8 },
+  { label: 'Fine-tuning', group: 'ai', densityTier: 5 },
+  { label: 'Embeddings', group: 'ai', densityTier: 4 },
+  { label: 'Design systems', group: 'design', densityTier: 9 },
+  { label: 'UX', group: 'design', densityTier: 10 },
+  { label: 'Design thinking', group: 'design', densityTier: 7 },
+  { label: 'UI', group: 'design', densityTier: 10 },
+  { label: 'Product Design', group: 'design', densityTier: 7 },
+  { label: 'Figma', group: 'design', densityTier: 10 },
+  { label: 'Prototyping', group: 'design', densityTier: 8 },
+  { label: 'Touch designer', group: 'design', densityTier: 2 },
+  { label: 'Motion design', group: 'design', densityTier: 4 },
+  { label: 'Antigravity', group: 'tooling', densityTier: 7 },
+  { label: 'Claude Code', group: 'tooling', densityTier: 7 },
+  { label: 'Codex', group: 'tooling', densityTier: 7 },
+  { label: 'Python', group: 'tooling', densityTier: 3 },
+  { label: 'React', group: 'engineering', densityTier: 4 },
+  { label: 'Next.js', group: 'engineering', densityTier: 2 },
+  { label: 'Node.js', group: 'engineering', densityTier: 2 },
+  { label: 'Git', group: 'tooling', densityTier: 6 },
+  { label: 'WebGL', group: 'engineering', densityTier: 5 },
+  { label: 'Three.js', group: 'engineering', densityTier: 6 },
+  { label: 'GSAP', group: 'engineering', densityTier: 4 },
   { label: 'GLSL', group: 'engineering', densityTier: 2 },
-  { label: 'Vercel', group: 'engineering', densityTier: 2 },
-  { label: 'Supabase', group: 'engineering', densityTier: 2 },
-  { label: 'PostgreSQL', group: 'engineering', densityTier: 2 },
-  { label: 'Sound design', group: 'audio', densityTier: 3 },
-  { label: 'Mixing', group: 'audio', densityTier: 3 },
-  { label: 'mastering', group: 'audio', densityTier: 2 },
-  { label: 'Ableton Live', group: 'audio', densityTier: 4 },
-  { label: 'Max4live', group: 'audio', densityTier: 1 },
+  { label: 'Vercel', group: 'engineering', densityTier: 6 },
+  { label: 'Supabase', group: 'engineering', densityTier: 5 },
+  { label: 'PostgreSQL', group: 'engineering', densityTier: 4 },
+  { label: 'Sound design', group: 'audio', densityTier: 6 },
+  { label: 'Audio Mixing', group: 'audio', densityTier: 7 },
+  { label: 'Audio mastering', group: 'audio', densityTier: 5 },
+  { label: 'Ableton Live', group: 'audio', densityTier: 8 },
+  { label: 'Max4live', group: 'audio', densityTier: 2 },
 ]

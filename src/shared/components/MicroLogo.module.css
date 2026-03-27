@@ -6,10 +6,10 @@
   line-height: 1;
   letter-spacing: var(--micro-logo-tracking);
   color: var(--color-light-primary);
-  text-shadow: var(--shadow-soft);
+  text-shadow: var(--shadow-title);
   text-transform: uppercase;
   transform-origin: left center;
-  transition: color var(--page-transition), opacity var(--page-transition);
+  transition: color var(--page-transition), opacity var(--page-transition), transform var(--page-transition);
   will-change: transform, opacity;
 }
 
@@ -24,6 +24,7 @@
 .logo:hover,
 .logo:focus-visible {
   color: var(--color-light-highlight);
+  transform: scale(1.2);
 }
 
 @keyframes microLogoEnter {

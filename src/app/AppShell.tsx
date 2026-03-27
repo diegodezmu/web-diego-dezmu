@@ -22,7 +22,16 @@ const pathToSection = {
   '/contact': 'contact',
 } as const
 
-const MENU_OVERLAY_MOTION_MS = 1500
+const MENU_OVERLAY_MOTION_MS = 220
+const CURSOR_INTERACTIVE_SELECTOR = [
+  'button[data-cursor="interactive"]:not([disabled])',
+  'a[data-cursor="interactive"][href]',
+  '[role="button"][data-cursor="interactive"]:not([aria-disabled="true"])',
+].join(', ')
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
+}
 
 export function AppShell() {
   const location = useLocation()
@@ -31,10 +40,12 @@ export function AppShell() {
   const menuOpen = useAppStore((state) => state.menuOpen)
   const capabilities = useAppStore((state) => state.capabilities)
   const contactProgress = useAppStore((state) => state.contactProgress)
+  const stackProgress = useAppStore((state) => state.stackProgress)
   const setActiveSection = useAppStore((state) => state.setActiveSection)
   const bumpContentRevealKey = useAppStore((state) => state.bumpContentRevealKey)
   const setCapabilities = useAppStore((state) => state.setCapabilities)
   const setMenuOpen = useAppStore((state) => state.setMenuOpen)
+  const setMenuOverlayActive = useAppStore((state) => state.setMenuOverlayActive)
   const setPointer = useAppStore((state) => state.setPointer)
   const [overlayMounted, setOverlayMounted] = useState(menuOpen)
   const [overlayMotion, setOverlayMotion] = useState<'enter' | 'exit'>('enter')
@@ -83,6 +94,7 @@ export function AppShell() {
     if (menuOpen) {
       animationFrame = window.requestAnimationFrame(() => {
         setOverlayMounted(true)
+        setMenuOverlayActive(true)
         setOverlayMotion('enter')
       })
     } else if (overlayMounted) {
@@ -91,6 +103,7 @@ export function AppShell() {
       })
       overlayExitTimeoutRef.current = window.setTimeout(() => {
         setOverlayMounted(false)
+        setMenuOverlayActive(false)
         overlayExitTimeoutRef.current = null
       }, MENU_OVERLAY_MOTION_MS)
     }
@@ -98,7 +111,7 @@ export function AppShell() {
     return () => {
       window.cancelAnimationFrame(animationFrame)
     }
-  }, [menuOpen, overlayMounted])
+  }, [menuOpen, overlayMounted, setMenuOverlayActive])
 
   const handlePointerMove = useEffectEvent((event: PointerEvent) => {
     const target = event.target instanceof Element ? event.target : null
@@ -106,7 +119,7 @@ export function AppShell() {
       x: (event.clientX / window.innerWidth) * 2 - 1,
       y: -((event.clientY / window.innerHeight) * 2 - 1),
       inside: true,
-      interactive: Boolean(target?.closest('[data-cursor="interactive"]')),
+      interactive: Boolean(target?.closest(CURSOR_INTERACTIVE_SELECTOR)),
     })
   })
 
@@ -135,6 +148,7 @@ export function AppShell() {
   const aboutContentBelowScene = !menuOpen && activeSection === 'about'
   const aboutUnderlayOpacity = showAboutUnderlay ? 1 : 0
   const contactUnderlayOpacity = Math.min(1, 0.4 + contactProgress * 0.52)
+  const stackFallbackBlend = clamp(stackProgress, 0, 1)
 
   useEffect(() => {
     if (previousMenuVisibleRef.current && !menuVisible) {
@@ -156,6 +170,19 @@ export function AppShell() {
 
       {capabilities.webglSupported ? (
         <SceneCanvas />
+      ) : activeSection === 'stack' && !menuOpen ? (
+        <>
+          <div
+            className={`${styles.fallbackBackdrop} ${styles['fallbackBackdrop--stackGamma']}`}
+            style={{ opacity: 1 - stackFallbackBlend * 0.76, transition: 'none' }}
+            aria-hidden="true"
+          />
+          <div
+            className={`${styles.fallbackBackdrop} ${styles['fallbackBackdrop--stackEmbeddingMap']}`}
+            style={{ opacity: stackFallbackBlend, transition: 'none' }}
+            aria-hidden="true"
+          />
+        </>
       ) : (
         <div
           className={`${styles.fallbackBackdrop} ${styles[`fallbackBackdrop--${fallbackMode}`]}`}

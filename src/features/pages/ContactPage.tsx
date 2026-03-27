@@ -87,8 +87,9 @@ export function ContactPage() {
         pointerState.current.active = false
       }}
     >
-      <div
+      <button
         className={styles.titleAnchor}
+        type="button"
         style={{
           transform: `translate(-50%, -50%)`,
         }}
@@ -96,8 +97,8 @@ export function ContactPage() {
         onClick={() => setContactProgress(contactProgress < 0.5 ? 1 : 0)}
         data-cursor="interactive"
       >
-        <PageTitle className={styles.titleBlock} title={siteContent.contactTitle} />
-      </div>
+        <PageTitle as="span" className={styles.titleBlock} title={siteContent.contactTitle} />
+      </button>
 
       <div
         className={styles.linksBlock}
@@ -113,7 +114,24 @@ export function ContactPage() {
         >
           {siteContent.contactEmail}
         </a>
-        <p className={styles.socialText}>{siteContent.contactSocialLabel}</p>
+        <div className={styles.socialRow} aria-label="Social links coming soon">
+          {siteContent.contactSocialLinks.map((link) =>
+            link.href ? (
+              <a
+                key={link.label}
+                className={styles.socialLink}
+                href={link.href}
+                data-cursor="interactive"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <span key={link.label} className={styles.socialText}>
+                {link.label}
+              </span>
+            ),
+          )}
+        </div>
       </div>
     </section>
   )

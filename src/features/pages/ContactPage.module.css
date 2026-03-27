@@ -10,6 +10,13 @@
   top: 50%;
   left: 50%;
   z-index: 4;
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
   pointer-events: auto;
   cursor: pointer;
 }
@@ -34,6 +41,7 @@
 }
 
 .emailLink,
+.socialLink,
 .socialText {
   font-size: var(--link-size);
   line-height: 1.5;
@@ -47,6 +55,15 @@
   color: var(--color-light-primary);
 }
 
+.socialRow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  white-space: nowrap;
+}
+
+.socialLink,
 .socialText {
   color: var(--color-light-off);
 }
