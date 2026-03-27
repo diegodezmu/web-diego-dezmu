@@ -73,35 +73,37 @@ function SideButton({
 export function PaginationControls() {
   const activeSection = useAppStore((state) => state.activeSection)
   const menuOpen = useAppStore((state) => state.menuOpen)
-  const isTouch = useAppStore((state) => state.capabilities.isTouch)
-  const isMobile = isTouch
 
   if (menuOpen) {
     return null
   }
 
-  const previous = buildNeighbor(activeSection, -1, isMobile)
+  const desktopPrevious = buildNeighbor(activeSection, -1, false)
+  const mobilePrevious = buildNeighbor(activeSection, -1, true)
   const next = buildNeighbor(activeSection, 1, false)
-  const navKey = `${activeSection}-${isMobile ? 'mobile' : 'desktop'}`
 
-  return isMobile ? (
-    <nav key={navKey} className={styles.mobileNav} aria-label="Section navigation">
-      {previous ? (
-        <SideButton href={previous.href} label={previous.label} side="left" mobile />
-      ) : (
-        <span className={`${styles.mobileButton} ${styles.mobileSpacer}`} />
-      )}
-
-      {next ? (
-        <SideButton href={next.href} label={next.label} side="right" mobile />
-      ) : (
-        <span className={`${styles.mobileButton} ${styles.mobileSpacer}`} />
-      )}
-    </nav>
-  ) : (
+  return (
     <>
-      {previous ? <SideButton key={`${navKey}-prev`} href={previous.href} label={previous.label} side="left" /> : null}
-      {next ? <SideButton key={`${navKey}-next`} href={next.href} label={next.label} side="right" /> : null}
+      <nav className={styles.desktopNav} aria-label="Section navigation">
+        {desktopPrevious ? (
+          <SideButton href={desktopPrevious.href} label={desktopPrevious.label} side="left" />
+        ) : null}
+        {next ? <SideButton href={next.href} label={next.label} side="right" /> : null}
+      </nav>
+
+      <nav className={styles.mobileNav} aria-label="Section navigation">
+        {mobilePrevious ? (
+          <SideButton href={mobilePrevious.href} label={mobilePrevious.label} side="left" mobile />
+        ) : (
+          <span className={`${styles.mobileButton} ${styles.mobileSpacer}`} />
+        )}
+
+        {next ? (
+          <SideButton href={next.href} label={next.label} side="right" mobile />
+        ) : (
+          <span className={`${styles.mobileButton} ${styles.mobileSpacer}`} />
+        )}
+      </nav>
     </>
   )
 }
