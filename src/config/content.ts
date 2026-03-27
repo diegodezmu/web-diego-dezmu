@@ -2,10 +2,13 @@ import type { AppSection, StackSkillGroup, StackSkillSpec } from '@/shared/types
 
 type ContactSocialLink = {
   label: string
-  href?: string
+  href: string
 }
 
-const contactSocialLinks: ContactSocialLink[] = [{ label: 'Instagram' }, { label: 'Twitter' }]
+const contactSocialLinks: ContactSocialLink[] = [
+  { label: 'Instagram', href: 'https://www.instagram.com/ddezmu' },
+  { label: 'Twitter', href: 'https://x.com/ddezmu' },
+]
 
 export const sectionOrder: AppSection[] = ['home', 'about', 'stack', 'contact']
 

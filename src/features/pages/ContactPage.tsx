@@ -129,23 +129,17 @@ export function ContactPage() {
         >
           {siteContent.contactEmail}
         </a>
-        <div className={styles.socialRow} aria-label="Social links coming soon">
-          {siteContent.contactSocialLinks.map((link) =>
-            link.href ? (
-              <a
-                key={link.label}
-                className={styles.socialLink}
-                href={link.href}
-                data-cursor="interactive"
-              >
-                {link.label}
-              </a>
-            ) : (
-              <span key={link.label} className={styles.socialText}>
-                {link.label}
-              </span>
-            ),
-          )}
+        <div className={styles.socialRow} aria-label="Social links">
+          {siteContent.contactSocialLinks.map((link) => (
+            <a
+              key={link.label}
+              className={styles.socialLink}
+              href={link.href}
+              data-cursor="interactive"
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
       </div>
     </section>

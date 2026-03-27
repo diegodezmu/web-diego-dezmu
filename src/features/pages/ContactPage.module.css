@@ -41,8 +41,7 @@
 }
 
 .emailLink,
-.socialLink,
-.socialText {
+.socialLink {
   font-size: var(--link-size);
   line-height: 1.5;
   font-weight: 500;
@@ -63,8 +62,7 @@
   white-space: nowrap;
 }
 
-.socialLink,
-.socialText {
+.socialLink {
   color: var(--color-light-off);
 }
 

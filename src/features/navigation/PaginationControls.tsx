@@ -1,30 +1,22 @@
 import { Link } from 'react-router-dom'
 import { sectionLabels, sectionOrder } from '@/config/content'
+import { ChevronLeftIcon, ChevronRightIcon } from '@/shared/components/InlineIcons'
 import type { AppSection } from '@/shared/types'
 import { useAppStore } from '@/state/appStore'
 import styles from './PaginationControls.module.css'
-import chevronLeftSvg from '../../../Material/icon-chevron-left.svg?raw'
-import chevronRightSvg from '../../../Material/icon-chevron-right.svg?raw'
 
 type NeighborLink = {
   href: string
   label: string
 }
 
-const CHEVRON_MARKUP = {
-  left: chevronLeftSvg,
-  right: chevronRightSvg,
-} as const
-
 function Chevron({ side, mobile = false }: { side: 'left' | 'right'; mobile?: boolean }) {
-  const markup = side === 'left' ? CHEVRON_MARKUP.left : CHEVRON_MARKUP.right
+  const Icon = side === 'left' ? ChevronLeftIcon : ChevronRightIcon
 
   return (
-    <span
-      className={`${styles.chevron} ${mobile ? styles.mobileChevron : ''}`}
-      aria-hidden="true"
-      dangerouslySetInnerHTML={{ __html: markup }}
-    />
+    <span className={`${styles.chevron} ${mobile ? styles.mobileChevron : ''}`} aria-hidden="true">
+      <Icon />
+    </span>
   )
 }
 
@@ -82,7 +74,7 @@ export function PaginationControls() {
   const activeSection = useAppStore((state) => state.activeSection)
   const menuOpen = useAppStore((state) => state.menuOpen)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
-  const isMobile = isTouch || window.innerWidth <= 767
+  const isMobile = isTouch
 
   if (menuOpen) {
     return null

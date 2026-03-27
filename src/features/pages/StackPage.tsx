@@ -2,12 +2,11 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
+import { ZoomInIcon, ZoomOutIcon } from '@/shared/components/InlineIcons'
 import {
   DEFAULT_STACK_PHI,
   useAppStore,
 } from '@/state/appStore'
-import zoomInSvg from '../../../Material/icon-zoom-in.svg?raw'
-import zoomOutSvg from '../../../Material/icon-zoom-out.svg?raw'
 
 // ─── Zoom limits — adjust these to taste ────────────────────────────────────
 const ZOOM_MIN = 0.4   // most zoomed in  (camera closest)
@@ -519,7 +518,9 @@ export function StackPage() {
           disabled={stackZoom >= ZOOM_MAX}
           onClick={() => setStackZoom(clamp(stackZoom + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX))}
         >
-          <span className={styles.zoomButtonInner} dangerouslySetInnerHTML={{ __html: zoomOutSvg }} />
+          <span className={styles.zoomButtonInner}>
+            <ZoomOutIcon />
+          </span>
         </button>
 
         <button
@@ -530,7 +531,9 @@ export function StackPage() {
           disabled={stackZoom <= ZOOM_MIN}
           onClick={() => setStackZoom(clamp(stackZoom - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX))}
         >
-          <span className={styles.zoomButtonInner} dangerouslySetInnerHTML={{ __html: zoomInSvg }} />
+          <span className={styles.zoomButtonInner}>
+            <ZoomInIcon />
+          </span>
         </button>
       </div>
     </section>
