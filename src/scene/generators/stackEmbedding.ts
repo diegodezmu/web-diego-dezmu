@@ -1,88 +1,16 @@
-import type { CurveDefinition, StackSkillGroup, StackSkillSpec } from '@/shared/types'
-import type { StackSceneData, StackSkillDatum } from './types'
-
-function mulberry32(seed: number) {
-  let value = seed >>> 0
-
-  return () => {
-    value += 0x6d2b79f5
-    let result = Math.imul(value ^ (value >>> 15), 1 | value)
-    result ^= result + Math.imul(result ^ (result >>> 7), 61 | result)
-    return ((result ^ (result >>> 14)) >>> 0) / 4294967296
-  }
-}
-
-function gaussian(random: () => number) {
-  const u = Math.max(random(), 1e-6)
-  const v = Math.max(random(), 1e-6)
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v)
-}
-
-function hashUnit(seed: number) {
-  const value = Math.sin(seed * 127.1 + 311.7) * 43758.5453123
-  return value - Math.floor(value)
-}
-
-function hashSigned(seed: number) {
-  return hashUnit(seed) * 2 - 1
-}
-
-function hashString(value: string) {
-  let hash = 2166136261
-
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index)
-    hash = Math.imul(hash, 16777619)
-  }
-
-  return hash >>> 0
-}
-
-function crossMod(t: number, amount: number, freqX: number, freqY: number) {
-  if (amount <= 0) {
-    return 0
-  }
-
-  return amount * Math.sin(freqX * freqY * t)
-}
-
-function wavefold(value: number, amount: number) {
-  if (amount <= 0) {
-    return value
-  }
-
-  const gained = value * (1 + amount * 3)
-  return (2 / Math.PI) * Math.asin(Math.sin((Math.PI / 2) * gained))
-}
-
-function ringMod(value: number, t: number, modFreq: number) {
-  if (modFreq <= 0) {
-    return value
-  }
-
-  return value * Math.sin(modFreq * t)
-}
-
-function getCurvePoint(curve: CurveDefinition, t: number, phaseOffset: number) {
-  const localCross = crossMod(t, curve.crossModAmount, curve.freqX, curve.freqY)
-  let x = Math.sin(curve.freqX * t + curve.phase + phaseOffset + localCross)
-  let y = Math.sin(curve.freqY * t + localCross)
-
-  x = wavefold(x, curve.foldAmount)
-  y = wavefold(y, curve.foldAmount)
-  x = ringMod(x, t, curve.ringModFreq)
-  y = ringMod(y, t, curve.ringModFreq)
-
-  return { x, y }
-}
-
-function toTuple(x: number, y: number, z: number): [number, number, number] {
-  return [x, y, z]
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value))
-}
+import type { StackSkillGroup, StackSkillSpec } from '@/shared/types'
+import type { StackSceneData, StackSkillDatum } from '../types'
+import { fitPointCount } from './bufferTransforms'
+import { createGridSegments } from './grids'
+import {
+  clamp,
+  fillBufferPoint,
+  gaussian,
+  hashSigned,
+  hashString,
+  mulberry32,
+  toTuple,
+} from './shared'
 
 const STACK_CUBE_SIZE = 10
 const STACK_CUBE_HALF = STACK_CUBE_SIZE * 0.5
@@ -150,33 +78,6 @@ const STACK_CLUSTER_LAYOUTS: Record<
   },
 }
 
-function fillBufferPoint(buffer: Float32Array, index: number, point: [number, number, number]) {
-  const offset = index * 3
-  buffer[offset] = point[0]
-  buffer[offset + 1] = point[1]
-  buffer[offset + 2] = point[2]
-}
-
-function appendSegment(segments: number[], start: [number, number, number], end: [number, number, number]) {
-  segments.push(start[0], start[1], start[2], end[0], end[1], end[2])
-}
-
-function createGridSegments(size: number, centerY: number, divisions: number) {
-  const half = size * 0.5
-  const step = size / divisions
-  const bottom = centerY - half
-  const segments: number[] = []
-
-  for (let index = 1; index < divisions; index += 1) {
-    const t = -half + index * step
-
-    appendSegment(segments, [t, bottom, -half], [t, bottom, half])
-    appendSegment(segments, [-half, bottom, t], [half, bottom, t])
-  }
-
-  return new Float32Array(segments)
-}
-
 function allocateSkillParticleCounts(skills: StackSkillSpec[], budget: number) {
   const raw = skills.map((skill) => STACK_PARTICLE_COUNT_BY_TIER[skill.densityTier])
   const totalBase = raw.reduce((sum, value) => sum + value, 0) || 1
@@ -202,16 +103,16 @@ function allocateSkillParticleCounts(skills: StackSkillSpec[], budget: number) {
 function clampPointToCube(point: [number, number, number], margin: number) {
   return toTuple(
     clamp(point[0], -STACK_CUBE_HALF + margin, STACK_CUBE_HALF - margin),
-    clamp(point[1], STACK_CUBE_CENTER_Y - STACK_CUBE_HALF + margin, STACK_CUBE_CENTER_Y + STACK_CUBE_HALF - margin),
+    clamp(
+      point[1],
+      STACK_CUBE_CENTER_Y - STACK_CUBE_HALF + margin,
+      STACK_CUBE_CENTER_Y + STACK_CUBE_HALF - margin,
+    ),
     clamp(point[2], -STACK_CUBE_HALF + margin, STACK_CUBE_HALF - margin),
   )
 }
 
-function createCandidatePoint(
-  group: StackSkillGroup,
-  seed: string,
-  radius: number,
-) {
+function createCandidatePoint(group: StackSkillGroup, seed: string, radius: number) {
   const layout = STACK_CLUSTER_LAYOUTS[group]
   const random = mulberry32(hashString(seed))
   const point = toTuple(
@@ -231,11 +132,7 @@ function createLabelAnchor(position: [number, number, number], radius: number, t
   const depthOffset = clamp(position[2] * 0.035, -0.12, 0.12)
   const vertical = 0.22 + radius * 0.9 + text.length * 0.002
 
-  return toTuple(
-    position[0] - 0.35,
-    position[1] + vertical,
-    position[2] + depthOffset,
-  )
+  return toTuple(position[0] - 0.35, position[1] + vertical, position[2] + depthOffset)
 }
 
 function createSkillAnchors(skills: StackSkillSpec[], counts: number[]) {
@@ -326,130 +223,6 @@ function fillSkillSpherePoints(
   }
 
   return cursor
-}
-
-export function fillLissajousPoints(
-  buffer: Float32Array,
-  curve: CurveDefinition,
-  phaseOffset: number,
-  width: number,
-  height: number,
-  depth: number,
-  thickness: number,
-) {
-  const count = buffer.length / 3
-
-  for (let index = 0; index < count; index += 1) {
-    const seedBase = index + 1
-    const progressJitter = (hashUnit(seedBase * 0.71) - 0.5) * 0.024
-    const progress = (index / count + progressJitter + 1) % 1
-    const t = progress * Math.PI * 2
-    const point = getCurvePoint(curve, t, phaseOffset)
-    const nextPoint = getCurvePoint(curve, (progress + 1 / count) * Math.PI * 2, phaseOffset)
-
-    const tangentX = nextPoint.x - point.x
-    const tangentY = nextPoint.y - point.y
-    const tangentLength = Math.hypot(tangentX, tangentY) || 1
-    const normalX = -tangentY / tangentLength
-    const normalY = tangentX / tangentLength
-    const tangentNormX = tangentX / tangentLength
-    const tangentNormY = tangentY / tangentLength
-    const densityBand = hashUnit(seedBase * 1.13)
-    const spreadBand = densityBand < 0.64 ? 1.7 : densityBand < 0.88 ? 2.7 : 3.8
-    const normalOffset = hashSigned(seedBase * 2.17) * thickness * spreadBand
-    const tangentOffset = hashSigned(seedBase * 2.61) * thickness * (0.9 + densityBand * 2.4)
-    const depthOffset = hashSigned(seedBase * 3.11) * depth * (0.2 + densityBand * 0.6)
-    const breathing = Math.sin(t * 4 + phaseOffset * 0.35 + seedBase * 0.002) * thickness * 0.22
-    const x = point.x * width + normalX * (normalOffset + breathing) + tangentNormX * tangentOffset
-    const y = point.y * height + normalY * (normalOffset + breathing) + tangentNormY * tangentOffset
-
-    buffer[index * 3] = x
-    buffer[index * 3 + 1] = y
-    buffer[index * 3 + 2] = Math.sin(t * 3.2 + phaseOffset * 0.4) * depth * 0.1 + depthOffset
-  }
-}
-
-export function generateViewportGridPoints(
-  width: number,
-  height: number,
-  cellSize: number,
-  depth: number,
-) {
-  const halfWidth = width * 0.5
-  const halfHeight = height * 0.5
-  const columns = Math.max(2, Math.floor(width / cellSize) + 1)
-  const rows = Math.max(2, Math.floor(height / cellSize) + 1)
-  const points = new Float32Array(columns * rows * 3)
-  let offset = 0
-
-  for (let row = 0; row < rows; row += 1) {
-    const y = halfHeight - (row / Math.max(1, rows - 1)) * height
-    for (let column = 0; column < columns; column += 1) {
-      const x = -halfWidth + (column / Math.max(1, columns - 1)) * width
-      points[offset * 3] = x
-      points[offset * 3 + 1] = y
-      points[offset * 3 + 2] = hashSigned(offset * 0.93) * depth
-      offset += 1
-    }
-  }
-
-  return points
-}
-
-export function generateMarginGridPoints(
-  width: number,
-  height: number,
-  cellSize: number,
-  marginX: number,
-  marginY: number,
-  depth: number,
-) {
-  const halfWidth = width * 0.5
-  const halfHeight = height * 0.5
-  const columns = Math.max(2, Math.floor(width / cellSize) + 1)
-  const rows = Math.max(2, Math.floor(height / cellSize) + 1)
-  const innerHalfWidth = Math.max(0, halfWidth - marginX)
-  const innerHalfHeight = Math.max(0, halfHeight - marginY)
-  const points: number[] = []
-  let offset = 0
-
-  for (let row = 0; row < rows; row += 1) {
-    const y = halfHeight - (row / Math.max(1, rows - 1)) * height
-
-    for (let column = 0; column < columns; column += 1) {
-      const x = -halfWidth + (column / Math.max(1, columns - 1)) * width
-
-      if (Math.abs(x) < innerHalfWidth && Math.abs(y) < innerHalfHeight) {
-        continue
-      }
-
-      points.push(x, y, hashSigned(offset * 0.93) * depth)
-      offset += 1
-    }
-  }
-
-  return new Float32Array(points)
-}
-
-export function fitPointCount(source: Float32Array, count: number) {
-  const sourceCount = source.length / 3
-
-  if (sourceCount === count) {
-    return source
-  }
-
-  const points = new Float32Array(count * 3)
-
-  for (let index = 0; index < count; index += 1) {
-    const sourceIndex = Math.floor((index / count) * sourceCount) % sourceCount
-    const sourceOffset = sourceIndex * 3
-    const targetOffset = index * 3
-    points[targetOffset] = source[sourceOffset]
-    points[targetOffset + 1] = source[sourceOffset + 1]
-    points[targetOffset + 2] = source[sourceOffset + 2]
-  }
-
-  return points
 }
 
 type StackTransitionMappingOptions = {

@@ -20,14 +20,10 @@ import {
   useAppStore,
 } from '@/state/appStore'
 import { resolveLfoSceneParameters } from './lfo'
-import {
-  fillLissajousPoints,
-  fitPointCount,
-  generateMarginGridPoints,
-  generateStackSceneData,
-  generateViewportGridPoints,
-  STACK_CUBE_CENTER_Y,
-} from './pointSources'
+import { fitPointCount } from './generators/bufferTransforms'
+import { fillLissajousPoints } from './generators/curves'
+import { generateMarginGridPoints, generateViewportGridPoints } from './generators/grids'
+import { generateStackSceneData, STACK_CUBE_CENTER_Y } from './generators/stackEmbedding'
 import { ParticleField } from './ParticleField'
 import { StackEmbeddingMap } from './StackEmbeddingMap'
 import type { SceneSnapshot, StackSceneData } from './types'
