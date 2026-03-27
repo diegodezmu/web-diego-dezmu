@@ -77,15 +77,15 @@ const sharedCurveParticles = createParticleTuning({
 
 export const alphaConfig: CurveSceneConfig = {
   curve: {
-    freqX: 1,
-    freqY: 2,
-    ampX: 0.4,
-    ampY: 0.4,
+    freqX: 2,
+    freqY: 1,
+    ampX: 0.3,
+    ampY: 0.3,
     phase: 0,
     crossModAmount: 0,
     foldAmount: 0,
     ringModFreq: 0,
-    speed: 0.005,
+    speed: 0.022,
     animate: true,
   },
   particles: sharedCurveParticles,

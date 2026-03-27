@@ -574,7 +574,7 @@ export function ParticleScene() {
         stackThetaRef.current,
         stackPhiRef.current,
         Math.max(DEFAULT_STACK_RADIUS, stackSceneResources.pointCloudMetrics.radius * 3.35) *
-          stackZoomRef.current,
+        stackZoomRef.current,
       )
       const gammaCameraX = pointer.x * 0.035
       const gammaCameraY = pointer.y * 0.028
@@ -743,8 +743,8 @@ export function ParticleScene() {
             homeBuffer,
             homeScene.curve,
             homePhaseRef.current,
-            homeWorld.width * 0.25 * getAmplitudeRatio(alphaConfig.curve.ampX, homeScene.curve.ampX),
-            homeWorld.height * 0.17 * getAmplitudeRatio(alphaConfig.curve.ampY, homeScene.curve.ampY),
+            homeWorld.width * 0.18 * getAmplitudeRatio(alphaConfig.curve.ampX, homeScene.curve.ampX),
+            homeWorld.height * 0.18 * getAmplitudeRatio(alphaConfig.curve.ampY, homeScene.curve.ampY),
             0.22,
             thickness,
           )

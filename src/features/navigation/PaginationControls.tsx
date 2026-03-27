@@ -89,7 +89,7 @@ export function PaginationControls() {
   }
 
   const previous = buildNeighbor(activeSection, -1, isMobile)
-  const next = buildNeighbor(activeSection, 1, isMobile)
+  const next = buildNeighbor(activeSection, 1, false)
   const navKey = `${activeSection}-${isMobile ? 'mobile' : 'desktop'}`
 
   return isMobile ? (

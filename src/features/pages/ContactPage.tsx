@@ -16,6 +16,7 @@ export function ContactPage() {
     y: 0,
   })
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
+  const previousContentRevealKeyRef = useRef(contentRevealKey)
   const contactProgress = useAppStore((state) => state.contactProgress)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
   const setContactProgress = useAppStore((state) => state.setContactProgress)
@@ -25,9 +26,23 @@ export function ContactPage() {
   }, [setContactProgress])
 
   useLayoutEffect(() => {
-    if (contentRevealKey === 0) {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        `.${styles.titleBlock}`,
+        { autoAlpha: 0, y: '15vh' },
+        { autoAlpha: 1, y: 0, duration: 3, ease: 'power3.out' },
+      )
+    }, shellRef)
+
+    return () => ctx.revert()
+  }, [])
+
+  useLayoutEffect(() => {
+    if (contentRevealKey === previousContentRevealKeyRef.current) {
       return
     }
+
+    previousContentRevealKeyRef.current = contentRevealKey
 
     const ctx = gsap.context(() => {
       gsap.fromTo(

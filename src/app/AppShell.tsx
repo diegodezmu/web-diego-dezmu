@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { sectionLabels } from '@/config/content'
 import { Header } from '@/features/layout/Header'
@@ -8,8 +8,8 @@ import { AboutPage } from '@/features/pages/AboutPage'
 import { ContactPage } from '@/features/pages/ContactPage'
 import { HomePage } from '@/features/pages/HomePage'
 import { StackPage } from '@/features/pages/StackPage'
-import { SceneCanvas } from '@/scene/SceneCanvas'
 import { CustomCursor } from '@/shared/components/CustomCursor'
+import type { AppSection } from '@/shared/types'
 import { detectCapabilities } from '@/shared/utils/device'
 import { supportsWebGL } from '@/shared/utils/webgl'
 import { useAppStore } from '@/state/appStore'
@@ -29,8 +29,43 @@ const CURSOR_INTERACTIVE_SELECTOR = [
   '[role="button"][data-cursor="interactive"]:not([aria-disabled="true"])',
 ].join(', ')
 
+const SceneCanvas = lazy(() =>
+  import('@/scene/SceneCanvas').then((module) => ({ default: module.SceneCanvas })),
+)
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
+}
+
+function renderFallbackScene(
+  fallbackMode: string,
+  activeSection: AppSection,
+  menuOpen: boolean,
+  stackFallbackBlend: number,
+) {
+  if (activeSection === 'stack' && !menuOpen) {
+    return (
+      <>
+        <div
+          className={`${styles.fallbackBackdrop} ${styles['fallbackBackdrop--stackGamma']}`}
+          style={{ opacity: 1 - stackFallbackBlend * 0.76, transition: 'none' }}
+          aria-hidden="true"
+        />
+        <div
+          className={`${styles.fallbackBackdrop} ${styles['fallbackBackdrop--stackEmbeddingMap']}`}
+          style={{ opacity: stackFallbackBlend, transition: 'none' }}
+          aria-hidden="true"
+        />
+      </>
+    )
+  }
+
+  return (
+    <div
+      className={`${styles.fallbackBackdrop} ${styles[`fallbackBackdrop--${fallbackMode}`]}`}
+      aria-hidden="true"
+    />
+  )
 }
 
 export function AppShell() {
@@ -149,6 +184,12 @@ export function AppShell() {
   const aboutUnderlayOpacity = showAboutUnderlay ? 1 : 0
   const contactUnderlayOpacity = Math.min(1, 0.4 + contactProgress * 0.52)
   const stackFallbackBlend = clamp(stackProgress, 0, 1)
+  const sceneFallback = renderFallbackScene(
+    fallbackMode,
+    activeSection,
+    menuOpen,
+    stackFallbackBlend,
+  )
 
   useEffect(() => {
     if (previousMenuVisibleRef.current && !menuVisible) {
@@ -169,25 +210,11 @@ export function AppShell() {
       />
 
       {capabilities.webglSupported ? (
-        <SceneCanvas />
-      ) : activeSection === 'stack' && !menuOpen ? (
-        <>
-          <div
-            className={`${styles.fallbackBackdrop} ${styles['fallbackBackdrop--stackGamma']}`}
-            style={{ opacity: 1 - stackFallbackBlend * 0.76, transition: 'none' }}
-            aria-hidden="true"
-          />
-          <div
-            className={`${styles.fallbackBackdrop} ${styles['fallbackBackdrop--stackEmbeddingMap']}`}
-            style={{ opacity: stackFallbackBlend, transition: 'none' }}
-            aria-hidden="true"
-          />
-        </>
+        <Suspense fallback={sceneFallback}>
+          <SceneCanvas />
+        </Suspense>
       ) : (
-        <div
-          className={`${styles.fallbackBackdrop} ${styles[`fallbackBackdrop--${fallbackMode}`]}`}
-          aria-hidden="true"
-        />
+        sceneFallback
       )}
 
       <div

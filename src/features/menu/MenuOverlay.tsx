@@ -69,7 +69,7 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
                   setMenuOpen(false)
                 }}
               >
-                {label}
+                <span className={styles.linkLabel}>{label}</span>
               </button>
             )
           })}

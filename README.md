@@ -53,6 +53,7 @@ npm run preview
 - Expanded the `Stack` section into a curve-to-embedding-map transition with grouped skills, orbit controls, zoom buttons, and projected labels in 3D space.
 - Updated the particle scene to support the stack map transition, section-specific blends, and LFO-driven parameter modulation.
 - Tightened shell-level interaction handling for menu overlay visibility, pointer interactivity, and WebGL fallback states.
+- Split the runtime bundle with lazy-loaded pages/canvas and manual vendor chunking, then isolated the remaining R3F payload as its own async scene chunk with an explicit warning budget for staging builds.
 
 ## Validation
 
@@ -61,4 +62,5 @@ npm run preview
 
 ## Notes
 
-- The production build currently emits a large main chunk warning from Vite. The build succeeds, but route-level or scene-level code splitting would be the next optimization step if bundle size becomes a staging concern.
+- The WebGL scene remains persistent at runtime, but it is now delivered through async chunks so the entry bundle stays light.
+- Vite's `chunkSizeWarningLimit` is set to `900` because the isolated R3F runtime is a deliberate async payload, not the entry bundle.

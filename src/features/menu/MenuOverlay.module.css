@@ -72,6 +72,9 @@
 .linkButton {
   min-width: 168px;
   padding: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-display);
   font-size: var(--menu-button-size);
   line-height: 1.4;
@@ -82,8 +85,15 @@
   text-transform: uppercase;
   transition:
     color var(--page-transition),
-    transform var(--page-transition),
-    font-size var(--page-transition);
+    transform var(--page-transition);
+  will-change: transform;
+}
+
+.linkLabel {
+  display: block;
+  transform-origin: center;
+  transition: transform var(--page-transition);
+  will-change: transform;
 }
 
 .nav:has(.linkButton:hover) .linkButton:not(:hover) {
@@ -98,8 +108,12 @@
 
 .linkButton:hover,
 .linkButton:focus-visible {
-  font-size: var(--menu-button-hover-size);
   transform: translateY(-2px);
+}
+
+.linkButton:hover .linkLabel,
+.linkButton:focus-visible .linkLabel {
+  transform: scale(1.2);
 }
 
 .caption {

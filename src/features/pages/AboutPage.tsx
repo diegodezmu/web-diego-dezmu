@@ -36,6 +36,7 @@ export function AboutPage() {
   })
   const [aboutScrollTop, setAboutScrollTop] = useState(0)
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
+  const previousContentRevealKeyRef = useRef(contentRevealKey)
   const aboutScrollProgress = useAppStore((state) => state.aboutScrollProgress)
   const setAboutScrollProgress = useAppStore((state) => state.setAboutScrollProgress)
 
@@ -62,9 +63,11 @@ export function AboutPage() {
   }, [])
 
   useLayoutEffect(() => {
-    if (contentRevealKey === 0) {
+    if (contentRevealKey === previousContentRevealKeyRef.current) {
       return
     }
+
+    previousContentRevealKeyRef.current = contentRevealKey
 
     const ctx = gsap.context(() => {
       gsap.fromTo(

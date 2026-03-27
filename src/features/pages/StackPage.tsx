@@ -77,6 +77,7 @@ export function StackPage() {
   const stackProgressTweenRef = useRef<gsap.core.Tween | null>(null)
   const stackProgressValueRef = useRef({ value: 0 })
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
+  const previousContentRevealKeyRef = useRef(contentRevealKey)
   const stackStateTarget = useAppStore((state) => state.stackStateTarget)
   const stackProgress = useAppStore((state) => state.stackProgress)
   const stackCamera = useAppStore((state) => state.stackCamera)
@@ -99,6 +100,36 @@ export function StackPage() {
   useEffect(() => {
     stackProgressValueRef.current.value = stackProgress
   }, [stackProgress])
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        `.${styles.titleBlock}`,
+        { autoAlpha: 0, y: '15vh' },
+        { autoAlpha: 1, y: 0, duration: 3, ease: 'power3.out' },
+      )
+    }, shellRef)
+
+    return () => ctx.revert()
+  }, [])
+
+  useLayoutEffect(() => {
+    if (contentRevealKey === previousContentRevealKeyRef.current) {
+      return
+    }
+
+    previousContentRevealKeyRef.current = contentRevealKey
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        `.${styles.titleBlock}`,
+        { autoAlpha: 0, y: 20 },
+        { autoAlpha: 1, y: 0, duration: 0.72, ease: 'power2.out' },
+      )
+    }, shellRef)
+
+    return () => ctx.revert()
+  }, [contentRevealKey])
 
   useEffect(() => {
     const nextMode = stackProgress > 0.001 ? 'stackEmbeddingMap' : 'stackGamma'
@@ -138,22 +169,6 @@ export function StackPage() {
       stackProgressTweenRef.current = null
     }
   }, [setStackCamera, setStackProgress, setStackZoom, stackStateTarget])
-
-  useLayoutEffect(() => {
-    if (contentRevealKey === 0) {
-      return
-    }
-
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        `.${styles.titleBlock}`,
-        { autoAlpha: 0, y: 20 },
-        { autoAlpha: 1, y: 0, duration: 0.72, ease: 'power2.out' },
-      )
-    }, shellRef)
-
-    return () => ctx.revert()
-  }, [contentRevealKey])
 
   useEffect(() => {
     const layer = interactionRef.current
