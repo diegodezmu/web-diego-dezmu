@@ -164,17 +164,6 @@ export const deltaConfig: CurveSceneConfig = {
   lfos: createLfoBank(),
 }
 
-export const frameGridConfig = {
-  cellPx: 18,
-  count: 3600,
-  sizePx: 3.3,
-  opacity: 0.54,
-  haloPx: 10,
-  pointerRadiusPx: 60,
-  pointerStrength: 0.14,
-  recovery: 0.012,
-}
-
 export const aboutMarginGridConfig = {
   cellPx: 18,
   count: 4200,

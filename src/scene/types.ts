@@ -37,6 +37,5 @@ export type StackSceneData = {
   ambientPoints: Float32Array
   skillPoints: Float32Array
   skills: StackSkillDatum[]
-  cubeSegments: Float32Array
   gridSegments: Float32Array
 }

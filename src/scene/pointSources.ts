@@ -161,12 +161,6 @@ function appendSegment(segments: number[], start: [number, number, number], end:
   segments.push(start[0], start[1], start[2], end[0], end[1], end[2])
 }
 
-function createCubeSegments(size: number, centerY: number) {
-  void size
-  void centerY
-  return new Float32Array(0)
-}
-
 function createGridSegments(size: number, centerY: number, divisions: number) {
   const half = size * 0.5
   const step = size / divisions
@@ -375,53 +369,6 @@ export function fillLissajousPoints(
   }
 }
 
-export function generateFrameGridPoints(
-  width: number,
-  height: number,
-  cellSize: number,
-  depth: number,
-) {
-  const halfWidth = width * 0.5
-  const halfHeight = height * 0.5
-  const columns = Math.max(2, Math.round(width / cellSize))
-  const rows = Math.max(2, Math.round(height / cellSize))
-  const total = columns * 2 + rows * 2 - 4
-  const points = new Float32Array(total * 3)
-  let offset = 0
-
-  for (let column = 0; column < columns; column += 1) {
-    const x = -halfWidth + (column / Math.max(1, columns - 1)) * width
-    points[offset * 3] = x
-    points[offset * 3 + 1] = halfHeight
-    points[offset * 3 + 2] = hashSigned(offset * 1.7) * depth
-    offset += 1
-
-    if (column === 0 || column === columns - 1) {
-      continue
-    }
-
-    points[offset * 3] = x
-    points[offset * 3 + 1] = -halfHeight
-    points[offset * 3 + 2] = hashSigned(offset * 1.7) * depth
-    offset += 1
-  }
-
-  for (let row = 1; row < rows - 1; row += 1) {
-    const y = halfHeight - (row / Math.max(1, rows - 1)) * height
-    points[offset * 3] = -halfWidth
-    points[offset * 3 + 1] = y
-    points[offset * 3 + 2] = hashSigned(offset * 1.7) * depth
-    offset += 1
-
-    points[offset * 3] = halfWidth
-    points[offset * 3 + 1] = y
-    points[offset * 3 + 2] = hashSigned(offset * 1.7) * depth
-    offset += 1
-  }
-
-  return points
-}
-
 export function generateViewportGridPoints(
   width: number,
   height: number,
@@ -514,25 +461,6 @@ type StackTransitionMappingOptions = {
   verticalJitter: number
 }
 
-export function flattenStackPointsForTransition(source: Float32Array, count: number) {
-  const fitted = fitPointCount(source, count)
-  const flattened = new Float32Array(count * 3)
-
-  for (let index = 0; index < count; index += 1) {
-    const offset = index * 3
-    const centeredY = fitted[offset + 1] - STACK_CUBE_CENTER_Y
-
-    flattened[offset] =
-      fitted[offset] * 0.56 + hashSigned((index + 1) * 0.77) * 0.042
-    flattened[offset + 1] =
-      centeredY * 0.46 + hashSigned((index + 1) * 1.11) * 0.034
-    flattened[offset + 2] =
-      fitted[offset + 2] * 0.18 + hashSigned((index + 1) * 1.49) * 0.072
-  }
-
-  return flattened
-}
-
 export function mapTransitionPointsToStack(
   source: Float32Array,
   count: number,
@@ -599,7 +527,6 @@ export function generateStackSceneData(
     ambientPoints,
     skillPoints,
     skills: skillData,
-    cubeSegments: createCubeSegments(STACK_CUBE_SIZE, STACK_CUBE_CENTER_Y),
     gridSegments: createGridSegments(STACK_CUBE_SIZE, STACK_CUBE_CENTER_Y, STACK_CUBE_DIVISIONS),
   }
 }

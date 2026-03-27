@@ -101,14 +101,6 @@ export type LfoConfig = {
 
 export type LfoBank = readonly [LfoConfig, LfoConfig, LfoConfig]
 
-export type StackCluster = {
-  name: string
-  slug: string
-  weight: number
-  colorHint: string
-  skills: string[]
-}
-
 export type StackSkillGroup = 'ai' | 'design' | 'engineering' | 'tooling' | 'audio'
 
 export type StackSkillSpec = {

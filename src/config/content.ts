@@ -43,14 +43,6 @@ export const stackGroupPalette: Record<StackSkillGroup, string> = {
   audio: '#b7b2ac',
 }
 
-export const stackGroupLabels: Record<StackSkillGroup, string> = {
-  ai: 'AI',
-  design: 'Design',
-  engineering: 'Engineering',
-  tooling: 'Tooling',
-  audio: 'Audio',
-}
-
 export const stackSkillSpecs: StackSkillSpec[] = [
   { label: 'LLM', group: 'ai', densityTier: 10 },
   { label: 'n8n', group: 'ai', densityTier: 6 },
