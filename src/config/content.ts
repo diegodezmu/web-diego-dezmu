@@ -21,12 +21,12 @@ export const sectionLabels: Record<AppSection, string> = {
 
 export const siteContent = {
   displayName: 'DIEGO DEZMU',
-  microDisplayName: 'D. DEZMU',
+  microDisplayName: 'D.DEZMU',
   rolePrimary: 'AI BUILDER',
   roleSecondary: 'PRODUCT DESIGNER',
   aboutTitle: 'ABOUT',
   aboutParagraphs: [
-    'Diego is an AI builder with a foundation in software development, product design and audio engineering.',
+    'Diego Dezmu is an AI builder with a foundation in software development, product design and audio engineering.',
     '"My multidisciplinary background taught me to think in systems: optimize signals, remove noise, and ensure the output is clean. For over a decade of career I applied that same logic to every framework, from designing mobile apps to immersive audiovisual experiences, audio interfaces, workflows or any kind of solution.',
     '"Today I am currently specialized in generative AI, working at the intersection of solution design and intelligent systems, agentic architectures, and automations that connect work ecosystems."',
     '"I combine design thinking with the technical ability to build with AI. I do not need to translate between teams. I speak both languages."',
