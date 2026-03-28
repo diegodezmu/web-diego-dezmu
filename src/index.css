@@ -11,19 +11,15 @@
   --color-light-highlight: #ffffff;
   --color-light-secondary: #808080;
   --color-light-off: #3e3e3e;
-  --color-line: rgba(209, 209, 209, 0.82);
-  --color-border: rgba(255, 255, 255, 0.06);
   --font-display: 'Michroma', 'Avenir Next', 'Segoe UI', sans-serif;
   --font-body: 'Heebo', 'Inter', 'Segoe UI', sans-serif;
   --frame-margin-desktop: 72px;
   --frame-margin-tablet: 48px;
   --frame-margin-mobile: 40px;
   --frame-margin: var(--frame-margin-desktop);
-  --header-offset: 72px;
   --title-size: 32px;
   --title-tracking: 0.45em;
   --menu-button-size: 20px;
-  --menu-button-hover-size: 24px;
   --menu-button-tracking: 0.5em;
   --logo-display-size: 48px;
   --logo-display-tracking: 0.5em;
@@ -140,11 +136,9 @@ p {
     --frame-margin: var(--frame-margin-mobile);
     --title-size: 26px;
     --menu-button-size: 16px;
-    --menu-button-hover-size: 20px;
     --logo-display-size: 21px;
     --logo-display-tracking: 0.5em;
     --role-size: 16px;
     --body-size: 15px;
-    --header-offset: 40px;
   }
 }
