@@ -5,28 +5,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    // The WebGL runtime is intentionally isolated in an async R3F chunk.
+    // Keep generic vendor splits, but let Vite own the scene graph chunking so
+    // the React.lazy SceneCanvas boundary stays fully async.
     // The default 500 kB warning is too low for this dedicated scene payload.
     chunkSizeWarningLimit: 900,
     rolldownOptions: {
       output: {
         manualChunks(id) {
-          if (
-            id.includes('/node_modules/three/') ||
-            id.includes('/three/build/') ||
-            id.includes('/three/src/')
-          ) {
-            return 'three-core'
-          }
-
-          if (id.includes('@react-three/fiber/dist/events-')) {
-            return 'r3f-events'
-          }
-
-          if (id.includes('@react-three/fiber')) {
-            return 'r3f-core'
-          }
-
           if (id.includes('/node_modules/gsap/')) {
             return 'gsap'
           }
