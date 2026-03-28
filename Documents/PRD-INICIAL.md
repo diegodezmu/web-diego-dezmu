@@ -1,3 +1,5 @@
+> ⚠️ Documento histórico — puede no reflejar el estado actual del proyecto
+
 # DESCRIPCIÓN
 Portffolio web responsive tipo web-shell con 5 páginas:
 - Home
@@ -168,5 +170,4 @@ Para realizar el proyecto Codex deberá hacer uso de sus skills:
 # IMPORTANTE
 - El portfolio está diseñado para verse bien en formato web, aunque finalmente sea responsive y haya versión mobile, es importante primero dejar bien la versión web y después adaptar a formatos más pequeños. 
 - La navegación e interacción ha de ser fluida y sin saltos. Dado que hay funcionalidades con efectos interactivos sobre la UI, habrá que plantear bien las capas de la web y hacer uso de prácticas profesionales para desarrollo de webGL.
-
 

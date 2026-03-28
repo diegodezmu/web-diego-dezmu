@@ -1,3 +1,5 @@
+> ⚠️ Documento histórico — puede no reflejar el estado actual del proyecto
+
 
 ## UI
 - **Se han actualizado estilos de color y tipografía en diseños de Figma. Revisar FIGMA-LINKS.3 y ajustar.**
@@ -106,4 +108,3 @@ Para la creación de este espacio usar las referencias de la carpeta "VISUAL-REF
 # Mobile
 - Los tamaños no están bien. Revisar Links de Figma en mobile y ajustar con fidelidad pantalla por pantalla. 
 - Al modificar el tamaño del viewport para chequear el responsiveness, hay flasheos blancos en pantalla. Averiguar porqué y solucionarlo.
-

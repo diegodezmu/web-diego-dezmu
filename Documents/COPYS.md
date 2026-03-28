@@ -1,4 +1,6 @@
 
+> ⚠️ Documento histórico — puede no reflejar el estado actual del proyecto
+
 # Display logo text
 Diego Dezmu
 

@@ -1,3 +1,5 @@
+> ⚠️ Documento histórico — puede no reflejar el estado actual del proyecto
+
 # Thread 1 Handoff
 
 ## Estado actual

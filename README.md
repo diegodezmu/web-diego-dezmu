@@ -2,6 +2,8 @@
 
 Interactive portfolio built with React, Vite, TypeScript, GSAP, Three.js, and React Three Fiber. The app mixes route-driven DOM content with a persistent particle scene that morphs across the main sections of the site.
 
+Current version: `4.2.0`
+
 ## Scripts
 
 ```bash
@@ -27,6 +29,7 @@ npm run preview
 - `src/scene`: particle system, stack embedding map, labels, and point generators
 - `src/config`: copy, curve definitions, and scene presets
 - `Material`: imported images and SVG assets
+- `Documents`: historical planning and handoff docs that may not reflect the current implementation
 - `Visual-references`: non-runtime visual references for design iteration
 
 ## Current Experience
@@ -34,7 +37,7 @@ npm run preview
 - `Home`: animated wordmark and role lockup over a Lissajous-based particle composition.
 - `About`: scroll-driven biography reveal with a responsive portrait loaded through `<picture>` and a particle-frame transition in the scene.
 - `Stack`: two-state interaction that morphs from the curve field into a 3D skill embedding map with orbit, inertia, touch gestures, zoom controls, and projected labels.
-- `Contact`: wheel/touch-driven reveal for the email block and social placeholders with an upward particle exit transition.
+- `Contact`: wheel/touch-driven reveal for the email block and social links with an upward particle exit transition.
 - `Global`: animated menu overlay, pagination controls, custom cursor for non-touch devices, capability detection, and non-WebGL fallback backgrounds.
 
 ## Content and Scene Tuning
@@ -46,7 +49,7 @@ npm run preview
 
 ## Update Log
 
-### `we-diego-dezmu-4`
+### `4.2.0`
 
 - Replaced the previous single About portrait asset with a responsive desktop/mobile pair: `Material/portrait-desktop.webp` and `Material/portrait-mobile.webp`.
 - Reworked the `About` section to use direct scroll progress, title-triggered wheel/touch control, and a responsive image frame.

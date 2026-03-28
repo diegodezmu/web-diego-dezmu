@@ -11,12 +11,17 @@ node_modules
 dist
 dist-ssr
 *.local
+Visual-references/
+
+# System files
+.DS_Store
+.AppleDouble
+._*
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj

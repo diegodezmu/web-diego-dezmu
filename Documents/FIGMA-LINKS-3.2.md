@@ -1,3 +1,5 @@
+> ⚠️ Documento histórico — puede no reflejar el estado actual del proyecto
+
 # Información
 Cuenta diegofmk92@gmail.com
 **Proyecto: aibysm - Portfolio - v2**
