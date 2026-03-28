@@ -8,6 +8,13 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
 }
 
+function isInteractiveTarget(target: EventTarget | null) {
+  return (
+    target instanceof Element &&
+    target.closest('a, button, [data-cursor="interactive"]') !== null
+  )
+}
+
 export function ContactPage() {
   const shellRef = useRef<HTMLElement | null>(null)
   const pointerState = useRef<{ active: boolean; y: number }>({
@@ -50,6 +57,10 @@ export function ContactPage() {
       ref={shellRef}
       className={styles.page}
       onPointerDown={(event) => {
+        if (isInteractiveTarget(event.target)) {
+          return
+        }
+
         pointerState.current = { active: true, y: event.clientY }
         event.currentTarget.setPointerCapture(event.pointerId)
       }}
@@ -64,8 +75,15 @@ export function ContactPage() {
         setContactProgress(clamp(current + deltaY * -0.009, 0, 1))
       }}
       onPointerUp={(event) => {
+        if (!pointerState.current.active) {
+          return
+        }
+
         pointerState.current.active = false
-        event.currentTarget.releasePointerCapture(event.pointerId)
+
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId)
+        }
       }}
       onPointerLeave={() => {
         pointerState.current.active = false
@@ -113,6 +131,8 @@ export function ContactPage() {
               key={link.label}
               className={styles.socialLink}
               href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
               data-cursor="interactive"
             >
               {link.label}
