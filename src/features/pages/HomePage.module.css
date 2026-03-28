@@ -1,3 +1,27 @@
+@keyframes wordmarkEntry {
+  from {
+    opacity: 0;
+    transform: translateY(15vh) translateX(-50%) translateY(-50%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%) translateY(-50%);
+  }
+}
+
+@keyframes roleGroupEntry {
+  from {
+    opacity: 0;
+    transform: translateY(10vh) translateX(-50%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+  }
+}
+
 .page {
   position: relative;
   width: 100%;
@@ -21,6 +45,7 @@
   text-shadow: var(--shadow-title);
   text-transform: uppercase;
   white-space: nowrap;
+  animation: wordmarkEntry 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 .roleGroup {
@@ -32,6 +57,7 @@
   justify-content: center;
   gap: 16px;
   width: calc(100% - var(--frame-margin-desktop) * 2);
+  animation: roleGroupEntry 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.14s both;
 }
 
 .roleText {
