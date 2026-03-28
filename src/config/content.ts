@@ -7,7 +7,7 @@ type ContactSocialLink = {
 
 const contactSocialLinks: ContactSocialLink[] = [
   { label: 'Instagram', href: 'https://www.instagram.com/ddezmu' },
-  { label: 'Twitter', href: 'https://x.com/ddezmu' },
+  { label: 'twitter / X', href: 'https://x.com/ddezmu' },
 ]
 
 export const sectionOrder: AppSection[] = ['home', 'about', 'stack', 'contact']

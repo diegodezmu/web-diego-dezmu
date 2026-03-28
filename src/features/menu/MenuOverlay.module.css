@@ -82,7 +82,7 @@
   letter-spacing: var(--menu-button-tracking);
   color: var(--color-light-primary);
   text-align: center;
-  text-shadow: var(--shadow-soft);
+  text-shadow: var(--shadow-title);
   text-transform: uppercase;
   transition:
     color var(--page-transition),
@@ -142,6 +142,7 @@
   font-size: var(--caption-size);
   line-height: 1.4;
   color: var(--color-light-secondary);
+  text-shadow: var(--shadow-title);
   pointer-events: auto;
 }
 
