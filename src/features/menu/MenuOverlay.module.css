@@ -9,6 +9,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  animation: panelFadeIn 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 .closeButton {
@@ -87,6 +88,23 @@
     color var(--page-transition),
     transform var(--page-transition);
   will-change: transform;
+  animation: itemSlideIn 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.08s both;
+}
+
+.linkButton:nth-child(1) {
+  animation-delay: 0.08s;
+}
+
+.linkButton:nth-child(2) {
+  animation-delay: 0.14s;
+}
+
+.linkButton:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.linkButton:nth-child(4) {
+  animation-delay: 0.26s;
 }
 
 .linkLabel {
@@ -131,6 +149,32 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 160ms ease;
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes itemSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(56px);
+    visibility: hidden;
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+  }
 }
 
 @keyframes closeToggleEnter {
