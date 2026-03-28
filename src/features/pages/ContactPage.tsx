@@ -1,5 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
-import { gsap } from 'gsap'
+import { useEffect, useRef, useState } from 'react'
 import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
 import { useAppStore } from '@/state/appStore'
@@ -16,7 +15,7 @@ export function ContactPage() {
     y: 0,
   })
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
-  const previousContentRevealKeyRef = useRef(contentRevealKey)
+  const [initialContentRevealKey] = useState(contentRevealKey)
   const contactProgress = useAppStore((state) => state.contactProgress)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
   const setContactProgress = useAppStore((state) => state.setContactProgress)
@@ -24,36 +23,6 @@ export function ContactPage() {
   useEffect(() => {
     setContactProgress(0)
   }, [setContactProgress])
-
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        `.${styles.titleBlock}`,
-        { autoAlpha: 0, y: '15vh' },
-        { autoAlpha: 1, y: 0, duration: 3, ease: 'power3.out' },
-      )
-    }, shellRef)
-
-    return () => ctx.revert()
-  }, [])
-
-  useLayoutEffect(() => {
-    if (contentRevealKey === previousContentRevealKeyRef.current) {
-      return
-    }
-
-    previousContentRevealKeyRef.current = contentRevealKey
-
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        `.${styles.titleBlock}`,
-        { autoAlpha: 0, y: 28 },
-        { autoAlpha: 1, y: 0, duration: 0.68, ease: 'power2.out' },
-      )
-    }, shellRef)
-
-    return () => ctx.revert()
-  }, [contentRevealKey])
 
   useEffect(() => {
     const element = shellRef.current
@@ -112,7 +81,16 @@ export function ContactPage() {
         onClick={() => setContactProgress(contactProgress < 0.5 ? 1 : 0)}
         data-cursor="interactive"
       >
-        <PageTitle as="span" className={styles.titleBlock} title={siteContent.contactTitle} />
+        <PageTitle
+          key={contentRevealKey}
+          as="span"
+          className={`${styles.titleBlock} ${
+            contentRevealKey === initialContentRevealKey
+              ? styles.titleBlockMount
+              : styles.titleBlockReveal
+          }`}
+          title={siteContent.contactTitle}
+        />
       </button>
 
       <div

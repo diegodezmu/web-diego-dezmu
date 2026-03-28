@@ -1,3 +1,27 @@
+@keyframes contactTitleEntry {
+  from {
+    opacity: 0;
+    transform: translateY(15vh);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes contactTitleReveal {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .page {
   position: relative;
   width: 100%;
@@ -23,6 +47,14 @@
 
 .titleBlock {
   text-shadow: var(--shadow-title);
+}
+
+.titleBlockMount {
+  animation: contactTitleEntry 3s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+.titleBlockReveal {
+  animation: contactTitleReveal 0.68s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 .linksBlock {
