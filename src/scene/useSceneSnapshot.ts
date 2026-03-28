@@ -63,12 +63,19 @@ function resolveCurveSceneState(
   })
 }
 
-function sphericalToCartesian(theta: number, phi: number, radius: number) {
-  return new THREE.Vector3(
+function setSphericalPosition(
+  target: THREE.Vector3,
+  theta: number,
+  phi: number,
+  radius: number,
+) {
+  target.set(
     radius * Math.sin(phi) * Math.cos(theta),
     radius * Math.cos(phi),
     radius * Math.sin(phi) * Math.sin(theta),
   )
+
+  return target
 }
 
 function hexToFloatColor(hex: string) {
@@ -356,6 +363,7 @@ export function useSceneSnapshot() {
   const stackZoomRef = useRef(stackZoom)
   const stackThetaRef = useRef(DEFAULT_STACK_THETA)
   const stackPhiRef = useRef(DEFAULT_STACK_PHI)
+  const orbitPositionRef = useRef(new THREE.Vector3())
   const modeStartedAtRef = useRef(0)
   const previousModeRef = useRef('')
   const stackResources = useMemo(() => {
@@ -563,7 +571,8 @@ export function useSceneSnapshot() {
       stackThetaRef.current += (stackCamera.thetaTarget - stackThetaRef.current) * orbitSmoothing
       stackPhiRef.current += (stackCamera.phiTarget - stackPhiRef.current) * orbitSmoothing
 
-      const orbitPosition = sphericalToCartesian(
+      const orbitPosition = setSphericalPosition(
+        orbitPositionRef.current,
         stackThetaRef.current,
         stackPhiRef.current,
         Math.max(DEFAULT_STACK_RADIUS, stackResources.pointCloudMetrics.radius * 3.35) *

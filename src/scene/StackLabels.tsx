@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { memo, useMemo, useRef } from 'react'
 import { Html } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -24,8 +24,10 @@ function clamp(value: number, min: number, max: number) {
 const FADE_DURATION = 0.9    // s
 const FADE_IN_DELAY = 1.8   // s
 const FADE_OUT_DELAY = 0   // s
+const LABEL_Z_INDEX_RANGE: [number, number] = [2, 0]
+const LABEL_STYLE = { color: 'var(--color-light-secondary)' } as const
 
-function ProjectedLabel({ skill, visibility }: ProjectedLabelProps) {
+function ProjectedLabelComponent({ skill, visibility }: ProjectedLabelProps) {
   const labelRef = useRef<HTMLSpanElement | null>(null)
   const smoothOpacityRef = useRef(0)
   const delayRef = useRef(0)
@@ -91,19 +93,21 @@ function ProjectedLabel({ skill, visibility }: ProjectedLabelProps) {
   })
 
   return (
-    <Html position={skill.labelAnchor} center transform={false} zIndexRange={[2, 0]}>
-      <span
-        ref={labelRef}
-        className={styles.label}
-        style={{ color: 'var(--color-light-secondary)' }}
-      >
+    <Html position={skill.labelAnchor} center transform={false} zIndexRange={LABEL_Z_INDEX_RANGE}>
+      <span ref={labelRef} className={styles.label} style={LABEL_STYLE}>
         {skill.text}
       </span>
     </Html>
   )
 }
 
-export function StackLabels({ skills, visibility }: StackLabelsProps) {
+const ProjectedLabel = memo(
+  ProjectedLabelComponent,
+  (previousProps, nextProps) =>
+    previousProps.skill === nextProps.skill && previousProps.visibility === nextProps.visibility,
+)
+
+function StackLabelsComponent({ skills, visibility }: StackLabelsProps) {
   const menuOpen = useAppStore((state) => state.menuOpen)
   const activeSection = useAppStore((state) => state.activeSection)
 
@@ -119,3 +123,10 @@ export function StackLabels({ skills, visibility }: StackLabelsProps) {
     </group>
   )
 }
+
+export const StackLabels = memo(
+  StackLabelsComponent,
+  (previousProps, nextProps) =>
+    previousProps.skills === nextProps.skills &&
+    previousProps.visibility === nextProps.visibility,
+)
