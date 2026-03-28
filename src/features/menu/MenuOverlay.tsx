@@ -15,10 +15,16 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
   const panelRef = useRef<HTMLDivElement | null>(null)
   const closeButtonRef = useRef<HTMLButtonElement | null>(null)
   const itemsRef = useRef<Array<HTMLButtonElement | null>>([])
+  const previousFocusedElementRef = useRef<HTMLElement | null>(null)
+  const shouldRestoreFocusRef = useRef(true)
   const setMenuOpen = useAppStore((state) => state.setMenuOpen)
   const exitClass = motion === 'exit' ? styles.exitHidden : ''
 
   useLayoutEffect(() => {
+    previousFocusedElementRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+    closeButtonRef.current?.focus({ preventScroll: true })
+
     const ctx = gsap.context(() => {
       gsap.fromTo(
         panelRef.current,
@@ -32,8 +38,43 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
       )
     }, panelRef)
 
-    return () => ctx.revert()
-  }, [])
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return
+      }
+
+      event.preventDefault()
+      shouldRestoreFocusRef.current = true
+      setMenuOpen(false)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      ctx.revert()
+
+      if (shouldRestoreFocusRef.current) {
+        const restoreFocus = () => {
+          const restoreTarget =
+            previousFocusedElementRef.current?.isConnected
+              ? previousFocusedElementRef.current
+              : document.querySelector<HTMLButtonElement>('button[aria-label="Open menu"]')
+
+          restoreTarget?.focus({ preventScroll: true })
+        }
+
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(restoreFocus)
+        })
+      }
+    }
+  }, [setMenuOpen])
+
+  const closeMenu = () => {
+    shouldRestoreFocusRef.current = true
+    setMenuOpen(false)
+  }
 
   return (
     <aside className={styles.overlay} aria-modal="true" role="dialog">
@@ -44,7 +85,7 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
           type="button"
           aria-label="Close menu"
           data-cursor="interactive"
-          onClick={() => setMenuOpen(false)}
+          onClick={closeMenu}
         >
           <span className={styles.closeLine} />
           <span className={styles.closeLine} />
@@ -65,6 +106,7 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
                 type="button"
                 data-cursor="interactive"
                 onClick={() => {
+                  shouldRestoreFocusRef.current = false
                   navigate(section === 'home' ? '/' : `/${section}`)
                   setMenuOpen(false)
                 }}
