@@ -3,9 +3,9 @@ import styles from './CustomCursor.module.css'
 
 export function CustomCursor() {
   const pointer = useAppStore((state) => state.pointer)
-  const capabilities = useAppStore((state) => state.capabilities)
+  const isTouch = useAppStore((state) => state.capabilities.isTouch)
 
-  if (capabilities.isTouch) {
+  if (isTouch) {
     return null
   }
 

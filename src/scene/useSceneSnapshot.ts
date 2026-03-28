@@ -261,8 +261,8 @@ function pixelsToWorld(px: number, viewportHeightPx: number, cameraZ: number, fo
 }
 
 export function useSceneSnapshot() {
-  const capabilities = useAppStore((state) => state.capabilities)
-  const deviceTier = capabilities.deviceTier
+  const deviceTier = useAppStore((state) => state.capabilities.deviceTier)
+  const reducedMotion = useAppStore((state) => state.capabilities.reducedMotion)
   const menuOpen = useAppStore((state) => state.menuOpen)
   const menuOverlayActive = useAppStore((state) => state.menuOverlayActive)
   const sceneMode = useAppStore((state) => state.sceneMode)
@@ -511,10 +511,10 @@ export function useSceneSnapshot() {
         gammaConfig,
         stackGammaPreset,
         elapsedTime,
-        capabilities.reducedMotion,
+        reducedMotion,
       )
 
-      if (!capabilities.reducedMotion && gammaScene.curve.animate) {
+      if (!reducedMotion && gammaScene.curve.animate) {
         stackPhaseRef.current += delta * gammaScene.curve.speed * Math.PI * 12
       }
 
@@ -544,12 +544,12 @@ export function useSceneSnapshot() {
       snapshot.opacity = lerp(gammaScene.particles.opacity, stackMapPreset.opacity, stackBlend)
       snapshot.orbit = lerp(
         gammaScene.particles.orbitMotion,
-        capabilities.reducedMotion ? 0 : 0.045,
+        reducedMotion ? 0 : 0.045,
         stackBlend,
       )
       snapshot.drift = lerp(
         gammaScene.particles.driftMotion,
-        capabilities.reducedMotion ? 0 : 0.040,
+        reducedMotion ? 0 : 0.040,
         stackBlend,
       )
       snapshot.recovery = lerp(gammaScene.particles.recovery, stackMapPreset.recovery, stackBlend)
@@ -559,7 +559,7 @@ export function useSceneSnapshot() {
       snapshot.blend = stackBlend
       snapshot.is3D = stackBlend > 0.04
 
-      const orbitSmoothing = capabilities.reducedMotion ? 0.2 : 0.1
+      const orbitSmoothing = reducedMotion ? 0.2 : 0.1
       stackThetaRef.current += (stackCamera.thetaTarget - stackThetaRef.current) * orbitSmoothing
       stackPhiRef.current += (stackCamera.phiTarget - stackPhiRef.current) * orbitSmoothing
 
@@ -590,10 +590,10 @@ export function useSceneSnapshot() {
             betaConfig,
             aboutPreset,
             elapsedTime,
-            capabilities.reducedMotion,
+            reducedMotion,
           )
 
-          if (!capabilities.reducedMotion && aboutScene.curve.animate) {
+          if (!reducedMotion && aboutScene.curve.animate) {
             aboutPhaseRef.current += delta * aboutScene.curve.speed * Math.PI * 12
           }
 
@@ -642,10 +642,10 @@ export function useSceneSnapshot() {
             deltaConfig,
             contactPreset,
             elapsedTime,
-            capabilities.reducedMotion,
+            reducedMotion,
           )
 
-          if (!capabilities.reducedMotion && contactScene.curve.animate) {
+          if (!reducedMotion && contactScene.curve.animate) {
             contactPhaseRef.current += delta * contactScene.curve.speed * Math.PI * 12
           }
 
@@ -721,10 +721,10 @@ export function useSceneSnapshot() {
             alphaConfig,
             homePreset,
             elapsedTime,
-            capabilities.reducedMotion,
+            reducedMotion,
           )
 
-          if (!capabilities.reducedMotion && homeScene.curve.animate) {
+          if (!reducedMotion && homeScene.curve.animate) {
             homePhaseRef.current += delta * homeScene.curve.speed * Math.PI * 12
           }
 

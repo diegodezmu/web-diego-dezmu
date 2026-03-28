@@ -73,7 +73,8 @@ export function AppShell() {
   const activeSection = useAppStore((state) => state.activeSection)
   const sceneMode = useAppStore((state) => state.sceneMode)
   const menuOpen = useAppStore((state) => state.menuOpen)
-  const capabilities = useAppStore((state) => state.capabilities)
+  const isTouch = useAppStore((state) => state.capabilities.isTouch)
+  const webglSupported = useAppStore((state) => state.capabilities.webglSupported)
   const contactProgress = useAppStore((state) => state.contactProgress)
   const stackProgress = useAppStore((state) => state.stackProgress)
   const setActiveSection = useAppStore((state) => state.setActiveSection)
@@ -163,7 +164,7 @@ export function AppShell() {
   })
 
   useEffect(() => {
-    if (capabilities.isTouch) {
+    if (isTouch) {
       return
     }
 
@@ -174,7 +175,7 @@ export function AppShell() {
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerleave', handlePointerLeave)
     }
-  }, [capabilities.isTouch])
+  }, [isTouch])
 
   const fallbackMode = menuOpen ? 'menuGrid' : sceneMode
   const menuVisible = menuOpen || overlayMounted
@@ -209,7 +210,7 @@ export function AppShell() {
         aria-hidden="true"
       />
 
-      {capabilities.webglSupported ? (
+      {webglSupported ? (
         <Suspense fallback={sceneFallback}>
           <SceneCanvas />
         </Suspense>
