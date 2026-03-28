@@ -1,13 +1,11 @@
-import { Suspense, lazy, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { Suspense, lazy, useDeferredValue, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { sectionLabels } from '@/config/content'
 import { Header } from '@/features/layout/Header'
 import { MenuOverlay } from '@/features/menu/MenuOverlay'
 import { PaginationControls } from '@/features/navigation/PaginationControls'
-import { AboutPage } from '@/features/pages/AboutPage'
 import { ContactPage } from '@/features/pages/ContactPage'
 import { HomePage } from '@/features/pages/HomePage'
-import { StackPage } from '@/features/pages/StackPage'
 import { CustomCursor } from '@/shared/components/CustomCursor'
 import type { AppSection } from '@/shared/types'
 import { detectCapabilities } from '@/shared/utils/device'
@@ -31,6 +29,12 @@ const CURSOR_INTERACTIVE_SELECTOR = [
 
 const SceneCanvas = lazy(() =>
   import('@/scene/SceneCanvas').then((module) => ({ default: module.SceneCanvas })),
+)
+const AboutPage = lazy(() =>
+  import('@/features/pages/AboutPage').then((module) => ({ default: module.AboutPage })),
+)
+const StackPage = lazy(() =>
+  import('@/features/pages/StackPage').then((module) => ({ default: module.StackPage })),
 )
 
 function clamp(value: number, min: number, max: number) {
@@ -70,6 +74,7 @@ function renderFallbackScene(
 
 export function AppShell() {
   const location = useLocation()
+  const deferredLocation = useDeferredValue(location)
   const activeSection = useAppStore((state) => state.activeSection)
   const sceneMode = useAppStore((state) => state.sceneMode)
   const menuOpen = useAppStore((state) => state.menuOpen)
@@ -223,13 +228,15 @@ export function AppShell() {
         aria-hidden={menuVisible}
       >
         <main className={styles.main}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/stack" element={<StackPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Suspense fallback={null}>
+            <Routes location={deferredLocation}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/stack" element={<StackPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
 
