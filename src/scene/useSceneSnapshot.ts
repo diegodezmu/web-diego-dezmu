@@ -33,6 +33,8 @@ type StackSceneResources = {
   pointCloudMetrics: ReturnType<typeof getPointCloudMetrics>
 }
 
+const HOLD_RADIUS_BOOST = 50
+
 function smoothstep(min: number, max: number, value: number) {
   const t = Math.min(1, Math.max(0, (value - min) / (max - min)))
   return t * t * (3 - 2 * t)
@@ -489,6 +491,7 @@ export function useSceneSnapshot() {
     const store = useAppStore.getState()
     const pointer = store.pointer
     const stackCamera = store.stackCamera
+    const holdRadiusBoost = store.holdStartTime === null ? 0 : HOLD_RADIUS_BOOST
     const elapsedTime = state.clock.elapsedTime
     const snapshot = snapshotRef.current
     const aboutBlend = smoothstep(0.01, 0.16, aboutScrollProgress)
@@ -781,6 +784,8 @@ export function useSceneSnapshot() {
         }
       }
     }
+
+    snapshot.pointerRadiusPx += holdRadiusBoost
   })
 
   return {
