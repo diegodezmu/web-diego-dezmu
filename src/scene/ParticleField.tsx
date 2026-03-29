@@ -5,12 +5,17 @@ import { useAppStore } from '@/state/appStore'
 import { applyRadialExplode } from '@/scene/radialExplode'
 import type { SceneSnapshot } from './types'
 
+/** Rango de dispersión inicial de las partículas.
+ *  Controla cuánto de lejos empiezan antes de converger.
+ *  0 = sin dispersión (comportamiento anterior).
+ *  Ajustar visualmente: 2-5 es el rango útil. */
+const INITIAL_SCATTER_RANGE = 3.0
+
 function createInitialPositions(maxCount: number) {
   const points = new Float32Array(maxCount * 3)
 
   for (let index = 0; index < points.length; index += 1) {
-    const seed = Math.sin((index + 1) * 12.9898) * 43758.5453
-    points[index] = ((seed - Math.floor(seed)) * 2 - 1) * 2
+    points[index] = (Math.random() - 0.5) * 2 * INITIAL_SCATTER_RANGE
   }
 
   return points
