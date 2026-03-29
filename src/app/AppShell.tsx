@@ -89,6 +89,8 @@ export function AppShell() {
   const setMenuOpen = useAppStore((state) => state.setMenuOpen)
   const setMenuOverlayActive = useAppStore((state) => state.setMenuOverlayActive)
   const setPointer = useAppStore((state) => state.setPointer)
+  const startHold = useAppStore((state) => state.startHold)
+  const endHold = useAppStore((state) => state.endHold)
   const [introFinished, setIntroFinished] = useState(false)
   const [overlayMounted, setOverlayMounted] = useState(menuOpen)
   const [overlayMotion, setOverlayMotion] = useState<'enter' | 'exit'>('enter')
@@ -208,7 +210,21 @@ export function AppShell() {
   }, [bumpContentRevealKey, menuVisible])
 
   return (
-    <div className={styles.shell} data-section={activeSection}>
+    <div
+      className={styles.shell}
+      data-section={activeSection}
+      onPointerDown={() => {
+        if (!isTouch) {
+          startHold()
+        }
+      }}
+      onPointerUp={() => {
+        endHold()
+      }}
+      onPointerLeave={() => {
+        endHold()
+      }}
+    >
       <div
         className={`${styles.sceneUnderlay} ${showAboutUnderlay ? styles.sceneUnderlayAbout : ''} ${showContactUnderlay ? styles.sceneUnderlayContact : ''}`}
         style={{

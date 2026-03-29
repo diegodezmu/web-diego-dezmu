@@ -20,12 +20,15 @@ type AppState = {
   contentRevealKey: number
   pointer: PointerState
   capabilities: Capabilities
+  holdStartTime: number | null
   aboutScrollProgress: number
   contactProgress: number
   stackStateTarget: 0 | 1
   stackProgress: number
   stackCamera: StackCameraState
   stackZoom: number
+  startHold: () => void
+  endHold: () => void
   setActiveSection: (section: AppSection) => void
   setSceneMode: (sceneMode: SceneMode) => void
   setMenuOpen: (open: boolean) => void
@@ -70,12 +73,15 @@ export const useAppStore = create<AppState>((set) => ({
   contentRevealKey: 0,
   pointer: defaultPointer,
   capabilities: defaultCapabilities,
+  holdStartTime: null,
   aboutScrollProgress: 0,
   contactProgress: 0,
   stackStateTarget: 0,
   stackProgress: 0,
   stackCamera: defaultStackCamera,
   stackZoom: 1,
+  startHold: () => set({ holdStartTime: Date.now() }),
+  endHold: () => set({ holdStartTime: null }),
   setActiveSection: (section) =>
     set({
       activeSection: section,
