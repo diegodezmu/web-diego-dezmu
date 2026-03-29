@@ -73,6 +73,7 @@ function SideButton({
 export function PaginationControls() {
   const activeSection = useAppStore((state) => state.activeSection)
   const menuOpen = useAppStore((state) => state.menuOpen)
+  const homeIntroClass = activeSection === 'home' ? styles.homeIntroNav : ''
 
   if (menuOpen) {
     return null
@@ -84,14 +85,14 @@ export function PaginationControls() {
 
   return (
     <>
-      <nav className={styles.desktopNav} aria-label="Section navigation">
+      <nav className={`${styles.desktopNav} ${homeIntroClass}`.trim()} aria-label="Section navigation">
         {desktopPrevious ? (
           <SideButton href={desktopPrevious.href} label={desktopPrevious.label} side="left" />
         ) : null}
         {next ? <SideButton href={next.href} label={next.label} side="right" /> : null}
       </nav>
 
-      <nav className={styles.mobileNav} aria-label="Section navigation">
+      <nav className={`${styles.mobileNav} ${homeIntroClass}`.trim()} aria-label="Section navigation">
         {mobilePrevious ? (
           <SideButton href={mobilePrevious.href} label={mobilePrevious.label} side="left" mobile />
         ) : (

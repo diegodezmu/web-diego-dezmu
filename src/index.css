@@ -32,6 +32,8 @@
   --micro-logo-tracking: 2px;
   --menu-toggle-size: 18px;
   --menu-toggle-tracking: 0.09em;
+  /* Delay de entrada de UI en home — sincroniza con recomposición de partículas */
+  --intro-delay: 2.2s;
   --page-transition: 420ms cubic-bezier(0.22, 1, 0.36, 1);
   --nav-enter-duration: 1500ms;
   --nav-enter-ease: cubic-bezier(0.25, 0.1, 0.25, 1);

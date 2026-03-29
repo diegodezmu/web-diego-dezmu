@@ -48,6 +48,7 @@
   text-transform: uppercase;
   white-space: nowrap;
   animation: wordmarkEntry 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: var(--intro-delay);
 }
 
 .roleGroup {
@@ -59,7 +60,8 @@
   justify-content: center;
   gap: 12px;
   width: calc(100% - var(--frame-margin-desktop) * 2);
-  animation: roleGroupEntry 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.14s both;
+  animation: roleGroupEntry 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: calc(var(--intro-delay) + 0.1s);
 }
 
 .roleText {

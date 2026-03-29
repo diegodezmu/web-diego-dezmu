@@ -263,7 +263,7 @@ export function AppShell() {
 
       <div className={`${styles.chromeLayer} ${menuVisible ? styles.layerHidden : ''}`} aria-hidden={menuVisible}>
         <Header />
-        <PaginationControls />
+        <PaginationControls key={activeSection} />
       </div>
 
       {menuVisible ? <MenuOverlay activeLabel={sectionLabels[activeSection]} motion={overlayMotion} /> : null}

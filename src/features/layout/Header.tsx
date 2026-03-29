@@ -84,7 +84,7 @@ export function Header() {
         {logoMounted ? <MicroLogo key={logoRenderKey} motion={logoMotion} /> : null}
       </div>
 
-      {!menuOpen ? <MenuToggle /> : null}
+      {!menuOpen ? <MenuToggle key={activeSection} /> : null}
     </header>
   )
 }

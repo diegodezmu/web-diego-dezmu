@@ -16,7 +16,7 @@
   transform: translateY(-50%);
   overflow: hidden;
   transition: color var(--page-transition), transform var(--page-transition);
-  animation: paginationDockIn var(--nav-enter-duration) var(--nav-enter-ease);
+  animation: paginationDockIn var(--nav-enter-duration) var(--nav-enter-ease) both;
   isolation: isolate;
 }
 
@@ -164,9 +164,14 @@
   width: 50%;
   height: 100%;
   color: var(--color-light-primary);
-  animation: paginationDockIn var(--nav-enter-duration) var(--nav-enter-ease);
+  animation: paginationDockIn var(--nav-enter-duration) var(--nav-enter-ease) both;
   overflow: hidden;
   isolation: isolate;
+}
+
+.homeIntroNav .sideButton,
+.homeIntroNav .mobileButton {
+  animation-delay: calc(var(--intro-delay) + 0.2s);
 }
 
 .mobileButtonLeft {
