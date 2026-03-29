@@ -84,6 +84,7 @@ export function ParticleField({
   const baseColorsRef = useRef(baseColors ?? createInitialColors(maxCount))
   const positionsRef = useRef(positions)
   const colorsRef = useRef(colors)
+  const holdColorMixRef = useRef<number>(0)
   const spriteTexture = useMemo(() => createSpriteTexture(), [])
   const pointerWorld = useMemo(() => new THREE.Vector3(), [])
   const rayTarget = useMemo(() => new THREE.Vector3(), [])
@@ -116,14 +117,15 @@ export function ParticleField({
       return
     }
 
-    let holdColorMix = 0
-
     if (holdStartTime !== null) {
       const elapsed = (Date.now() - holdStartTime) / 1000
-      holdColorMix = Math.min(1, elapsed / 0.3)
+      const targetMix = Math.min(1, elapsed / 0.3)
+      holdColorMixRef.current = targetMix
+    } else {
+      holdColorMixRef.current = Math.max(0, holdColorMixRef.current - delta / 0.6)
     }
 
-    material.color.setRGB(1, 1 - holdColorMix, 1 - holdColorMix)
+    material.color.setRGB(1, 1 - holdColorMixRef.current, 1 - holdColorMixRef.current)
 
     const blendTargets = snapshot.blendTargets
     const blend = snapshot.blend
