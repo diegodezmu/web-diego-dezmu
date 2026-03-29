@@ -1,5 +1,6 @@
 import { Suspense, lazy, useDeferredValue, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { IntroCurtain } from '@/app/IntroCurtain'
 import { sectionLabels } from '@/config/content'
 import { Header } from '@/features/layout/Header'
 import { MenuOverlay } from '@/features/menu/MenuOverlay'
@@ -88,6 +89,7 @@ export function AppShell() {
   const setMenuOpen = useAppStore((state) => state.setMenuOpen)
   const setMenuOverlayActive = useAppStore((state) => state.setMenuOverlayActive)
   const setPointer = useAppStore((state) => state.setPointer)
+  const [introFinished, setIntroFinished] = useState(false)
   const [overlayMounted, setOverlayMounted] = useState(menuOpen)
   const [overlayMotion, setOverlayMotion] = useState<'enter' | 'exit'>('enter')
   const overlayExitTimeoutRef = useRef<number | null>(null)
@@ -248,6 +250,7 @@ export function AppShell() {
       {menuVisible ? <MenuOverlay activeLabel={sectionLabels[activeSection]} motion={overlayMotion} /> : null}
 
       <CustomCursor />
+      {!introFinished ? <IntroCurtain onFinished={() => setIntroFinished(true)} /> : null}
     </div>
   )
 }
