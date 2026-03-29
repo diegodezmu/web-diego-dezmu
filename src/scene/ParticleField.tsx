@@ -252,7 +252,7 @@ export function ParticleField({
     }
 
     if (explodeAmountRef.current > 0) {
-      applyRadialExplode(positions, explodeAmountRef.current, 1.0, 0, 0, 0)
+      applyRadialExplode(positions, snapshot.targets, explodeAmountRef.current, 0, 0, 0)
       explodeAmountRef.current = Math.max(0, explodeAmountRef.current - delta * 1.5)
     }
 
