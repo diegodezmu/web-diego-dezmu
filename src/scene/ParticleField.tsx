@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useAppStore } from '@/state/appStore'
+import { applyHoldWavefold } from './holdWavefold'
 import type { SceneSnapshot } from './types'
 
 function createInitialPositions(maxCount: number) {
@@ -85,6 +86,7 @@ export function ParticleField({
   const positionsRef = useRef(positions)
   const colorsRef = useRef(colors)
   const holdColorMixRef = useRef<number>(0)
+  const holdWavefoldRef = useRef<number>(0)
   const spriteTexture = useMemo(() => createSpriteTexture(), [])
   const pointerWorld = useMemo(() => new THREE.Vector3(), [])
   const rayTarget = useMemo(() => new THREE.Vector3(), [])
@@ -235,6 +237,18 @@ export function ParticleField({
       colors[offset] = baseColors[offset] * intensity
       colors[offset + 1] = baseColors[offset + 1] * intensity
       colors[offset + 2] = baseColors[offset + 2] * intensity
+    }
+
+    if (holdStartTime !== null) {
+      const elapsed = (Date.now() - holdStartTime) / 1000
+      const targetAmount = Math.min(1, 1 - Math.exp(-elapsed / 1.2))
+      holdWavefoldRef.current = targetAmount
+    } else {
+      holdWavefoldRef.current = Math.max(0, holdWavefoldRef.current - delta / 1.0)
+    }
+
+    if (holdWavefoldRef.current > 0) {
+      applyHoldWavefold(positions, holdWavefoldRef.current, 3.0)
     }
 
     geometry.attributes.position.needsUpdate = true
