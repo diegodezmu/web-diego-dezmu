@@ -10,7 +10,7 @@ import {
   gammaConfig,
   menuGridConfig,
 } from '@/config/curves'
-import { stackGroupPalette, stackSkillSpecs } from '@/config/content'
+import { PARTICLE_BASE_COLOR, stackGroupPalette, stackSkillSpecs } from '@/config/content'
 import { getPresetForTier } from '@/config/scenePresets'
 import type { ScenePreset } from '@/shared/types'
 import {
@@ -78,9 +78,9 @@ function setSphericalPosition(
   return target
 }
 
-function hexToFloatColor(hex: string) {
-  const normalized = hex.startsWith('#') ? hex.slice(1) : hex
-  const value = Number.parseInt(normalized, 16)
+function hexToFloatColor(hex: string): [number, number, number] {
+  const clean = hex.replace(/^#/, '')
+  const value = Number.parseInt(clean.substring(0, 6), 16)
 
   return [
     ((value >> 16) & 255) / 255,
@@ -329,7 +329,7 @@ export function useSceneSnapshot() {
   const contactCount = Math.max(contactPreset.count, contactOutPreset.count)
   const maxCount = Math.max(homeCount, aboutCount, stackCount, contactCount, menuPreset.count)
   const neutralParticleColors = useMemo(
-    () => createSolidColorBuffer(maxCount, '#bfbfbf'),
+    () => createSolidColorBuffer(maxCount, PARTICLE_BASE_COLOR),
     [maxCount],
   )
   const stackColorBlend = stackProgress
