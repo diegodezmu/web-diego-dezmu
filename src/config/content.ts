@@ -5,9 +5,9 @@ type ContactSocialLink = {
   href: string
 }
 
-/** Color base de las partículas en todas las escenas.
+/** Tinte global de las partículas en todas las escenas.
  *  Formato #RRGGBB — editable con cualquier color picker. */
-export const PARTICLE_BASE_COLOR = '#ff1010'
+export const PARTICLE_TINT_COLOR = '#5367b9'
 
 const contactSocialLinks: ContactSocialLink[] = [
   { label: 'Instagram', href: 'https://www.instagram.com/ddezmu' },

@@ -10,7 +10,7 @@ import {
   gammaConfig,
   menuGridConfig,
 } from '@/config/curves'
-import { PARTICLE_BASE_COLOR, stackGroupPalette, stackSkillSpecs } from '@/config/content'
+import { stackGroupPalette, stackSkillSpecs } from '@/config/content'
 import { getPresetForTier } from '@/config/scenePresets'
 import type { ScenePreset } from '@/shared/types'
 import {
@@ -118,16 +118,6 @@ function createStackColorBuffer(
       colors[offset + 2] = blue
     }
   })
-
-  return colors
-}
-
-function blendColorBuffers(source: Float32Array, target: Float32Array, amount: number) {
-  const colors = new Float32Array(source.length)
-
-  for (let index = 0; index < source.length; index += 1) {
-    colors[index] = source[index] + (target[index] - source[index]) * amount
-  }
 
   return colors
 }
@@ -329,10 +319,9 @@ export function useSceneSnapshot() {
   const contactCount = Math.max(contactPreset.count, contactOutPreset.count)
   const maxCount = Math.max(homeCount, aboutCount, stackCount, contactCount, menuPreset.count)
   const neutralParticleColors = useMemo(
-    () => createSolidColorBuffer(maxCount, PARTICLE_BASE_COLOR),
+    () => createSolidColorBuffer(maxCount, '#ffffff'),
     [maxCount],
   )
-  const stackColorBlend = stackProgress
 
   const homeBufferRef = useRef(new Float32Array(homeCount * 3))
   const aboutBufferRef = useRef(new Float32Array(aboutCount * 3))
@@ -422,13 +411,7 @@ export function useSceneSnapshot() {
     [maxCount, menuCellWorld, menuWorld.height, menuWorld.width],
   )
 
-  const particleColors = useMemo(() => {
-    if (!isStackMode) {
-      return neutralParticleColors
-    }
-
-    return blendColorBuffers(neutralParticleColors, stackResources.particleColors, stackColorBlend)
-  }, [isStackMode, neutralParticleColors, stackColorBlend, stackResources])
+  const particleColors = neutralParticleColors
 
   const snapshotRef = useRef<SceneSnapshot>({
     count: maxCount,
@@ -537,11 +520,11 @@ export function useSceneSnapshot() {
         gammaScene.curve,
         stackPhaseRef.current,
         stackGammaWorld.width *
-          0.3 *
-          getAmplitudeRatio(gammaConfig.curve.ampX, gammaScene.curve.ampX),
+        0.3 *
+        getAmplitudeRatio(gammaConfig.curve.ampX, gammaScene.curve.ampX),
         stackGammaWorld.height *
-          0.26 *
-          getAmplitudeRatio(gammaConfig.curve.ampY, gammaScene.curve.ampY),
+        0.26 *
+        getAmplitudeRatio(gammaConfig.curve.ampY, gammaScene.curve.ampY),
         0.22,
         thickness,
       )

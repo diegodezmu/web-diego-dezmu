@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+import { PARTICLE_TINT_COLOR } from '@/config/content'
 import { useAppStore } from '@/state/appStore'
 import type { SceneSnapshot } from './types'
 
@@ -9,6 +10,7 @@ import type { SceneSnapshot } from './types'
  *  0 = sin dispersión (comportamiento anterior).
  *  Ajustar visualmente: 2-5 es el rango útil. */
 const INITIAL_SCATTER_RANGE = 3.0
+const HOLD_TARGET_GRAY = 0.243
 
 function createInitialPositions(maxCount: number) {
   const points = new Float32Array(maxCount * 3)
@@ -93,6 +95,7 @@ export function ParticleField({
   const explodeAmountRef = useRef<number>(0)
   const lastExplodeVersionRef = useRef<number>(0)
   const spriteTexture = useMemo(() => createSpriteTexture(), [])
+  const particleTintColor = useMemo(() => new THREE.Color(PARTICLE_TINT_COLOR), [])
   const pointerWorld = useMemo(() => new THREE.Vector3(), [])
   const rayTarget = useMemo(() => new THREE.Vector3(), [])
   const rayDirection = useMemo(() => new THREE.Vector3(), [])
@@ -135,10 +138,14 @@ export function ParticleField({
         holdColorMixRef.current = Math.max(0, holdColorMixRef.current - delta / 0.6)
       }
 
-      material.color.setRGB(1, 1 - holdColorMixRef.current, 1 - holdColorMixRef.current)
+      material.color.setRGB(
+        THREE.MathUtils.lerp(particleTintColor.r, HOLD_TARGET_GRAY, holdColorMixRef.current),
+        THREE.MathUtils.lerp(particleTintColor.g, HOLD_TARGET_GRAY, holdColorMixRef.current),
+        THREE.MathUtils.lerp(particleTintColor.b, HOLD_TARGET_GRAY, holdColorMixRef.current),
+      )
     } else {
       holdColorMixRef.current = 0
-      material.color.setRGB(1, 1, 1)
+      material.color.copy(particleTintColor)
     }
 
     const blendTargets = snapshot.blendTargets
