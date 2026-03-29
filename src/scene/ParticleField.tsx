@@ -113,21 +113,26 @@ export function ParticleField({
     const baseColors = baseColorsRef.current
     const geometry = geometryRef.current
     const material = materialRef.current
-    const { pointer, capabilities, holdStartTime } = useAppStore.getState()
+    const { pointer, capabilities, holdStartTime, sceneMode } = useAppStore.getState()
 
     if (!geometry || !material) {
       return
     }
 
-    if (holdStartTime !== null) {
-      const elapsed = (Date.now() - holdStartTime) / 1000
-      const targetMix = Math.min(1, elapsed / 0.3)
-      holdColorMixRef.current = targetMix
-    } else {
-      holdColorMixRef.current = Math.max(0, holdColorMixRef.current - delta / 0.6)
-    }
+    if (sceneMode === 'stackEmbeddingMap') {
+      if (holdStartTime !== null) {
+        const elapsed = (Date.now() - holdStartTime) / 1000
+        const targetMix = Math.min(1, elapsed / 0.3)
+        holdColorMixRef.current = targetMix
+      } else {
+        holdColorMixRef.current = Math.max(0, holdColorMixRef.current - delta / 0.6)
+      }
 
-    material.color.setRGB(1, 1 - holdColorMixRef.current, 1 - holdColorMixRef.current)
+      material.color.setRGB(1, 1 - holdColorMixRef.current, 1 - holdColorMixRef.current)
+    } else {
+      holdColorMixRef.current = 0
+      material.color.setRGB(1, 1, 1)
+    }
 
     const blendTargets = snapshot.blendTargets
     const blend = snapshot.blend
