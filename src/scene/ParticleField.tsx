@@ -86,7 +86,8 @@ export function ParticleField({
   const positionsRef = useRef(positions)
   const colorsRef = useRef(colors)
   const holdColorMixRef = useRef<number>(0)
-  const holdDistortionRef = useRef<number>(0)
+  const explodeAmountRef = useRef<number>(0)
+  const lastExplodeVersionRef = useRef<number>(0)
   const spriteTexture = useMemo(() => createSpriteTexture(), [])
   const pointerWorld = useMemo(() => new THREE.Vector3(), [])
   const rayTarget = useMemo(() => new THREE.Vector3(), [])
@@ -113,7 +114,8 @@ export function ParticleField({
     const baseColors = baseColorsRef.current
     const geometry = geometryRef.current
     const material = materialRef.current
-    const { pointer, capabilities, holdStartTime, sceneMode } = useAppStore.getState()
+    const { pointer, capabilities, holdStartTime, sceneMode, explodeVersion, explodeStrength } =
+      useAppStore.getState()
 
     if (!geometry || !material) {
       return
@@ -244,16 +246,14 @@ export function ParticleField({
       colors[offset + 2] = baseColors[offset + 2] * intensity
     }
 
-    if (holdStartTime !== null) {
-      const elapsed = (Date.now() - holdStartTime) / 1000
-      const targetAmount = Math.min(1, 1 - Math.exp(-elapsed / 1.2))
-      holdDistortionRef.current = targetAmount
-    } else {
-      holdDistortionRef.current = Math.max(0, holdDistortionRef.current - delta / 1.0)
+    if (explodeVersion !== lastExplodeVersionRef.current) {
+      explodeAmountRef.current = explodeStrength
+      lastExplodeVersionRef.current = explodeVersion
     }
 
-    if (holdDistortionRef.current > 0) {
-      applyRadialExplode(positions, holdDistortionRef.current, 2.0, 0, 0, 0)
+    if (explodeAmountRef.current > 0) {
+      applyRadialExplode(positions, explodeAmountRef.current, 1.0, 0, 0, 0)
+      explodeAmountRef.current = Math.max(0, explodeAmountRef.current - delta * 1.5)
     }
 
     geometry.attributes.position.needsUpdate = true

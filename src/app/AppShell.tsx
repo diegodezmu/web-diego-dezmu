@@ -2,6 +2,7 @@ import { Suspense, lazy, useDeferredValue, useEffect, useEffectEvent, useRef, us
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { IntroCurtain } from '@/app/IntroCurtain'
 import { sectionLabels } from '@/config/content'
+import { EXPLODE_PRESETS } from '@/config/scenePresets'
 import { Header } from '@/features/layout/Header'
 import { MenuOverlay } from '@/features/menu/MenuOverlay'
 import { PaginationControls } from '@/features/navigation/PaginationControls'
@@ -91,6 +92,7 @@ export function AppShell() {
   const setPointer = useAppStore((state) => state.setPointer)
   const startHold = useAppStore((state) => state.startHold)
   const endHold = useAppStore((state) => state.endHold)
+  const triggerExplode = useAppStore((state) => state.triggerExplode)
   const [introFinished, setIntroFinished] = useState(false)
   const [overlayMounted, setOverlayMounted] = useState(menuOpen)
   const [overlayMotion, setOverlayMotion] = useState<'enter' | 'exit'>('enter')
@@ -125,8 +127,9 @@ export function AppShell() {
   useEffect(() => {
     const section = pathToSection[location.pathname as keyof typeof pathToSection] ?? 'home'
     setActiveSection(section)
+    triggerExplode(EXPLODE_PRESETS[section]?.strength ?? 0)
     setMenuOpen(false)
-  }, [location.pathname, setActiveSection, setMenuOpen])
+  }, [location.pathname, setActiveSection, setMenuOpen, triggerExplode])
 
   useEffect(() => {
     let animationFrame = 0

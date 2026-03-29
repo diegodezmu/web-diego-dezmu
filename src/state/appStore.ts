@@ -21,6 +21,8 @@ type AppState = {
   pointer: PointerState
   capabilities: Capabilities
   holdStartTime: number | null
+  explodeVersion: number
+  explodeStrength: number
   aboutScrollProgress: number
   contactProgress: number
   stackStateTarget: 0 | 1
@@ -29,6 +31,7 @@ type AppState = {
   stackZoom: number
   startHold: () => void
   endHold: () => void
+  triggerExplode: (strength: number) => void
   setActiveSection: (section: AppSection) => void
   setSceneMode: (sceneMode: SceneMode) => void
   setMenuOpen: (open: boolean) => void
@@ -74,6 +77,8 @@ export const useAppStore = create<AppState>((set) => ({
   pointer: defaultPointer,
   capabilities: defaultCapabilities,
   holdStartTime: null,
+  explodeVersion: 0,
+  explodeStrength: 0,
   aboutScrollProgress: 0,
   contactProgress: 0,
   stackStateTarget: 0,
@@ -82,6 +87,11 @@ export const useAppStore = create<AppState>((set) => ({
   stackZoom: 1,
   startHold: () => set({ holdStartTime: Date.now() }),
   endHold: () => set({ holdStartTime: null }),
+  triggerExplode: (explodeStrength) =>
+    set((state) => ({
+      explodeStrength,
+      explodeVersion: state.explodeVersion + 1,
+    })),
   setActiveSection: (section) =>
     set({
       activeSection: section,
