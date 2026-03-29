@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { sectionLabels, sectionOrder } from '@/config/content'
 import { ChevronLeftIcon, ChevronRightIcon } from '@/shared/components/InlineIcons'
@@ -72,9 +73,10 @@ function SideButton({
 
 export function PaginationControls() {
   const activeSection = useAppStore((state) => state.activeSection)
-  const introCompleted = useAppStore((state) => state.introCompleted)
   const menuOpen = useAppStore((state) => state.menuOpen)
-  const homeIntroClass = activeSection === 'home' && !introCompleted ? styles.homeIntroNav : ''
+  const mountedDuringIntroRef = useRef(!useAppStore.getState().introCompleted)
+  const homeIntroClass =
+    activeSection === 'home' && mountedDuringIntroRef.current ? styles.homeIntroNav : ''
 
   if (menuOpen) {
     return null

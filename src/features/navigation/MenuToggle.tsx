@@ -1,11 +1,12 @@
+import { useRef } from 'react'
 import { useAppStore } from '@/state/appStore'
 import styles from './MenuToggle.module.css'
 
 export function MenuToggle() {
   const activeSection = useAppStore((state) => state.activeSection)
-  const introCompleted = useAppStore((state) => state.introCompleted)
   const setMenuOpen = useAppStore((state) => state.setMenuOpen)
-  const shouldDelayHomeIntro = activeSection === 'home' && !introCompleted
+  const mountedDuringIntroRef = useRef(!useAppStore.getState().introCompleted)
+  const shouldDelayHomeIntro = activeSection === 'home' && mountedDuringIntroRef.current
 
   return (
     <button
