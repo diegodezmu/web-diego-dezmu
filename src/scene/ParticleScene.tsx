@@ -14,7 +14,6 @@ export function ParticleScene() {
         key={scene.maxCount}
         maxCount={scene.maxCount}
         snapshotRef={scene.snapshotRef}
-        baseColors={scene.particleColors}
       />
       <StackEmbeddingMap
         active={scene.isStackMode}

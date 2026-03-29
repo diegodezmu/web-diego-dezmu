@@ -16,10 +16,10 @@ export const EXPLODE_PRESETS: Record<
     introStrength?: number
   }
 > = {
-  home: { strength: 3, introStrength: 8 },
-  about: { strength: 6 },
-  stack: { strength: 4 },
-  contact: { strength: 5 },
+  home: { strength: 1, introStrength: 8 },
+  about: { strength: 1 },
+  stack: { strength: 1 },
+  contact: { strength: 1 },
 }
 
 export const scenePresets: Record<SceneMode, ScenePreset> = {
@@ -41,6 +41,7 @@ export const scenePresets: Record<SceneMode, ScenePreset> = {
     count: aboutMarginGridConfig.count,
     sizePx: aboutMarginGridConfig.sizePx,
     opacity: aboutMarginGridConfig.opacity,
+    glowBoost: aboutMarginGridConfig.glowBoost,
     strokeWeightPx: 1,
     jitterPx: 0,
     haloPx: aboutMarginGridConfig.haloPx,
@@ -86,6 +87,7 @@ export const scenePresets: Record<SceneMode, ScenePreset> = {
     count: menuGridConfig.count,
     sizePx: menuGridConfig.sizePx,
     opacity: menuGridConfig.opacity,
+    glowBoost: menuGridConfig.glowBoost,
     strokeWeightPx: 1,
     jitterPx: 0,
     haloPx: menuGridConfig.haloPx,

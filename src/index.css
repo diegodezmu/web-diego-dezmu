@@ -6,7 +6,7 @@
 
 :root {
   --color-dark: #000000;
-  --color-dark-hover: #0f0f0f;
+  --color-dark-hover: #121212;
   --color-accent: var(--color-light-highlight);
   --color-light-primary: #d1d1d1;
   --color-light-highlight: #ffffff;
@@ -33,7 +33,7 @@
   --menu-toggle-size: 18px;
   --menu-toggle-tracking: 0.09em;
   /* Delay de entrada de UI en home — sincroniza con recomposición de partículas */
-  --intro-delay: 2.2s;
+  --intro-delay: 5s;
   --page-transition: 420ms cubic-bezier(0.22, 1, 0.36, 1);
   --nav-enter-duration: 1500ms;
   --nav-enter-ease: cubic-bezier(0.25, 0.1, 0.25, 1);

@@ -58,6 +58,7 @@ export type ParticleTuning = {
   count: number
   sizePx: number
   opacity: number
+  glowBoost: number
   strokeWeightPx: number
   jitterPx: number
   haloPx: number
@@ -71,6 +72,7 @@ export type ParticleTuning = {
 export type LfoParticleKey =
   | 'sizePx'
   | 'opacity'
+  | 'glowBoost'
   | 'strokeWeightPx'
   | 'jitterPx'
   | 'haloPx'

@@ -42,6 +42,7 @@ const CURVE_PARAMETER_RANGES: Record<LfoCurveKey, NumericRange> = {
 const PARTICLE_PARAMETER_RANGES: Record<LfoParticleKey, NumericRange> = {
   sizePx: { min: 0, max: 8 },
   opacity: { min: 0, max: 1 },
+  glowBoost: { min: 0, max: 2 },
   strokeWeightPx: { min: 0, max: 3 },
   jitterPx: { min: 0, max: 20 },
   haloPx: { min: 0, max: 24 },

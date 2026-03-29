@@ -20,6 +20,7 @@ export type SceneSnapshot = {
   blend: number
   sizePx: number
   opacity: number
+  glowBoost: number
   orbit: number
   drift: number
   recovery: number

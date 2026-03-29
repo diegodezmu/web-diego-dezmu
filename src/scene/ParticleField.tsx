@@ -10,7 +10,7 @@ import type { SceneSnapshot } from './types'
  *  0 = sin dispersión (comportamiento anterior).
  *  Ajustar visualmente: 2-5 es el rango útil. */
 const INITIAL_SCATTER_RANGE = 3.0
-const HOLD_TARGET_GRAY = 0.243
+const HOLD_TARGET_OPACITY = 0.5
 
 function createInitialPositions(maxCount: number) {
   const points = new Float32Array(maxCount * 3)
@@ -66,7 +66,6 @@ function createSpriteTexture() {
 type ParticleFieldProps = {
   maxCount: number
   snapshotRef: React.MutableRefObject<SceneSnapshot>
-  baseColors?: Float32Array
   initialPositions?: Float32Array | null
   livePositionsRef?: React.MutableRefObject<Float32Array | null>
 }
@@ -74,7 +73,6 @@ type ParticleFieldProps = {
 export function ParticleField({
   maxCount,
   snapshotRef,
-  baseColors,
   initialPositions,
   livePositionsRef,
 }: ParticleFieldProps) {
@@ -88,10 +86,9 @@ export function ParticleField({
     return createInitialPositions(maxCount)
   }, [initialPositions, maxCount])
   const colors = useMemo(() => createInitialColors(maxCount), [maxCount])
-  const baseColorsRef = useRef(baseColors ?? createInitialColors(maxCount))
   const positionsRef = useRef(positions)
   const colorsRef = useRef(colors)
-  const holdColorMixRef = useRef<number>(0)
+  const holdMixRef = useRef<number>(0)
   const explodeAmountRef = useRef<number>(0)
   const lastExplodeVersionRef = useRef<number>(0)
   const spriteTexture = useMemo(() => createSpriteTexture(), [])
@@ -101,10 +98,6 @@ export function ParticleField({
   const rayDirection = useMemo(() => new THREE.Vector3(), [])
   const focusTarget = useMemo(() => new THREE.Vector3(), [])
   const { camera } = useThree()
-
-  useEffect(() => {
-    baseColorsRef.current = baseColors ?? createInitialColors(maxCount)
-  }, [baseColors, maxCount])
 
   useEffect(() => {
     if (!livePositionsRef) {
@@ -119,7 +112,6 @@ export function ParticleField({
     const positions = positionsRef.current
     const targets = snapshot.targets
     const colors = colorsRef.current
-    const baseColors = baseColorsRef.current
     const geometry = geometryRef.current
     const material = materialRef.current
     const { pointer, capabilities, holdStartTime, sceneMode, explodeVersion, explodeStrength } =
@@ -129,24 +121,24 @@ export function ParticleField({
       return
     }
 
+    material.color.copy(particleTintColor)
+
     if (sceneMode === 'stackEmbeddingMap') {
       if (holdStartTime !== null) {
         const elapsed = (Date.now() - holdStartTime) / 1000
         const targetMix = Math.min(1, elapsed / 0.3)
-        holdColorMixRef.current = targetMix
+        holdMixRef.current = targetMix
       } else {
-        holdColorMixRef.current = Math.max(0, holdColorMixRef.current - delta / 0.6)
+        holdMixRef.current = Math.max(0, holdMixRef.current - delta / 0.6)
       }
-
-      material.color.setRGB(
-        THREE.MathUtils.lerp(particleTintColor.r, HOLD_TARGET_GRAY, holdColorMixRef.current),
-        THREE.MathUtils.lerp(particleTintColor.g, HOLD_TARGET_GRAY, holdColorMixRef.current),
-        THREE.MathUtils.lerp(particleTintColor.b, HOLD_TARGET_GRAY, holdColorMixRef.current),
-      )
     } else {
-      holdColorMixRef.current = 0
-      material.color.copy(particleTintColor)
+      holdMixRef.current = 0
     }
+
+    const effectiveOpacity =
+      sceneMode === 'stackEmbeddingMap'
+        ? THREE.MathUtils.lerp(snapshot.opacity, HOLD_TARGET_OPACITY, holdMixRef.current)
+        : snapshot.opacity
 
     const blendTargets = snapshot.blendTargets
     const blend = snapshot.blend
@@ -264,10 +256,10 @@ export function ParticleField({
         positions[offset + 1] = currentY
         positions[offset + 2] = currentZ
 
-        const intensity = snapshot.opacity + (1 - snapshot.opacity) * glow
-        colors[offset] = baseColors[offset] * intensity
-        colors[offset + 1] = baseColors[offset + 1] * intensity
-        colors[offset + 2] = baseColors[offset + 2] * intensity
+        const intensity = Math.min(1, effectiveOpacity * (1 + snapshot.glowBoost * glow))
+        colors[offset] = intensity
+        colors[offset + 1] = intensity
+        colors[offset + 2] = intensity
       }
 
       explodeAmountRef.current = Math.max(0, explodeAmt - delta * 1.5)
@@ -344,10 +336,10 @@ export function ParticleField({
         positions[offset + 1] = currentY
         positions[offset + 2] = currentZ
 
-        const intensity = snapshot.opacity + (1 - snapshot.opacity) * glow
-        colors[offset] = baseColors[offset] * intensity
-        colors[offset + 1] = baseColors[offset + 1] * intensity
-        colors[offset + 2] = baseColors[offset + 2] * intensity
+        const intensity = Math.min(1, effectiveOpacity * (1 + snapshot.glowBoost * glow))
+        colors[offset] = intensity
+        colors[offset + 1] = intensity
+        colors[offset + 2] = intensity
       }
     }
 

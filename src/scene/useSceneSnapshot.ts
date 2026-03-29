@@ -10,7 +10,7 @@ import {
   gammaConfig,
   menuGridConfig,
 } from '@/config/curves'
-import { stackGroupPalette, stackSkillSpecs } from '@/config/content'
+import { stackSkillSpecs } from '@/config/content'
 import { getPresetForTier } from '@/config/scenePresets'
 import type { ScenePreset } from '@/shared/types'
 import {
@@ -28,7 +28,6 @@ import type { SceneSnapshot, StackSceneData } from './types'
 
 type StackSceneResources = {
   sceneData: StackSceneData
-  particleColors: Float32Array
   particleTargets: Float32Array
   pointCloudMetrics: ReturnType<typeof getPointCloudMetrics>
 }
@@ -76,50 +75,6 @@ function setSphericalPosition(
   )
 
   return target
-}
-
-function hexToFloatColor(hex: string): [number, number, number] {
-  const clean = hex.replace(/^#/, '')
-  const value = Number.parseInt(clean.substring(0, 6), 16)
-
-  return [
-    ((value >> 16) & 255) / 255,
-    ((value >> 8) & 255) / 255,
-    (value & 255) / 255,
-  ] as const
-}
-
-function createSolidColorBuffer(count: number, hex: string) {
-  const colors = new Float32Array(count * 3)
-  const [red, green, blue] = hexToFloatColor(hex)
-
-  for (let index = 0; index < count; index += 1) {
-    const offset = index * 3
-    colors[offset] = red
-    colors[offset + 1] = green
-    colors[offset + 2] = blue
-  }
-
-  return colors
-}
-
-function createStackColorBuffer(
-  pointCount: number,
-  skills: ReturnType<typeof generateStackSceneData>['skills'],
-) {
-  const colors = new Float32Array(pointCount * 3)
-
-  skills.forEach((skill) => {
-    const [red, green, blue] = hexToFloatColor(stackGroupPalette[skill.group])
-    for (let pointIndex = skill.pointRange[0]; pointIndex < skill.pointRange[1]; pointIndex += 1) {
-      const offset = pointIndex * 3
-      colors[offset] = red
-      colors[offset + 1] = green
-      colors[offset + 2] = blue
-    }
-  })
-
-  return colors
 }
 
 function fillFittedTriplets(target: Float32Array, source: Float32Array, count: number) {
@@ -318,11 +273,6 @@ export function useSceneSnapshot() {
   const stackCount = Math.max(stackGammaPreset.count, stackMapPreset.count)
   const contactCount = Math.max(contactPreset.count, contactOutPreset.count)
   const maxCount = Math.max(homeCount, aboutCount, stackCount, contactCount, menuPreset.count)
-  const neutralParticleColors = useMemo(
-    () => createSolidColorBuffer(maxCount, '#ffffff'),
-    [maxCount],
-  )
-
   const homeBufferRef = useRef(new Float32Array(homeCount * 3))
   const aboutBufferRef = useRef(new Float32Array(aboutCount * 3))
   const stackBufferRef = useRef(new Float32Array(stackGammaPreset.count * 3))
@@ -357,14 +307,9 @@ export function useSceneSnapshot() {
   const previousModeRef = useRef('')
   const stackResources = useMemo(() => {
     const sceneData = generateStackSceneData(stackMapPreset.count, stackSkillSpecs)
-    const stackColorSource = createStackColorBuffer(
-      sceneData.skillPoints.length / 3,
-      sceneData.skills,
-    )
 
     return {
       sceneData,
-      particleColors: fitPointCount(stackColorSource, maxCount),
       particleTargets: fitPointCount(sceneData.skillPoints, maxCount),
       pointCloudMetrics: getPointCloudMetrics(sceneData.skillPoints),
     } satisfies StackSceneResources
@@ -411,8 +356,6 @@ export function useSceneSnapshot() {
     [maxCount, menuCellWorld, menuWorld.height, menuWorld.width],
   )
 
-  const particleColors = neutralParticleColors
-
   const snapshotRef = useRef<SceneSnapshot>({
     count: maxCount,
     targets: new Float32Array(maxCount * 3),
@@ -420,6 +363,7 @@ export function useSceneSnapshot() {
     blend: 0,
     sizePx: homePreset.sizePx,
     opacity: homePreset.opacity,
+    glowBoost: homePreset.glowBoost,
     orbit: homePreset.orbitMotion,
     drift: homePreset.driftMotion,
     recovery: homePreset.recovery,
@@ -533,6 +477,11 @@ export function useSceneSnapshot() {
       snapshot.count = maxCount
       snapshot.sizePx = lerp(gammaScene.particles.sizePx, stackMapPreset.sizePx, stackBlend)
       snapshot.opacity = lerp(gammaScene.particles.opacity, stackMapPreset.opacity, stackBlend)
+      snapshot.glowBoost = lerp(
+        gammaScene.particles.glowBoost,
+        stackMapPreset.glowBoost,
+        stackBlend,
+      )
       snapshot.orbit = lerp(
         gammaScene.particles.orbitMotion,
         reducedMotion ? 0 : 0.045,
@@ -612,6 +561,11 @@ export function useSceneSnapshot() {
           snapshot.count = maxCount
           snapshot.sizePx = lerp(aboutScene.particles.sizePx, framePreset.sizePx, aboutBlend)
           snapshot.opacity = lerp(aboutScene.particles.opacity, framePreset.opacity, aboutBlend)
+          snapshot.glowBoost = lerp(
+            aboutScene.particles.glowBoost,
+            framePreset.glowBoost,
+            aboutBlend,
+          )
           snapshot.orbit = aboutScene.particles.orbitMotion
           snapshot.drift = aboutScene.particles.driftMotion
           snapshot.recovery = lerp(aboutScene.particles.recovery, framePreset.recovery, aboutBlend)
@@ -673,6 +627,7 @@ export function useSceneSnapshot() {
           snapshot.count = maxCount
           snapshot.sizePx = contactScene.particles.sizePx
           snapshot.opacity = contactScene.particles.opacity
+          snapshot.glowBoost = contactScene.particles.glowBoost
           snapshot.orbit = contactScene.particles.orbitMotion
           snapshot.drift = contactScene.particles.driftMotion
           snapshot.recovery = contactScene.particles.recovery
@@ -693,6 +648,7 @@ export function useSceneSnapshot() {
           snapshot.count = maxCount
           snapshot.sizePx = menuPreset.sizePx
           snapshot.opacity = menuPreset.opacity
+          snapshot.glowBoost = menuPreset.glowBoost
           snapshot.orbit = menuPreset.orbitMotion
           snapshot.drift = menuPreset.driftMotion
           snapshot.recovery = menuPreset.recovery
@@ -749,6 +705,7 @@ export function useSceneSnapshot() {
           snapshot.count = maxCount
           snapshot.sizePx = homeScene.particles.sizePx + moveIn * 2.1
           snapshot.opacity = Math.min(1, homeScene.particles.opacity + moveIn * 0.24)
+          snapshot.glowBoost = homeScene.particles.glowBoost
           snapshot.orbit = homeScene.particles.orbitMotion
           snapshot.drift = homeScene.particles.driftMotion
           snapshot.recovery = homeScene.particles.recovery
@@ -770,7 +727,6 @@ export function useSceneSnapshot() {
   return {
     isStackMode,
     maxCount,
-    particleColors,
     snapshotRef,
     stackProgress,
     stackResources,

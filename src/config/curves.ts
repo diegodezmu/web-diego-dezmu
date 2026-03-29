@@ -10,6 +10,7 @@ type ParticleSpec = {
   count: number
   sizePx: number
   opacityPct: number
+  glowBoostPct: number
   strokeWeightPx: number
   jitterPx: number
   haloPx: number
@@ -25,6 +26,7 @@ function createParticleTuning(spec: ParticleSpec): ParticleTuning {
     count: spec.count,
     sizePx: spec.sizePx,
     opacity: spec.opacityPct / 100,
+    glowBoost: spec.glowBoostPct / 100,
     strokeWeightPx: spec.strokeWeightPx,
     jitterPx: spec.jitterPx,
     haloPx: spec.haloPx,
@@ -62,9 +64,10 @@ function createLfoBank(firstLfo?: Partial<LfoConfig>): LfoBank {
 }
 
 const sharedCurveParticles = createParticleTuning({
-  count: 4500,
+  count: 15000,
   sizePx: 3.3,
-  opacityPct: 60,
+  opacityPct: 80,
+  glowBoostPct: 100,
   strokeWeightPx: 1,
   jitterPx: 10,
   haloPx: 12,
@@ -149,12 +152,13 @@ export const deltaConfig: CurveSceneConfig = {
     animate: true,
   },
   particles: createParticleTuning({
-    count: 4500,
+    count: 15000,
     sizePx: 3.5,
-    opacityPct: 75,
+    opacityPct: 80,
+    glowBoostPct: 100,
     strokeWeightPx: 1,
     jitterPx: 10,
-    haloPx: 10,
+    haloPx: 12,
     pointerRadiusPx: 60,
     pointerStrength: 10,
     driftMotionPct: 0,
@@ -166,10 +170,11 @@ export const deltaConfig: CurveSceneConfig = {
 
 export const aboutMarginGridConfig = {
   cellPx: 18,
-  count: 4200,
+  count: 15000,
   sizePx: 3.1,
-  opacity: 0.48,
-  haloPx: 6,
+  opacity: 80,
+  glowBoost: 100,
+  haloPx: 12,
   pointerRadiusPx: 60,
   pointerStrength: 0.1,
   recovery: 0.012,
@@ -179,6 +184,7 @@ export const stackEmbeddingMapConfig: ParticleTuning = {
   count: 15000,
   sizePx: 3.5,
   opacity: 0.8,
+  glowBoost: 100,
   strokeWeightPx: 1,
   jitterPx: 0,
   haloPx: 10,
@@ -191,10 +197,11 @@ export const stackEmbeddingMapConfig: ParticleTuning = {
 
 export const menuGridConfig = {
   cellPx: 18,
-  count: 4200,
+  count: 15000,
   sizePx: 3.1,
-  opacity: 0.48,
-  haloPx: 6,
+  opacity: 80,
+  glowBoost: 100,
+  haloPx: 12,
   pointerRadiusPx: 192,
   pointerStrength: 0.1,
   recovery: 0.008,
