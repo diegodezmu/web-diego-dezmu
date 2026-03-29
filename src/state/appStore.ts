@@ -17,6 +17,7 @@ type AppState = {
   sceneMode: SceneMode
   menuOpen: boolean
   menuOverlayActive: boolean
+  introCompleted: boolean
   contentRevealKey: number
   pointer: PointerState
   capabilities: Capabilities
@@ -31,6 +32,7 @@ type AppState = {
   stackZoom: number
   startHold: () => void
   endHold: () => void
+  completeIntro: () => void
   triggerExplode: (strength: number) => void
   setActiveSection: (section: AppSection) => void
   setSceneMode: (sceneMode: SceneMode) => void
@@ -73,6 +75,7 @@ export const useAppStore = create<AppState>((set) => ({
   sceneMode: 'homeAlpha',
   menuOpen: false,
   menuOverlayActive: false,
+  introCompleted: false,
   contentRevealKey: 0,
   pointer: defaultPointer,
   capabilities: defaultCapabilities,
@@ -87,6 +90,7 @@ export const useAppStore = create<AppState>((set) => ({
   stackZoom: 1,
   startHold: () => set({ holdStartTime: Date.now() }),
   endHold: () => set({ holdStartTime: null }),
+  completeIntro: () => set({ introCompleted: true }),
   triggerExplode: (explodeStrength) =>
     set((state) => ({
       explodeStrength,

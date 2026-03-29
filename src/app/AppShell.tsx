@@ -80,6 +80,7 @@ export function AppShell() {
   const activeSection = useAppStore((state) => state.activeSection)
   const sceneMode = useAppStore((state) => state.sceneMode)
   const menuOpen = useAppStore((state) => state.menuOpen)
+  const introCompleted = useAppStore((state) => state.introCompleted)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
   const webglSupported = useAppStore((state) => state.capabilities.webglSupported)
   const contactProgress = useAppStore((state) => state.contactProgress)
@@ -92,6 +93,7 @@ export function AppShell() {
   const setPointer = useAppStore((state) => state.setPointer)
   const startHold = useAppStore((state) => state.startHold)
   const endHold = useAppStore((state) => state.endHold)
+  const completeIntro = useAppStore((state) => state.completeIntro)
   const triggerExplode = useAppStore((state) => state.triggerExplode)
   const [introFinished, setIntroFinished] = useState(false)
   const [overlayMounted, setOverlayMounted] = useState(menuOpen)
@@ -125,9 +127,32 @@ export function AppShell() {
   }, [])
 
   useEffect(() => {
+    if (introCompleted) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      completeIntro()
+    }, 3000)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [completeIntro, introCompleted])
+
+  useEffect(() => {
     const section = pathToSection[location.pathname as keyof typeof pathToSection] ?? 'home'
+    const { introCompleted } = useAppStore.getState()
+    const preset = EXPLODE_PRESETS[section]
+    const isIntro = section === 'home' && !introCompleted
+    const strength = preset
+      ? isIntro
+        ? (preset.introStrength ?? preset.strength)
+        : preset.strength
+      : 0
+
     setActiveSection(section)
-    triggerExplode(EXPLODE_PRESETS[section]?.strength ?? 0)
+    triggerExplode(strength)
     setMenuOpen(false)
   }, [location.pathname, setActiveSection, setMenuOpen, triggerExplode])
 

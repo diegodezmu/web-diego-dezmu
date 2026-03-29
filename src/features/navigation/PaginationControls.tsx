@@ -72,8 +72,9 @@ function SideButton({
 
 export function PaginationControls() {
   const activeSection = useAppStore((state) => state.activeSection)
+  const introCompleted = useAppStore((state) => state.introCompleted)
   const menuOpen = useAppStore((state) => state.menuOpen)
-  const homeIntroClass = activeSection === 'home' ? styles.homeIntroNav : ''
+  const homeIntroClass = activeSection === 'home' && !introCompleted ? styles.homeIntroNav : ''
 
   if (menuOpen) {
     return null

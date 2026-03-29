@@ -9,11 +9,17 @@ import {
 } from '@/config/curves'
 import type { AppSection, DeviceTier, SceneMode, ScenePreset } from '@/shared/types'
 
-export const EXPLODE_PRESETS: Record<string, { strength: number }> = {
-  home: { strength: 1.5 },
-  about: { strength: 1.2 },
-  stack: { strength: 0.8 },
-  contact: { strength: 1.0 },
+export const EXPLODE_PRESETS: Record<
+  string,
+  {
+    strength: number
+    introStrength?: number
+  }
+> = {
+  home: { strength: 3, introStrength: 8 },
+  about: { strength: 6 },
+  stack: { strength: 4 },
+  contact: { strength: 5 },
 }
 
 export const scenePresets: Record<SceneMode, ScenePreset> = {
