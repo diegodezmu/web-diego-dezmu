@@ -110,11 +110,20 @@ export function ParticleField({
     const baseColors = baseColorsRef.current
     const geometry = geometryRef.current
     const material = materialRef.current
-    const { pointer, capabilities } = useAppStore.getState()
+    const { pointer, capabilities, holdStartTime } = useAppStore.getState()
 
     if (!geometry || !material) {
       return
     }
+
+    let holdColorMix = 0
+
+    if (holdStartTime !== null) {
+      const elapsed = (Date.now() - holdStartTime) / 1000
+      holdColorMix = Math.min(1, elapsed / 0.3)
+    }
+
+    material.color.setRGB(1, 1 - holdColorMix, 1 - holdColorMix)
 
     const blendTargets = snapshot.blendTargets
     const blend = snapshot.blend
