@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useAppStore } from '@/state/appStore'
-import { applyRadialExplode } from '@/scene/radialExplode'
 import type { SceneSnapshot } from './types'
 
 /** Rango de dispersión inicial de las partículas.
@@ -115,6 +114,7 @@ export function ParticleField({
   useFrame((state, delta) => {
     const snapshot = snapshotRef.current
     const positions = positionsRef.current
+    const targets = snapshot.targets
     const colors = colorsRef.current
     const baseColors = baseColorsRef.current
     const geometry = geometryRef.current
@@ -173,92 +173,175 @@ export function ParticleField({
       pointerWorld.copy(camera.position).addScaledVector(rayDirection, distance)
     }
 
-    for (let index = 0; index < snapshot.count; index += 1) {
-      const offset = index * 3
-      let targetX = snapshot.targets[offset]
-      let targetY = snapshot.targets[offset + 1]
-      let targetZ = snapshot.targets[offset + 2]
-
-      if (blendTargets) {
-        targetX += (blendTargets[offset] - targetX) * blend
-        targetY += (blendTargets[offset + 1] - targetY) * blend
-        targetZ += (blendTargets[offset + 2] - targetZ) * blend
-      }
-
-      if (snapshot.orbit > 0 && !capabilities.reducedMotion) {
-        const orbitPhase = state.clock.elapsedTime * 0.56 + index * 0.017
-        targetX += Math.sin(orbitPhase) * snapshot.orbit
-        targetY += Math.cos(orbitPhase * 1.14) * snapshot.orbit
-        if (snapshot.is3D) {
-          targetZ += Math.sin(orbitPhase * 0.82) * snapshot.orbit * 1.28
-        }
-      }
-
-      if (snapshot.drift > 0 && !capabilities.reducedMotion) {
-        const driftPhase = state.clock.elapsedTime * 0.16 + index * 0.011
-        targetX += Math.sin(driftPhase * 0.93) * snapshot.drift
-        targetY += Math.cos(driftPhase * 0.71 + index * 0.003) * snapshot.drift * 0.86
-        if (snapshot.is3D) {
-          targetZ += Math.sin(driftPhase * 0.58 + index * 0.005) * snapshot.drift * 0.82
-        }
-      }
-
-      if (hasSceneRotation) {
-        const rotatedY = targetY * cosX - targetZ * sinX
-        const rotatedZAfterX = targetY * sinX + targetZ * cosX
-        const rotatedXAfterY = targetX * cosY + rotatedZAfterX * sinY
-        const rotatedZAfterY = -targetX * sinY + rotatedZAfterX * cosY
-        const rotatedX = rotatedXAfterY * cosZ - rotatedY * sinZ
-        const rotatedYFinal = rotatedXAfterY * sinZ + rotatedY * cosZ
-
-        targetX = rotatedX
-        targetY = rotatedYFinal
-        targetZ = rotatedZAfterY
-      }
-
-      let currentX = positions[offset]
-      let currentY = positions[offset + 1]
-      let currentZ = positions[offset + 2]
-
-      currentX += (targetX - currentX) * lerpFactor
-      currentY += (targetY - currentY) * lerpFactor
-      currentZ += (targetZ - currentZ) * lerpFactor
-
-      let glow = 0
-
-      if (hasPointer) {
-        const deltaX = currentX - pointerWorld.x
-        const deltaY = currentY - pointerWorld.y
-        const deltaZ = snapshot.is3D ? currentZ - pointerWorld.z : 0
-        const distance = Math.hypot(deltaX, deltaY, deltaZ) || 1
-
-        if (distance < pointerRadiusWorld) {
-          glow = (1 - distance / pointerRadiusWorld) ** 2
-          const force = (glow * snapshot.pointerStrength) / distance
-          currentX += deltaX * force
-          currentY += deltaY * force
-          currentZ += deltaZ * force * 0.7
-        }
-      }
-
-      positions[offset] = currentX
-      positions[offset + 1] = currentY
-      positions[offset + 2] = currentZ
-
-      const intensity = snapshot.opacity + (1 - snapshot.opacity) * glow
-      colors[offset] = baseColors[offset] * intensity
-      colors[offset + 1] = baseColors[offset + 1] * intensity
-      colors[offset + 2] = baseColors[offset + 2] * intensity
-    }
-
     if (explodeVersion !== lastExplodeVersionRef.current) {
       explodeAmountRef.current = explodeStrength
       lastExplodeVersionRef.current = explodeVersion
     }
 
-    if (explodeAmountRef.current > 0) {
-      applyRadialExplode(positions, snapshot.targets, explodeAmountRef.current, 0, 0, 0)
-      explodeAmountRef.current = Math.max(0, explodeAmountRef.current - delta * 1.5)
+    const explodeAmt = explodeAmountRef.current
+
+    if (explodeAmt > 0) {
+      for (let index = 0; index < snapshot.count; index += 1) {
+        const offset = index * 3
+        let targetX = targets[offset]
+        let targetY = targets[offset + 1]
+        let targetZ = targets[offset + 2]
+
+        if (blendTargets) {
+          targetX += (blendTargets[offset] - targetX) * blend
+          targetY += (blendTargets[offset + 1] - targetY) * blend
+          targetZ += (blendTargets[offset + 2] - targetZ) * blend
+        }
+
+        if (snapshot.orbit > 0 && !capabilities.reducedMotion) {
+          const orbitPhase = state.clock.elapsedTime * 0.56 + index * 0.017
+          targetX += Math.sin(orbitPhase) * snapshot.orbit
+          targetY += Math.cos(orbitPhase * 1.14) * snapshot.orbit
+          if (snapshot.is3D) {
+            targetZ += Math.sin(orbitPhase * 0.82) * snapshot.orbit * 1.28
+          }
+        }
+
+        if (snapshot.drift > 0 && !capabilities.reducedMotion) {
+          const driftPhase = state.clock.elapsedTime * 0.16 + index * 0.011
+          targetX += Math.sin(driftPhase * 0.93) * snapshot.drift
+          targetY += Math.cos(driftPhase * 0.71 + index * 0.003) * snapshot.drift * 0.86
+          if (snapshot.is3D) {
+            targetZ += Math.sin(driftPhase * 0.58 + index * 0.005) * snapshot.drift * 0.82
+          }
+        }
+
+        if (hasSceneRotation) {
+          const rotatedY = targetY * cosX - targetZ * sinX
+          const rotatedZAfterX = targetY * sinX + targetZ * cosX
+          const rotatedXAfterY = targetX * cosY + rotatedZAfterX * sinY
+          const rotatedZAfterY = -targetX * sinY + rotatedZAfterX * cosY
+          const rotatedX = rotatedXAfterY * cosZ - rotatedY * sinZ
+          const rotatedYFinal = rotatedXAfterY * sinZ + rotatedY * cosZ
+
+          targetX = rotatedX
+          targetY = rotatedYFinal
+          targetZ = rotatedZAfterY
+        }
+
+        targetX += targetX * explodeAmt
+        targetY += targetY * explodeAmt
+        targetZ += targetZ * explodeAmt
+
+        let currentX = positions[offset]
+        let currentY = positions[offset + 1]
+        let currentZ = positions[offset + 2]
+
+        currentX += (targetX - currentX) * lerpFactor
+        currentY += (targetY - currentY) * lerpFactor
+        currentZ += (targetZ - currentZ) * lerpFactor
+
+        let glow = 0
+
+        if (hasPointer) {
+          const deltaX = currentX - pointerWorld.x
+          const deltaY = currentY - pointerWorld.y
+          const deltaZ = snapshot.is3D ? currentZ - pointerWorld.z : 0
+          const distance = Math.hypot(deltaX, deltaY, deltaZ) || 1
+
+          if (distance < pointerRadiusWorld) {
+            glow = (1 - distance / pointerRadiusWorld) ** 2
+            const force = (glow * snapshot.pointerStrength) / distance
+            currentX += deltaX * force
+            currentY += deltaY * force
+            currentZ += deltaZ * force * 0.7
+          }
+        }
+
+        positions[offset] = currentX
+        positions[offset + 1] = currentY
+        positions[offset + 2] = currentZ
+
+        const intensity = snapshot.opacity + (1 - snapshot.opacity) * glow
+        colors[offset] = baseColors[offset] * intensity
+        colors[offset + 1] = baseColors[offset + 1] * intensity
+        colors[offset + 2] = baseColors[offset + 2] * intensity
+      }
+
+      explodeAmountRef.current = Math.max(0, explodeAmt - delta * 1.5)
+    } else {
+      for (let index = 0; index < snapshot.count; index += 1) {
+        const offset = index * 3
+        let targetX = targets[offset]
+        let targetY = targets[offset + 1]
+        let targetZ = targets[offset + 2]
+
+        if (blendTargets) {
+          targetX += (blendTargets[offset] - targetX) * blend
+          targetY += (blendTargets[offset + 1] - targetY) * blend
+          targetZ += (blendTargets[offset + 2] - targetZ) * blend
+        }
+
+        if (snapshot.orbit > 0 && !capabilities.reducedMotion) {
+          const orbitPhase = state.clock.elapsedTime * 0.56 + index * 0.017
+          targetX += Math.sin(orbitPhase) * snapshot.orbit
+          targetY += Math.cos(orbitPhase * 1.14) * snapshot.orbit
+          if (snapshot.is3D) {
+            targetZ += Math.sin(orbitPhase * 0.82) * snapshot.orbit * 1.28
+          }
+        }
+
+        if (snapshot.drift > 0 && !capabilities.reducedMotion) {
+          const driftPhase = state.clock.elapsedTime * 0.16 + index * 0.011
+          targetX += Math.sin(driftPhase * 0.93) * snapshot.drift
+          targetY += Math.cos(driftPhase * 0.71 + index * 0.003) * snapshot.drift * 0.86
+          if (snapshot.is3D) {
+            targetZ += Math.sin(driftPhase * 0.58 + index * 0.005) * snapshot.drift * 0.82
+          }
+        }
+
+        if (hasSceneRotation) {
+          const rotatedY = targetY * cosX - targetZ * sinX
+          const rotatedZAfterX = targetY * sinX + targetZ * cosX
+          const rotatedXAfterY = targetX * cosY + rotatedZAfterX * sinY
+          const rotatedZAfterY = -targetX * sinY + rotatedZAfterX * cosY
+          const rotatedX = rotatedXAfterY * cosZ - rotatedY * sinZ
+          const rotatedYFinal = rotatedXAfterY * sinZ + rotatedY * cosZ
+
+          targetX = rotatedX
+          targetY = rotatedYFinal
+          targetZ = rotatedZAfterY
+        }
+
+        let currentX = positions[offset]
+        let currentY = positions[offset + 1]
+        let currentZ = positions[offset + 2]
+
+        currentX += (targetX - currentX) * lerpFactor
+        currentY += (targetY - currentY) * lerpFactor
+        currentZ += (targetZ - currentZ) * lerpFactor
+
+        let glow = 0
+
+        if (hasPointer) {
+          const deltaX = currentX - pointerWorld.x
+          const deltaY = currentY - pointerWorld.y
+          const deltaZ = snapshot.is3D ? currentZ - pointerWorld.z : 0
+          const distance = Math.hypot(deltaX, deltaY, deltaZ) || 1
+
+          if (distance < pointerRadiusWorld) {
+            glow = (1 - distance / pointerRadiusWorld) ** 2
+            const force = (glow * snapshot.pointerStrength) / distance
+            currentX += deltaX * force
+            currentY += deltaY * force
+            currentZ += deltaZ * force * 0.7
+          }
+        }
+
+        positions[offset] = currentX
+        positions[offset + 1] = currentY
+        positions[offset + 2] = currentZ
+
+        const intensity = snapshot.opacity + (1 - snapshot.opacity) * glow
+        colors[offset] = baseColors[offset] * intensity
+        colors[offset + 1] = baseColors[offset + 1] * intensity
+        colors[offset + 2] = baseColors[offset + 2] * intensity
+      }
     }
 
     geometry.attributes.position.needsUpdate = true
