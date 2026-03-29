@@ -7,7 +7,7 @@
   margin-left: 4px;
   color: var(--color-light-primary);
   animation: toggleEnter var(--nav-enter-duration) var(--nav-enter-ease) both;
-  transition: color var(--page-transition), transform var(--page-transition);
+  transition: color var(--page-transition);
   transform-origin: right center;
 }
 
@@ -18,7 +18,6 @@
 .toggle:hover,
 .toggle:focus-visible {
   color: var(--color-light-highlight);
-  transform: scale(1.2);
 }
 
 .word {
@@ -35,6 +34,12 @@
   text-shadow: var(--shadow-soft);
   background: rgb(0 0 0 / 1);
   border-radius: 100%;
+  transition: transform var(--page-transition);
+}
+
+.toggle:hover .word,
+.toggle:focus-visible .word {
+  transform: scale(1.2);
 }
 
 @keyframes toggleEnter {
