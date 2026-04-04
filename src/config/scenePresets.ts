@@ -16,10 +16,10 @@ export const EXPLODE_PRESETS: Record<
     introStrength?: number
   }
 > = {
-  home: { strength: 1, introStrength: 6.5 },
-  about: { strength: 1 },
-  stack: { strength: 1 },
-  contact: { strength: 1 },
+  home: { strength: 0, introStrength: 6.5 },
+  about: { strength: 0 },
+  stack: { strength: 0 },
+  contact: { strength: 0 },
 }
 
 export const scenePresets: Record<SceneMode, ScenePreset> = {

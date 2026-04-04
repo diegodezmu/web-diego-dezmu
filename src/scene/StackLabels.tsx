@@ -4,17 +4,17 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
 import { useAppStore } from '@/state/appStore'
-import type { StackSkillDatum } from './types'
+import type { SceneSnapshot, StackSkillDatum } from './types'
 import styles from './StackLabels.module.css'
 
 type StackLabelsProps = {
   skills: StackSkillDatum[]
-  visibility: number
+  snapshotRef: React.MutableRefObject<SceneSnapshot>
 }
 
 type ProjectedLabelProps = {
   skill: StackSkillDatum
-  visibility: number
+  snapshotRef: React.MutableRefObject<SceneSnapshot>
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -27,7 +27,7 @@ const FADE_OUT_DELAY = 0   // s
 const LABEL_Z_INDEX_RANGE: [number, number] = [2, 0]
 const LABEL_STYLE = { color: 'var(--color-light-secondary)' } as const
 
-function ProjectedLabelComponent({ skill, visibility }: ProjectedLabelProps) {
+function ProjectedLabelComponent({ skill, snapshotRef }: ProjectedLabelProps) {
   const labelRef = useRef<HTMLSpanElement | null>(null)
   const smoothOpacityRef = useRef(0)
   const delayRef = useRef(0)
@@ -44,6 +44,7 @@ function ProjectedLabelComponent({ skill, visibility }: ProjectedLabelProps) {
     if (!element) {
       return
     }
+    const visibility = snapshotRef.current.stackDisplayProgress
 
     projected.copy(anchor)
     const distance = projected.distanceTo(camera.position)
@@ -104,21 +105,21 @@ function ProjectedLabelComponent({ skill, visibility }: ProjectedLabelProps) {
 const ProjectedLabel = memo(
   ProjectedLabelComponent,
   (previousProps, nextProps) =>
-    previousProps.skill === nextProps.skill && previousProps.visibility === nextProps.visibility,
+    previousProps.skill === nextProps.skill && previousProps.snapshotRef === nextProps.snapshotRef,
 )
 
-function StackLabelsComponent({ skills, visibility }: StackLabelsProps) {
+function StackLabelsComponent({ skills, snapshotRef }: StackLabelsProps) {
   const menuOpen = useAppStore((state) => state.menuOpen)
   const activeSection = useAppStore((state) => state.activeSection)
 
-  if (menuOpen || activeSection !== 'stack' || visibility <= 0.02) {
+  if (menuOpen || activeSection !== 'stack') {
     return null
   }
 
   return (
     <group>
       {skills.map((skill) => (
-        <ProjectedLabel key={skill.id} skill={skill} visibility={visibility} />
+        <ProjectedLabel key={skill.id} skill={skill} snapshotRef={snapshotRef} />
       ))}
     </group>
   )
@@ -128,5 +129,5 @@ export const StackLabels = memo(
   StackLabelsComponent,
   (previousProps, nextProps) =>
     previousProps.skills === nextProps.skills &&
-    previousProps.visibility === nextProps.visibility,
+    previousProps.snapshotRef === nextProps.snapshotRef,
 )

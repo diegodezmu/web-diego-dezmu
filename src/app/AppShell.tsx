@@ -1,4 +1,4 @@
-import { Suspense, lazy, useDeferredValue, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { Suspense, lazy, useDeferredValue, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { IntroCurtain } from '@/app/IntroCurtain'
 import { PAGE_TITLE_EXIT_DURATION_MS } from '@/app/pageTransition'
@@ -147,7 +147,7 @@ export function AppShell() {
     }
   }, [completeIntro, introCompleted])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const section = pathToSection[location.pathname as keyof typeof pathToSection] ?? 'home'
     const { introCompleted } = useAppStore.getState()
     const preset = EXPLODE_PRESETS[section]
@@ -223,11 +223,24 @@ export function AppShell() {
 
   const fallbackMode = menuOpen ? 'menuGrid' : sceneMode
   const menuVisible = menuOpen || overlayMounted
-  const showAboutUnderlay = !menuOpen && activeSection === 'about'
-  const showContactUnderlay = !menuOpen && activeSection === 'contact'
-  const aboutContentBelowScene = !menuOpen && activeSection === 'about'
+  const renderedSection =
+    pathToSection[deferredLocation.pathname as keyof typeof pathToSection] ?? activeSection
+  const underlaySection =
+    !menuOpen && pageTransitionTarget
+      ? (pathToSection[pageTransitionTarget as keyof typeof pathToSection] ?? activeSection)
+      : activeSection
+  const showAboutUnderlay =
+    !menuOpen && (underlaySection === 'about' || renderedSection === 'about')
+  const targetContactUnderlayOpacity =
+    !menuOpen && underlaySection === 'contact' ? Math.min(1, 0.4 + contactProgress * 0.52) : 0
+  const renderedContactUnderlayOpacity =
+    !menuOpen && renderedSection === 'contact' ? Math.min(1, 0.4 + contactProgress * 0.52) : 0
+  const aboutContentBelowScene = !menuOpen && renderedSection === 'about'
   const aboutUnderlayOpacity = showAboutUnderlay ? 1 : 0
-  const contactUnderlayOpacity = Math.min(1, 0.4 + contactProgress * 0.52)
+  const contactUnderlayOpacity = Math.max(
+    targetContactUnderlayOpacity,
+    renderedContactUnderlayOpacity,
+  )
   const stackFallbackBlend = clamp(stackProgress, 0, 1)
   const sceneFallback = renderFallbackScene(
     fallbackMode,
@@ -286,10 +299,13 @@ export function AppShell() {
       }}
     >
       <div
-        className={`${styles.sceneUnderlay} ${showAboutUnderlay ? styles.sceneUnderlayAbout : ''} ${showContactUnderlay ? styles.sceneUnderlayContact : ''}`}
-        style={{
-          opacity: showAboutUnderlay ? aboutUnderlayOpacity : showContactUnderlay ? contactUnderlayOpacity : 0,
-        }}
+        className={`${styles.sceneUnderlay} ${styles.sceneUnderlayAbout}`}
+        style={{ opacity: aboutUnderlayOpacity }}
+        aria-hidden="true"
+      />
+      <div
+        className={`${styles.sceneUnderlay} ${styles.sceneUnderlayContact}`}
+        style={{ opacity: contactUnderlayOpacity }}
         aria-hidden="true"
       />
 

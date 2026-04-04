@@ -17,8 +17,8 @@ export function ParticleScene() {
       />
       <StackEmbeddingMap
         active={scene.isStackMode}
-        sceneData={scene.isStackMode && scene.stackProgress > 0.001 ? scene.stackResources.sceneData : null}
-        visibility={scene.stackProgress}
+        sceneData={scene.isStackMode ? scene.stackResources.sceneData : null}
+        snapshotRef={scene.snapshotRef}
       />
     </>
   )

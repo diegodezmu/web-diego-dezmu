@@ -18,6 +18,7 @@ export type SceneSnapshot = {
   targets: Float32Array
   blendTargets: Float32Array | null
   blend: number
+  stackDisplayProgress: number
   sizePx: number
   opacity: number
   glowBoost: number

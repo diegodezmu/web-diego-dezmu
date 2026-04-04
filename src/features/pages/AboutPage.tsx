@@ -5,6 +5,7 @@ import {
   PAGE_TITLE_EXIT_DISTANCE,
   PAGE_TITLE_EXIT_DURATION_S,
   PAGE_TITLE_EXIT_EASE,
+  PAGE_TITLE_SECONDARY_EXIT_DISTANCE,
 } from '@/app/pageTransition'
 import { assets } from '@/shared/assets'
 import { siteContent } from '@/config/content'
@@ -95,6 +96,7 @@ export function AboutPage() {
     }
 
     const titleBlock = shellRef.current?.querySelector<HTMLElement>(`.${styles.titleBlock}`)
+    const contentColumn = shellRef.current?.querySelector<HTMLElement>(`.${styles.contentColumn}`)
     const titleTween = titleBlock
       ? gsap.to(titleBlock, {
           autoAlpha: 0,
@@ -104,9 +106,19 @@ export function AboutPage() {
           overwrite: true,
         })
       : null
+    const contentTween = contentColumn
+      ? gsap.to(contentColumn, {
+          autoAlpha: 0,
+          y: PAGE_TITLE_SECONDARY_EXIT_DISTANCE,
+          duration: PAGE_TITLE_EXIT_DURATION_S * 0.92,
+          ease: PAGE_TITLE_EXIT_EASE,
+          overwrite: true,
+        })
+      : null
 
     return () => {
       titleTween?.kill()
+      contentTween?.kill()
     }
   }, [location.pathname, pageTransitionOrigin, pageTransitionPhase])
 

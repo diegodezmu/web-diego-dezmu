@@ -12,8 +12,8 @@ import {
   menuGridConfig,
 } from '@/config/curves'
 import { stackSkillSpecs } from '@/config/content'
-import { getPresetForTier } from '@/config/scenePresets'
-import type { AppSection, ScenePreset } from '@/shared/types'
+import { getPresetForTier, sectionToSceneMode } from '@/config/scenePresets'
+import type { AppSection, SceneMode, ScenePreset } from '@/shared/types'
 import {
   DEFAULT_STACK_PHI,
   DEFAULT_STACK_RADIUS,
@@ -42,8 +42,38 @@ function lerp(a: number, b: number, amount: number) {
   return a + (b - a) * amount
 }
 
-function sectionToPath(section: AppSection) {
-  return section === 'home' ? '/' : `/${section}`
+function pathToSection(path: string): AppSection {
+  switch (path) {
+    case '/about':
+      return 'about'
+    case '/stack':
+      return 'stack'
+    case '/contact':
+      return 'contact'
+    case '/':
+    default:
+      return 'home'
+  }
+}
+
+function resolveDisplayMode(
+  menuOpen: boolean,
+  pageTransitionTarget: string | null,
+  sceneMode: SceneMode,
+) {
+  if (menuOpen) {
+    return 'menuGrid' as const
+  }
+
+  if (sceneMode === 'stackEmbeddingMap' && pageTransitionTarget && pathToSection(pageTransitionTarget) !== 'stack') {
+    return 'stackEmbeddingMap'
+  }
+
+  if (pageTransitionTarget) {
+    return sectionToSceneMode(pathToSection(pageTransitionTarget))
+  }
+
+  return sceneMode
 }
 
 function getAmplitudeRatio(baseAmplitude: number, modulatedAmplitude: number) {
@@ -218,17 +248,15 @@ function pixelsToWorld(px: number, viewportHeightPx: number, cameraZ: number, fo
 }
 
 export function useSceneSnapshot() {
-  const activeSection = useAppStore((state) => state.activeSection)
   const deviceTier = useAppStore((state) => state.capabilities.deviceTier)
   const reducedMotion = useAppStore((state) => state.capabilities.reducedMotion)
   const menuOpen = useAppStore((state) => state.menuOpen)
-  const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
-  const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
+  const pageTransitionTarget = useAppStore((state) => state.pageTransitionTarget)
   const sceneMode = useAppStore((state) => state.sceneMode)
   const aboutScrollProgress = useAppStore((state) => state.aboutScrollProgress)
   const contactProgress = useAppStore((state) => state.contactProgress)
   const stackProgress = useAppStore((state) => state.stackProgress)
-  const displayMode = menuOpen ? 'menuGrid' : sceneMode
+  const displayMode = resolveDisplayMode(menuOpen, pageTransitionTarget, sceneMode)
   const isStackMode = displayMode === 'stackGamma' || displayMode === 'stackEmbeddingMap'
 
   const homePreset = getPresetForTier('homeAlpha', deviceTier)
@@ -312,8 +340,8 @@ export function useSceneSnapshot() {
   const orbitPositionRef = useRef(new THREE.Vector3())
   const modeStartedAtRef = useRef(0)
   const previousModeRef = useRef('')
-  const pageExitStartedAtRef = useRef(0)
-  const previousPageExitRef = useRef(false)
+  const stackExitStartedAtRef = useRef(0)
+  const previousStackExitRef = useRef(false)
   const stackResources = useMemo(() => {
     const sceneData = generateStackSceneData(stackMapPreset.count, stackSkillSpecs)
 
@@ -370,6 +398,7 @@ export function useSceneSnapshot() {
     targets: new Float32Array(maxCount * 3),
     blendTargets: null,
     blend: 0,
+    stackDisplayProgress: 0,
     sizePx: homePreset.sizePx,
     opacity: homePreset.opacity,
     glowBoost: homePreset.glowBoost,
@@ -428,12 +457,12 @@ export function useSceneSnapshot() {
     const elapsedTime = state.clock.elapsedTime
     const snapshot = snapshotRef.current
     const aboutBlend = smoothstep(0.01, 0.16, aboutScrollProgress)
-    const stackBlend = stackProgress
+    const stackExitToGammaActive =
+      sceneMode === 'stackEmbeddingMap' &&
+      !menuOpen &&
+      pageTransitionTarget !== null &&
+      pathToSection(pageTransitionTarget) !== 'stack'
     const contactBlend = smoothstep(0.01, 0.16, contactProgress)
-    const isPageExiting =
-      pageTransitionPhase === 'exiting' &&
-      pageTransitionOrigin === sectionToPath(activeSection) &&
-      !menuOpen
     const homeBuffer = homeBufferRef.current
     const aboutBuffer = aboutBufferRef.current
     const stackBuffer = stackBufferRef.current
@@ -445,17 +474,21 @@ export function useSceneSnapshot() {
       modeStartedAtRef.current = elapsedTime
     }
 
-    if (isPageExiting !== previousPageExitRef.current) {
-      previousPageExitRef.current = isPageExiting
-      pageExitStartedAtRef.current = elapsedTime
+    if (stackExitToGammaActive !== previousStackExitRef.current) {
+      previousStackExitRef.current = stackExitToGammaActive
+      stackExitStartedAtRef.current = elapsedTime
     }
 
     const modeElapsed = elapsedTime - modeStartedAtRef.current
-    const pageExitProgress = isPageExiting
-      ? smoothstep(0, PAGE_TITLE_EXIT_DURATION_S, elapsedTime - pageExitStartedAtRef.current)
+    const stackExitToGammaProgress = stackExitToGammaActive
+      ? smoothstep(0, PAGE_TITLE_EXIT_DURATION_S, elapsedTime - stackExitStartedAtRef.current)
       : 0
+    const stackBlend = stackExitToGammaActive
+      ? stackProgress * (1 - stackExitToGammaProgress)
+      : stackProgress
     snapshot.blendTargets = null
     snapshot.blend = 0
+    snapshot.stackDisplayProgress = stackBlend
     snapshot.is3D = false
     snapshot.rotationX = 0
     snapshot.rotationY = 0
@@ -742,8 +775,6 @@ export function useSceneSnapshot() {
         }
       }
     }
-
-    snapshot.opacity *= 1 - pageExitProgress
 
   })
 
