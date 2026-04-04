@@ -25,7 +25,7 @@ export const sectionLabels: Record<AppSection, string> = {
 
 export const siteContent = {
   displayName: 'DIEGO DEZMU',
-  microDisplayName: 'D.DEZMU',
+  microDisplayName: 'D',
   rolePrimary: 'AI BUILDER',
   roleSecondary: 'PRODUCT DESIGNER',
   aboutTitle: 'ABOUT',

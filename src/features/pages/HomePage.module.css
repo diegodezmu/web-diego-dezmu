@@ -75,7 +75,7 @@
   font-size: var(--role-size);
   line-height: 1.4;
   letter-spacing: 1.8px;
-  color: var(--color-light-secondary);
+  color: var(--color-light-primary);
   text-shadow: var(--shadow-soft);
   text-transform: uppercase;
   white-space: nowrap;
@@ -100,7 +100,7 @@
   }
 
   .roleText {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .roleLine {
