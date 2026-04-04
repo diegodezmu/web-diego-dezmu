@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { INTRO_CURTAIN_ENABLED } from '@/config/appFlags'
 import { sectionToSceneMode } from '@/config/scenePresets'
 import type { AppSection, Capabilities, PointerState, SceneMode } from '@/shared/types'
 
@@ -75,7 +76,7 @@ export const useAppStore = create<AppState>((set) => ({
   sceneMode: 'homeAlpha',
   menuOpen: false,
   menuOverlayActive: false,
-  introCompleted: false,
+  introCompleted: !INTRO_CURTAIN_ENABLED,
   contentRevealKey: 0,
   pointer: defaultPointer,
   capabilities: defaultCapabilities,

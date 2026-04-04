@@ -1,6 +1,7 @@
 import { Suspense, lazy, useDeferredValue, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { IntroCurtain } from '@/app/IntroCurtain'
+import { INTRO_CURTAIN_ENABLED } from '@/config/appFlags'
 import { sectionLabels } from '@/config/content'
 import { EXPLODE_PRESETS } from '@/config/scenePresets'
 import { Header } from '@/features/layout/Header'
@@ -95,7 +96,7 @@ export function AppShell() {
   const endHold = useAppStore((state) => state.endHold)
   const completeIntro = useAppStore((state) => state.completeIntro)
   const triggerExplode = useAppStore((state) => state.triggerExplode)
-  const [introFinished, setIntroFinished] = useState(false)
+  const [introFinished, setIntroFinished] = useState(!INTRO_CURTAIN_ENABLED)
   const [overlayMounted, setOverlayMounted] = useState(menuOpen)
   const [overlayMotion, setOverlayMotion] = useState<'enter' | 'exit'>('enter')
   const overlayExitTimeoutRef = useRef<number | null>(null)
@@ -294,7 +295,9 @@ export function AppShell() {
       {menuVisible ? <MenuOverlay activeLabel={sectionLabels[activeSection]} motion={overlayMotion} /> : null}
 
       <CustomCursor />
-      {!introFinished ? <IntroCurtain onFinished={() => setIntroFinished(true)} /> : null}
+      {INTRO_CURTAIN_ENABLED && !introFinished ? (
+        <IntroCurtain onFinished={() => setIntroFinished(true)} />
+      ) : null}
     </div>
   )
 }

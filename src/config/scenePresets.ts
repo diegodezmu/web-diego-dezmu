@@ -16,7 +16,7 @@ export const EXPLODE_PRESETS: Record<
     introStrength?: number
   }
 > = {
-  home: { strength: 1, introStrength: 8 },
+  home: { strength: 1, introStrength: 6.5 },
   about: { strength: 1 },
   stack: { strength: 1 },
   contact: { strength: 1 },
