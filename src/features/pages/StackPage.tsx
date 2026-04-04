@@ -1,5 +1,11 @@
 import { useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
+import { useLocation } from 'react-router-dom'
+import {
+  PAGE_TITLE_EXIT_DISTANCE,
+  PAGE_TITLE_EXIT_DURATION_S,
+  PAGE_TITLE_EXIT_EASE,
+} from '@/app/pageTransition'
 import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
 import { ZoomInIcon, ZoomOutIcon } from '@/shared/components/InlineIcons'
@@ -10,9 +16,12 @@ import { useStackTransition } from './stack/useStackTransition'
 import styles from './StackPage.module.css'
 
 export function StackPage() {
+  const location = useLocation()
   const shellRef = useRef<HTMLElement | null>(null)
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
   const previousContentRevealKeyRef = useRef(contentRevealKey)
+  const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
+  const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const stackProgress = useAppStore((state) => state.stackProgress)
   const { titleOpacity, titleShift } = useStackTransition(stackProgress)
   const {
@@ -62,6 +71,27 @@ export function StackPage() {
 
     return () => ctx.revert()
   }, [contentRevealKey])
+
+  useLayoutEffect(() => {
+    if (pageTransitionPhase !== 'exiting' || pageTransitionOrigin !== location.pathname) {
+      return
+    }
+
+    const titleBlock = shellRef.current?.querySelector<HTMLElement>(`.${styles.titleBlock}`)
+    const titleTween = titleBlock
+      ? gsap.to(titleBlock, {
+          autoAlpha: 0,
+          y: PAGE_TITLE_EXIT_DISTANCE,
+          duration: PAGE_TITLE_EXIT_DURATION_S,
+          ease: PAGE_TITLE_EXIT_EASE,
+          overwrite: true,
+        })
+      : null
+
+    return () => {
+      titleTween?.kill()
+    }
+  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase])
 
   return (
     <section ref={shellRef} className={styles.page}>

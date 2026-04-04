@@ -1,22 +1,33 @@
 import { useEffect, useRef, useState } from 'react'
 import { MenuToggle } from '@/features/navigation/MenuToggle'
 import { MicroLogo } from '@/shared/components/MicroLogo'
+import type { AppSection } from '@/shared/types'
 import { useAppStore } from '@/state/appStore'
 import styles from './Header.module.css'
 
-const ABOUT_LOGO_MOTION_MS = 1500
+const HEADER_LOGO_MOTION_MS = 1500
+
+function sectionToPath(section: AppSection) {
+  return section === 'home' ? '/' : `/${section}`
+}
 
 export function Header() {
-  const menuOpen = useAppStore((state) => state.menuOpen)
+  const menuOverlayActive = useAppStore((state) => state.menuOverlayActive)
   const activeSection = useAppStore((state) => state.activeSection)
-  const shouldShowLogo = !menuOpen && activeSection !== 'home'
-  const aboutLogoVisible = shouldShowLogo && activeSection === 'about'
+  const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
+  const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
+  const pageTransitionTarget = useAppStore((state) => state.pageTransitionTarget)
+  const isTransitioningHome =
+    pageTransitionPhase === 'exiting' &&
+    pageTransitionTarget === '/' &&
+    pageTransitionOrigin === sectionToPath(activeSection)
+  const shouldShowLogo = !menuOverlayActive && activeSection !== 'home' && !isTransitioningHome
   const [logoMounted, setLogoMounted] = useState(shouldShowLogo)
   const [logoRenderKey, setLogoRenderKey] = useState(0)
   const [logoMotion, setLogoMotion] = useState<'static' | 'enter' | 'exit'>(
-    aboutLogoVisible ? 'enter' : 'static',
+    shouldShowLogo ? 'enter' : 'static',
   )
-  const previousAboutLogoVisibleRef = useRef(aboutLogoVisible)
+  const previousLogoVisibleRef = useRef(shouldShowLogo)
   const exitTimeoutRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -29,7 +40,7 @@ export function Header() {
 
   useEffect(() => {
     let animationFrame = 0
-    const wasAboutLogoVisible = previousAboutLogoVisibleRef.current
+    const wasLogoVisible = previousLogoVisibleRef.current
 
     if (exitTimeoutRef.current !== null) {
       window.clearTimeout(exitTimeoutRef.current)
@@ -39,21 +50,14 @@ export function Header() {
     if (shouldShowLogo) {
       animationFrame = window.requestAnimationFrame(() => {
         setLogoMounted(true)
-        if (aboutLogoVisible) {
-          if (!wasAboutLogoVisible) {
-            setLogoRenderKey((currentKey) => currentKey + 1)
-          }
-          setLogoMotion('enter')
-          return
-        }
-
-        if (wasAboutLogoVisible) {
+        if (!wasLogoVisible) {
           setLogoRenderKey((currentKey) => currentKey + 1)
+          setLogoMotion('enter')
+        } else {
+          setLogoMotion('static')
         }
-
-        setLogoMotion('static')
       })
-    } else if (wasAboutLogoVisible) {
+    } else if (wasLogoVisible) {
       animationFrame = window.requestAnimationFrame(() => {
         setLogoMounted(true)
         setLogoRenderKey((currentKey) => currentKey + 1)
@@ -63,7 +67,7 @@ export function Header() {
         setLogoMounted(false)
         setLogoMotion('static')
         exitTimeoutRef.current = null
-      }, ABOUT_LOGO_MOTION_MS)
+      }, HEADER_LOGO_MOTION_MS)
     } else {
       animationFrame = window.requestAnimationFrame(() => {
         setLogoMounted(false)
@@ -71,12 +75,12 @@ export function Header() {
       })
     }
 
-    previousAboutLogoVisibleRef.current = aboutLogoVisible
+    previousLogoVisibleRef.current = shouldShowLogo
 
     return () => {
       window.cancelAnimationFrame(animationFrame)
     }
-  }, [aboutLogoVisible, shouldShowLogo])
+  }, [shouldShowLogo])
 
   return (
     <header className={styles.header}>
@@ -84,7 +88,7 @@ export function Header() {
         {logoMounted ? <MicroLogo key={logoRenderKey} motion={logoMotion} /> : null}
       </div>
 
-      {!menuOpen ? <MenuToggle key={activeSection} /> : null}
+      {!menuOverlayActive ? <MenuToggle /> : null}
     </header>
   )
 }

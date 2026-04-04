@@ -25,7 +25,7 @@ export const sectionLabels: Record<AppSection, string> = {
 
 export const siteContent = {
   displayName: 'DIEGO DEZMU',
-  microDisplayName: 'D',
+  microDisplayName: 'DIEGO.DEZMU',
   rolePrimary: 'AI BUILDER',
   roleSecondary: 'PRODUCT DESIGNER',
   aboutTitle: 'ABOUT',
@@ -39,7 +39,7 @@ export const siteContent = {
   contactTitle: 'CONTACT',
   contactEmail: 'diego.dezmu@gmail.com',
   contactSocialLinks,
-  menuCaption: '\u00a9 COPYWRIGHT DIEGO DEZMU 2026',
+  menuCaption: '© SITE BY DIEGO DEZMU 2026',
 }
 
 export const stackGroupPalette: Record<StackSkillGroup, string> = {

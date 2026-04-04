@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import { usePageTransitionNavigation } from '@/app/usePageTransitionNavigation'
 import { sectionLabels, sectionOrder, siteContent } from '@/config/content'
 import { useAppStore } from '@/state/appStore'
 import styles from './MenuOverlay.module.css'
@@ -10,7 +11,8 @@ type MenuOverlayProps = {
 }
 
 export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
-  const navigate = useNavigate()
+  const location = useLocation()
+  const navigateWithTransition = usePageTransitionNavigation()
   const closeButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusedElementRef = useRef<HTMLElement | null>(null)
   const shouldRestoreFocusRef = useRef(true)
@@ -87,7 +89,11 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
                 data-cursor="interactive"
                 onClick={() => {
                   shouldRestoreFocusRef.current = false
-                  navigate(section === 'home' ? '/' : `/${section}`)
+                  const targetPath = section === 'home' ? '/' : `/${section}`
+
+                  if (targetPath !== location.pathname) {
+                    navigateWithTransition(targetPath)
+                  }
                   setMenuOpen(false)
                 }}
               >

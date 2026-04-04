@@ -1,5 +1,11 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
+import { useLocation } from 'react-router-dom'
+import {
+  PAGE_TITLE_EXIT_DISTANCE,
+  PAGE_TITLE_EXIT_DURATION_S,
+  PAGE_TITLE_EXIT_EASE,
+} from '@/app/pageTransition'
 import { assets } from '@/shared/assets'
 import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
@@ -24,6 +30,7 @@ function getAboutMaxScrollTop(element: HTMLDivElement) {
 }
 
 export function AboutPage() {
+  const location = useLocation()
   const shellRef = useRef<HTMLElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const aboutScrollTweenRef = useRef<gsap.core.Tween | null>(null)
@@ -37,6 +44,8 @@ export function AboutPage() {
   const [aboutScrollTop, setAboutScrollTop] = useState(0)
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
   const previousContentRevealKeyRef = useRef(contentRevealKey)
+  const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
+  const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const aboutScrollProgress = useAppStore((state) => state.aboutScrollProgress)
   const setAboutScrollProgress = useAppStore((state) => state.setAboutScrollProgress)
 
@@ -79,6 +88,27 @@ export function AboutPage() {
 
     return () => ctx.revert()
   }, [contentRevealKey])
+
+  useLayoutEffect(() => {
+    if (pageTransitionPhase !== 'exiting' || pageTransitionOrigin !== location.pathname) {
+      return
+    }
+
+    const titleBlock = shellRef.current?.querySelector<HTMLElement>(`.${styles.titleBlock}`)
+    const titleTween = titleBlock
+      ? gsap.to(titleBlock, {
+          autoAlpha: 0,
+          y: PAGE_TITLE_EXIT_DISTANCE,
+          duration: PAGE_TITLE_EXIT_DURATION_S,
+          ease: PAGE_TITLE_EXIT_EASE,
+          overwrite: true,
+        })
+      : null
+
+    return () => {
+      titleTween?.kill()
+    }
+  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase])
 
   useLayoutEffect(() => {
     const element = scrollRef.current

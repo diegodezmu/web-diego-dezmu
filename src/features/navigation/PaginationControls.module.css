@@ -20,6 +20,10 @@
   isolation: isolate;
 }
 
+.sideButtonExit {
+  animation: paginationDockOut var(--nav-enter-duration) var(--nav-enter-ease) forwards;
+}
+
 .sideButton::before,
 .mobileButton::before {
   content: '';
@@ -43,7 +47,6 @@
 .sideButtonRight {
   right: 0;
   justify-content: flex-end;
-  animation-duration: var(--nav-enter-duration);
 }
 
 .sideButtonRight::before,
@@ -169,6 +172,14 @@
   isolation: isolate;
 }
 
+.mobileSlotExit {
+  animation: paginationDockOut var(--nav-enter-duration) var(--nav-enter-ease) forwards;
+}
+
+.mobileButtonExit {
+  animation: paginationDockOut var(--nav-enter-duration) var(--nav-enter-ease) forwards;
+}
+
 .homeIntroNav .sideButton,
 .homeIntroNav .mobileButton {
   animation-delay: calc(var(--intro-delay) + 0.2s);
@@ -205,20 +216,6 @@
   right: calc(var(--frame-margin) - 11.93px);
 }
 
-.sideButtonLeft:hover .chevron,
-.sideButtonLeft:focus-visible .chevron,
-.mobileButtonLeft:hover .chevron,
-.mobileButtonLeft:focus-visible .chevron {
-  transform: translate(-12px, -50%);
-}
-
-.sideButtonRight:hover .chevron,
-.sideButtonRight:focus-visible .chevron,
-.mobileButtonRight:hover .chevron,
-.mobileButtonRight:focus-visible .chevron {
-  transform: translate(12px, -50%);
-}
-
 .mobileSpacer::before {
   display: none;
 }
@@ -239,6 +236,18 @@
   to {
     opacity: 1;
     transform: translateY(-50%) translateX(0);
+  }
+}
+
+@keyframes paginationDockOut {
+  from {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-50%) translateX(var(--pagination-offset, 0));
   }
 }
 
@@ -269,6 +278,11 @@
   .mobileSpacer {
     animation-name: mobilePaginationDockIn;
   }
+
+  .mobileSlotExit,
+  .mobileButtonExit {
+    animation-name: mobilePaginationDockOut;
+  }
 }
 
 @keyframes mobilePaginationDockIn {
@@ -280,5 +294,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes mobilePaginationDockOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
   }
 }

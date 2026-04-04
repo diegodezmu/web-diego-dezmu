@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom'
-import { siteContent } from '@/config/content'
+import { useRef } from 'react'
+import { useLocation } from 'react-router-dom'
+import { usePageTransitionNavigation } from '@/app/usePageTransitionNavigation'
+import { useAppStore } from '@/state/appStore'
 import styles from './MicroLogo.module.css'
 
 type MicroLogoProps = {
@@ -8,6 +10,11 @@ type MicroLogoProps = {
 }
 
 export function MicroLogo({ className = '', motion = 'static' }: MicroLogoProps) {
+  const location = useLocation()
+  const navigateWithTransition = usePageTransitionNavigation()
+  const mountedDuringIntroRef = useRef(!useAppStore.getState().introCompleted)
+  const isHome = location.pathname === '/'
+  const shouldDelayHomeIntro = motion === 'enter' && isHome && mountedDuringIntroRef.current
   const motionClass =
     motion === 'enter'
       ? styles.logoMotionEnter
@@ -16,13 +23,20 @@ export function MicroLogo({ className = '', motion = 'static' }: MicroLogoProps)
         : ''
 
   return (
-    <Link
-      className={`${styles.logo} ${motionClass} ${className}`.trim()}
-      to="/"
+    <button
+      className={`${styles.logo} ${motionClass} ${shouldDelayHomeIntro ? styles.logoHomeIntro : ''} ${className}`.trim()}
+      type="button"
       aria-label="Go to home"
       data-cursor="interactive"
+      onClick={() => {
+        if (!isHome) {
+          navigateWithTransition('/')
+        }
+      }}
     >
-      {siteContent.microDisplayName}
-    </Link>
+      <span className={styles.letter} aria-hidden="true">
+        D
+      </span>
+    </button>
   )
 }

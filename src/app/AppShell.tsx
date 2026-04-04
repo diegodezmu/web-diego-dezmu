@@ -1,6 +1,7 @@
 import { Suspense, lazy, useDeferredValue, useEffect, useEffectEvent, useRef, useState } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { IntroCurtain } from '@/app/IntroCurtain'
+import { PAGE_TITLE_EXIT_DURATION_MS } from '@/app/pageTransition'
 import { INTRO_CURTAIN_ENABLED } from '@/config/appFlags'
 import { sectionLabels } from '@/config/content'
 import { EXPLODE_PRESETS } from '@/config/scenePresets'
@@ -77,11 +78,14 @@ function renderFallbackScene(
 
 export function AppShell() {
   const location = useLocation()
+  const navigate = useNavigate()
   const deferredLocation = useDeferredValue(location)
   const activeSection = useAppStore((state) => state.activeSection)
   const sceneMode = useAppStore((state) => state.sceneMode)
   const menuOpen = useAppStore((state) => state.menuOpen)
   const introCompleted = useAppStore((state) => state.introCompleted)
+  const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
+  const pageTransitionTarget = useAppStore((state) => state.pageTransitionTarget)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
   const webglSupported = useAppStore((state) => state.capabilities.webglSupported)
   const contactProgress = useAppStore((state) => state.contactProgress)
@@ -95,6 +99,8 @@ export function AppShell() {
   const startHold = useAppStore((state) => state.startHold)
   const endHold = useAppStore((state) => state.endHold)
   const completeIntro = useAppStore((state) => state.completeIntro)
+  const startPageTransitionExit = useAppStore((state) => state.startPageTransitionExit)
+  const completePageTransition = useAppStore((state) => state.completePageTransition)
   const triggerExplode = useAppStore((state) => state.triggerExplode)
   const [introFinished, setIntroFinished] = useState(!INTRO_CURTAIN_ENABLED)
   const [overlayMounted, setOverlayMounted] = useState(menuOpen)
@@ -232,11 +238,36 @@ export function AppShell() {
 
   useEffect(() => {
     if (previousMenuVisibleRef.current && !menuVisible) {
-      bumpContentRevealKey()
+      const { pageTransitionTarget, pageTransitionPhase } = useAppStore.getState()
+
+      if (pageTransitionTarget && pageTransitionPhase === 'idle') {
+        startPageTransitionExit()
+      } else {
+        bumpContentRevealKey()
+      }
     }
 
     previousMenuVisibleRef.current = menuVisible
-  }, [bumpContentRevealKey, menuVisible])
+  }, [bumpContentRevealKey, menuVisible, startPageTransitionExit])
+
+  useEffect(() => {
+    if (pageTransitionPhase !== 'exiting' || !pageTransitionTarget) {
+      return
+    }
+
+    let completionFrame = 0
+    const timeoutId = window.setTimeout(() => {
+      navigate(pageTransitionTarget)
+      completionFrame = window.requestAnimationFrame(() => {
+        completePageTransition()
+      })
+    }, PAGE_TITLE_EXIT_DURATION_MS)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+      window.cancelAnimationFrame(completionFrame)
+    }
+  }, [completePageTransition, navigate, pageTransitionPhase, pageTransitionTarget])
 
   return (
     <div

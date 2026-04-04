@@ -10,7 +10,7 @@ import type { SceneSnapshot } from './types'
  *  0 = sin dispersión (comportamiento anterior).
  *  Ajustar visualmente: 2-5 es el rango útil. */
 const INITIAL_SCATTER_RANGE = 3.0
-const HOLD_TARGET_OPACITY = 0.5
+const HOLD_TARGET_OPACITY = 1
 
 function createInitialPositions(maxCount: number) {
   const points = new Float32Array(maxCount * 3)

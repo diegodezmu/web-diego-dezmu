@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { gsap } from 'gsap'
+import { useLocation } from 'react-router-dom'
+import {
+  PAGE_TITLE_EXIT_DISTANCE,
+  PAGE_TITLE_EXIT_DURATION_S,
+  PAGE_TITLE_EXIT_EASE,
+} from '@/app/pageTransition'
 import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
 import { useAppStore } from '@/state/appStore'
@@ -6,6 +13,17 @@ import styles from './ContactPage.module.css'
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
+}
+
+function freezeAnimatedElement(element: HTMLElement) {
+  const computedStyles = window.getComputedStyle(element)
+  const { opacity, transform } = computedStyles
+
+  element.style.animation = 'none'
+  element.style.opacity = opacity
+  if (transform !== 'none') {
+    element.style.transform = transform
+  }
 }
 
 function isInteractiveTarget(target: EventTarget | null) {
@@ -16,6 +34,7 @@ function isInteractiveTarget(target: EventTarget | null) {
 }
 
 export function ContactPage() {
+  const location = useLocation()
   const shellRef = useRef<HTMLElement | null>(null)
   const pointerState = useRef<{ active: boolean; y: number }>({
     active: false,
@@ -23,6 +42,8 @@ export function ContactPage() {
   })
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
   const [initialContentRevealKey] = useState(contentRevealKey)
+  const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
+  const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const contactProgress = useAppStore((state) => state.contactProgress)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
   const setContactProgress = useAppStore((state) => state.setContactProgress)
@@ -49,6 +70,30 @@ export function ContactPage() {
       element.removeEventListener('wheel', handleWheel)
     }
   }, [setContactProgress])
+
+  useLayoutEffect(() => {
+    if (pageTransitionPhase !== 'exiting' || pageTransitionOrigin !== location.pathname) {
+      return
+    }
+
+    const titleBlock = shellRef.current?.querySelector<HTMLElement>(`.${styles.titleBlock}`)
+    if (titleBlock) {
+      freezeAnimatedElement(titleBlock)
+    }
+    const titleTween = titleBlock
+      ? gsap.to(titleBlock, {
+          autoAlpha: 0,
+          y: PAGE_TITLE_EXIT_DISTANCE,
+          duration: PAGE_TITLE_EXIT_DURATION_S,
+          ease: PAGE_TITLE_EXIT_EASE,
+          overwrite: true,
+        })
+      : null
+
+    return () => {
+      titleTween?.kill()
+    }
+  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase])
 
   const revealProgress = clamp((contactProgress - 0.01) / 0.14, 0, 1)
 

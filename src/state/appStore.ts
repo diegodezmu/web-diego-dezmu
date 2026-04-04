@@ -13,6 +13,8 @@ type StackCameraState = {
   hasInteracted: boolean
 }
 
+type PageTransitionPhase = 'idle' | 'exiting'
+
 type AppState = {
   activeSection: AppSection
   sceneMode: SceneMode
@@ -20,6 +22,9 @@ type AppState = {
   menuOverlayActive: boolean
   introCompleted: boolean
   contentRevealKey: number
+  pageTransitionPhase: PageTransitionPhase
+  pageTransitionOrigin: string | null
+  pageTransitionTarget: string | null
   pointer: PointerState
   capabilities: Capabilities
   holdStartTime: number | null
@@ -34,6 +39,9 @@ type AppState = {
   startHold: () => void
   endHold: () => void
   completeIntro: () => void
+  queuePageTransition: (path: string, origin: string) => void
+  startPageTransitionExit: () => void
+  completePageTransition: () => void
   triggerExplode: (strength: number) => void
   setActiveSection: (section: AppSection) => void
   setSceneMode: (sceneMode: SceneMode) => void
@@ -78,6 +86,9 @@ export const useAppStore = create<AppState>((set) => ({
   menuOverlayActive: false,
   introCompleted: !INTRO_CURTAIN_ENABLED,
   contentRevealKey: 0,
+  pageTransitionPhase: 'idle',
+  pageTransitionOrigin: null,
+  pageTransitionTarget: null,
   pointer: defaultPointer,
   capabilities: defaultCapabilities,
   holdStartTime: null,
@@ -92,6 +103,19 @@ export const useAppStore = create<AppState>((set) => ({
   startHold: () => set({ holdStartTime: Date.now() }),
   endHold: () => set({ holdStartTime: null }),
   completeIntro: () => set({ introCompleted: true }),
+  queuePageTransition: (pageTransitionTarget, pageTransitionOrigin) =>
+    set({
+      pageTransitionTarget,
+      pageTransitionOrigin,
+    }),
+  startPageTransitionExit: () =>
+    set((state) => (state.pageTransitionTarget ? { pageTransitionPhase: 'exiting' } : {})),
+  completePageTransition: () =>
+    set({
+      pageTransitionPhase: 'idle',
+      pageTransitionOrigin: null,
+      pageTransitionTarget: null,
+    }),
   triggerExplode: (explodeStrength) =>
     set((state) => ({
       explodeStrength,
