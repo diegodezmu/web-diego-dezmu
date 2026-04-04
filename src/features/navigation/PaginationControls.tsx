@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { shouldInterceptPageTransitionClick, usePageTransitionNavigation } from '@/app/usePageTransitionNavigation'
 import { sectionLabels, sectionOrder } from '@/config/content'
@@ -100,9 +100,19 @@ export function PaginationControls() {
   const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
   const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const mountedDuringIntroRef = useRef(!useAppStore.getState().introCompleted)
-  const homeIntroClass =
-    activeSection === 'home' && mountedDuringIntroRef.current ? styles.homeIntroNav : ''
+  const homeIntroDelayConsumedRef = useRef(false)
+  const shouldDelayHomeIntro =
+    activeSection === 'home' &&
+    mountedDuringIntroRef.current &&
+    !homeIntroDelayConsumedRef.current
+  const homeIntroClass = shouldDelayHomeIntro ? styles.homeIntroNav : ''
   const exiting = pageTransitionPhase === 'exiting' && pageTransitionOrigin === sectionToPath(activeSection)
+
+  useEffect(() => {
+    if (!menuOpen && shouldDelayHomeIntro) {
+      homeIntroDelayConsumedRef.current = true
+    }
+  }, [menuOpen, shouldDelayHomeIntro])
 
   if (menuOpen) {
     return null

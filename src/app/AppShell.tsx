@@ -24,7 +24,7 @@ const pathToSection = {
   '/contact': 'contact',
 } as const
 
-const MENU_OVERLAY_MOTION_MS = 220
+const MENU_OVERLAY_MOTION_MS = 900
 const CURSOR_INTERACTIVE_SELECTOR = [
   'button[data-cursor="interactive"]:not([disabled])',
   'a[data-cursor="interactive"][href]',

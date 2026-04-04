@@ -130,10 +130,10 @@ export const gammaConfig: CurveSceneConfig = {
     enabled: true,
     ratio: 0.25,
     wave: 'triangle',
-    amountPct: 45,
+    amountPct: 10,
     target: {
       scope: 'curve',
-      key: 'ringModFreq',
+      key: 'ampY',
     },
   }),
 }

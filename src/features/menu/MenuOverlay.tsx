@@ -17,7 +17,8 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
   const previousFocusedElementRef = useRef<HTMLElement | null>(null)
   const shouldRestoreFocusRef = useRef(true)
   const setMenuOpen = useAppStore((state) => state.setMenuOpen)
-  const exitClass = motion === 'exit' ? styles.exitHidden : ''
+  const navMotionClass = motion === 'exit' ? styles.navExit : ''
+  const captionMotionClass = motion === 'exit' ? styles.captionExit : ''
 
   useLayoutEffect(() => {
     previousFocusedElementRef.current =
@@ -76,7 +77,7 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
           <span className={styles.closeLine} />
         </button>
 
-        <nav className={`${styles.nav} ${exitClass}`.trim()} aria-label="Site menu">
+        <nav className={`${styles.nav} ${navMotionClass}`.trim()} aria-label="Site menu">
           {sectionOrder.map((section) => {
             const label = sectionLabels[section]
             const isActive = label === activeLabel
@@ -103,7 +104,7 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
           })}
         </nav>
 
-        <p className={`${styles.caption} ${exitClass}`.trim()}>{siteContent.menuCaption}</p>
+        <p className={`${styles.caption} ${captionMotionClass}`.trim()}>{siteContent.menuCaption}</p>
       </div>
     </aside>
   )

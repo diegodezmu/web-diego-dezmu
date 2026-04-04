@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+import { PAGE_TITLE_EXIT_DURATION_S } from '@/app/pageTransition'
 import {
   aboutMarginGridConfig,
   alphaConfig,
@@ -12,7 +13,7 @@ import {
 } from '@/config/curves'
 import { stackSkillSpecs } from '@/config/content'
 import { getPresetForTier } from '@/config/scenePresets'
-import type { ScenePreset } from '@/shared/types'
+import type { AppSection, ScenePreset } from '@/shared/types'
 import {
   DEFAULT_STACK_PHI,
   DEFAULT_STACK_RADIUS,
@@ -39,6 +40,10 @@ function smoothstep(min: number, max: number, value: number) {
 
 function lerp(a: number, b: number, amount: number) {
   return a + (b - a) * amount
+}
+
+function sectionToPath(section: AppSection) {
+  return section === 'home' ? '/' : `/${section}`
 }
 
 function getAmplitudeRatio(baseAmplitude: number, modulatedAmplitude: number) {
@@ -213,15 +218,17 @@ function pixelsToWorld(px: number, viewportHeightPx: number, cameraZ: number, fo
 }
 
 export function useSceneSnapshot() {
+  const activeSection = useAppStore((state) => state.activeSection)
   const deviceTier = useAppStore((state) => state.capabilities.deviceTier)
   const reducedMotion = useAppStore((state) => state.capabilities.reducedMotion)
   const menuOpen = useAppStore((state) => state.menuOpen)
-  const menuOverlayActive = useAppStore((state) => state.menuOverlayActive)
+  const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
+  const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const sceneMode = useAppStore((state) => state.sceneMode)
   const aboutScrollProgress = useAppStore((state) => state.aboutScrollProgress)
   const contactProgress = useAppStore((state) => state.contactProgress)
   const stackProgress = useAppStore((state) => state.stackProgress)
-  const displayMode = (menuOpen || menuOverlayActive) ? 'menuGrid' : sceneMode
+  const displayMode = menuOpen ? 'menuGrid' : sceneMode
   const isStackMode = displayMode === 'stackGamma' || displayMode === 'stackEmbeddingMap'
 
   const homePreset = getPresetForTier('homeAlpha', deviceTier)
@@ -305,6 +312,8 @@ export function useSceneSnapshot() {
   const orbitPositionRef = useRef(new THREE.Vector3())
   const modeStartedAtRef = useRef(0)
   const previousModeRef = useRef('')
+  const pageExitStartedAtRef = useRef(0)
+  const previousPageExitRef = useRef(false)
   const stackResources = useMemo(() => {
     const sceneData = generateStackSceneData(stackMapPreset.count, stackSkillSpecs)
 
@@ -421,6 +430,10 @@ export function useSceneSnapshot() {
     const aboutBlend = smoothstep(0.01, 0.16, aboutScrollProgress)
     const stackBlend = stackProgress
     const contactBlend = smoothstep(0.01, 0.16, contactProgress)
+    const isPageExiting =
+      pageTransitionPhase === 'exiting' &&
+      pageTransitionOrigin === sectionToPath(activeSection) &&
+      !menuOpen
     const homeBuffer = homeBufferRef.current
     const aboutBuffer = aboutBufferRef.current
     const stackBuffer = stackBufferRef.current
@@ -432,7 +445,15 @@ export function useSceneSnapshot() {
       modeStartedAtRef.current = elapsedTime
     }
 
+    if (isPageExiting !== previousPageExitRef.current) {
+      previousPageExitRef.current = isPageExiting
+      pageExitStartedAtRef.current = elapsedTime
+    }
+
     const modeElapsed = elapsedTime - modeStartedAtRef.current
+    const pageExitProgress = isPageExiting
+      ? smoothstep(0, PAGE_TITLE_EXIT_DURATION_S, elapsedTime - pageExitStartedAtRef.current)
+      : 0
     snapshot.blendTargets = null
     snapshot.blend = 0
     snapshot.is3D = false
@@ -721,6 +742,8 @@ export function useSceneSnapshot() {
         }
       }
     }
+
+    snapshot.opacity *= 1 - pageExitProgress
 
   })
 

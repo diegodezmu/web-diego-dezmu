@@ -36,7 +36,7 @@ export function StackEmbeddingMap({ active, sceneData, visibility }: StackEmbedd
 
   return (
     <>
-      <StackLineSegments positions={sceneData.gridSegments} color="#454b52" opacity={0.17 * visibility} />
+      <StackLineSegments positions={sceneData.gridSegments} color="#d4d0c8" opacity={0.14 * visibility} />
       <StackLabels skills={sceneData.skills} visibility={visibility} />
     </>
   )
