@@ -34,17 +34,26 @@ const CURSOR_INTERACTIVE_SELECTOR = [
   '[role="button"][data-cursor="interactive"]:not([aria-disabled="true"])',
 ].join(', ')
 
+const loadSceneCanvas = () =>
+  import('@/scene/SceneCanvas').then((module) => ({ default: module.SceneCanvas }))
+const loadAboutPage = () =>
+  import('@/features/pages/AboutPage').then((module) => ({ default: module.AboutPage }))
+const loadStackPage = () =>
+  import('@/features/pages/StackPage').then((module) => ({ default: module.StackPage }))
+const loadNotFoundPage = () =>
+  import('@/features/pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage }))
+
 const SceneCanvas = lazy(() =>
-  import('@/scene/SceneCanvas').then((module) => ({ default: module.SceneCanvas })),
+  loadSceneCanvas(),
 )
 const AboutPage = lazy(() =>
-  import('@/features/pages/AboutPage').then((module) => ({ default: module.AboutPage })),
+  loadAboutPage(),
 )
 const StackPage = lazy(() =>
-  import('@/features/pages/StackPage').then((module) => ({ default: module.StackPage })),
+  loadStackPage(),
 )
 const NotFoundPage = lazy(() =>
-  import('@/features/pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })),
+  loadNotFoundPage(),
 )
 
 function clamp(value: number, min: number, max: number) {
@@ -167,6 +176,35 @@ export function AppShell() {
     return () => {
       if (overlayExitTimeoutRef.current !== null) {
         window.clearTimeout(overlayExitTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    let idleCallbackId: number | null = null
+    let timeoutId: number | null = null
+    const requestIdleCallback =
+      'requestIdleCallback' in window ? window.requestIdleCallback.bind(window) : null
+    const cancelIdleCallback =
+      'cancelIdleCallback' in window ? window.cancelIdleCallback.bind(window) : null
+    const preloadLazyPages = () => {
+      void loadAboutPage()
+      void loadStackPage()
+      void loadNotFoundPage()
+    }
+
+    if (requestIdleCallback) {
+      idleCallbackId = requestIdleCallback(preloadLazyPages, { timeout: 1500 })
+    } else {
+      timeoutId = window.setTimeout(preloadLazyPages, 300)
+    }
+
+    return () => {
+      if (idleCallbackId !== null && cancelIdleCallback) {
+        cancelIdleCallback(idleCallbackId)
+      }
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId)
       }
     }
   }, [])
