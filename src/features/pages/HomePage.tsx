@@ -2,10 +2,10 @@ import { useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { useLocation } from 'react-router-dom'
 import {
-  PAGE_TITLE_EXIT_DISTANCE,
   PAGE_TITLE_EXIT_DURATION_S,
   PAGE_TITLE_EXIT_EASE,
-  PAGE_TITLE_SECONDARY_EXIT_DISTANCE,
+  getPageTitleExitDistancePx,
+  getPageTitleSecondaryExitDistancePx,
 } from '@/app/pageTransition'
 import { siteContent } from '@/config/content'
 import { useAppStore } from '@/state/appStore'
@@ -54,19 +54,21 @@ export function HomePage() {
     const wordmarkTween = wordmark
       ? gsap.to(wordmark, {
           autoAlpha: 0,
-          y: PAGE_TITLE_EXIT_DISTANCE,
+          y: getPageTitleExitDistancePx(),
           duration: PAGE_TITLE_EXIT_DURATION_S,
           ease: PAGE_TITLE_EXIT_EASE,
           overwrite: true,
+          force3D: true,
         })
       : null
     const roleGroupTween = roleGroup
       ? gsap.to(roleGroup, {
           autoAlpha: 0,
-          y: PAGE_TITLE_SECONDARY_EXIT_DISTANCE,
+          y: getPageTitleSecondaryExitDistancePx(),
           duration: PAGE_TITLE_EXIT_DURATION_S * 0.92,
           ease: PAGE_TITLE_EXIT_EASE,
           overwrite: true,
+          force3D: true,
         })
       : null
 

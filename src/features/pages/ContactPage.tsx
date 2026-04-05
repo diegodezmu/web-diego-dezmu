@@ -1,10 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { useLocation } from 'react-router-dom'
 import {
-  PAGE_TITLE_EXIT_DISTANCE,
   PAGE_TITLE_EXIT_DURATION_S,
   PAGE_TITLE_EXIT_EASE,
+  getPageTitleExitDistancePx,
 } from '@/app/pageTransition'
 import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
@@ -13,17 +13,6 @@ import styles from './ContactPage.module.css'
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
-}
-
-function freezeAnimatedElement(element: HTMLElement) {
-  const computedStyles = window.getComputedStyle(element)
-  const { opacity, transform } = computedStyles
-
-  element.style.animation = 'none'
-  element.style.opacity = opacity
-  if (transform !== 'none') {
-    element.style.transform = transform
-  }
 }
 
 function isInteractiveTarget(target: EventTarget | null) {
@@ -36,12 +25,12 @@ function isInteractiveTarget(target: EventTarget | null) {
 export function ContactPage() {
   const location = useLocation()
   const shellRef = useRef<HTMLElement | null>(null)
+  const previousContentRevealKeyRef = useRef(useAppStore.getState().contentRevealKey)
   const pointerState = useRef<{ active: boolean; y: number }>({
     active: false,
     y: 0,
   })
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
-  const [initialContentRevealKey] = useState(contentRevealKey)
   const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
   const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const contactProgress = useAppStore((state) => state.contactProgress)
@@ -77,21 +66,67 @@ export function ContactPage() {
       return
     }
 
+    const titleBlock = shellRef.current?.querySelector<HTMLElement>(`.${styles.titleBlock}`)
+    if (!titleBlock) {
+      return
+    }
+
+    const titleTween = gsap.fromTo(
+      titleBlock,
+      { autoAlpha: 0, y: getPageTitleExitDistancePx(), force3D: true },
+      { autoAlpha: 1, y: 0, duration: 3, ease: 'power3.out', force3D: true, overwrite: 'auto' },
+    )
+
+    return () => {
+      titleTween.kill()
+    }
+  }, [reducedMotion])
+
+  useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
+    if (contentRevealKey === previousContentRevealKeyRef.current) {
+      return
+    }
+
+    previousContentRevealKeyRef.current = contentRevealKey
+
+    const titleBlock = shellRef.current?.querySelector<HTMLElement>(`.${styles.titleBlock}`)
+    if (!titleBlock) {
+      return
+    }
+
+    const titleTween = gsap.fromTo(
+      titleBlock,
+      { autoAlpha: 0, y: 28, force3D: true },
+      { autoAlpha: 1, y: 0, duration: 0.68, ease: 'power2.out', force3D: true, overwrite: 'auto' },
+    )
+
+    return () => {
+      titleTween.kill()
+    }
+  }, [contentRevealKey, reducedMotion])
+
+  useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
     if (pageTransitionPhase !== 'exiting' || pageTransitionOrigin !== location.pathname) {
       return
     }
 
     const titleBlock = shellRef.current?.querySelector<HTMLElement>(`.${styles.titleBlock}`)
-    if (titleBlock) {
-      freezeAnimatedElement(titleBlock)
-    }
     const titleTween = titleBlock
       ? gsap.to(titleBlock, {
           autoAlpha: 0,
-          y: PAGE_TITLE_EXIT_DISTANCE,
+          y: getPageTitleExitDistancePx(),
           duration: PAGE_TITLE_EXIT_DURATION_S,
           ease: PAGE_TITLE_EXIT_EASE,
           overwrite: true,
+          force3D: true,
         })
       : null
 
@@ -146,7 +181,7 @@ export function ContactPage() {
         aria-controls="contact-links-block"
         aria-expanded={contactLinksExpanded}
         style={{
-          transform: `translate(-50%, -50%)`,
+          transform: 'translate3d(-50%, -50%, 0)',
         }}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={() => setContactProgress(contactProgress < 0.5 ? 1 : 0)}
@@ -154,15 +189,10 @@ export function ContactPage() {
       >
         <PageTitle
           id="contact-page-title"
-          key={contentRevealKey}
           as="span"
           role="heading"
           aria-level={1}
-          className={`${styles.titleBlock} ${
-            contentRevealKey === initialContentRevealKey
-              ? styles.titleBlockMount
-              : styles.titleBlockReveal
-          }`}
+          className={styles.titleBlock}
           title={siteContent.contactTitle}
         />
       </button>

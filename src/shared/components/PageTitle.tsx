@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import styles from './PageTitle.module.css'
 
 type PageTitleProps = {
@@ -10,7 +11,7 @@ type PageTitleProps = {
   'aria-level'?: number
 }
 
-export function PageTitle({
+export const PageTitle = memo(function PageTitle({
   title,
   className = '',
   titleClassName = '',
@@ -29,4 +30,6 @@ export function PageTitle({
       {title}
     </Tag>
   )
-}
+})
+
+PageTitle.displayName = 'PageTitle'

@@ -2,9 +2,9 @@ import { useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { useLocation } from 'react-router-dom'
 import {
-  PAGE_TITLE_EXIT_DISTANCE,
   PAGE_TITLE_EXIT_DURATION_S,
   PAGE_TITLE_EXIT_EASE,
+  getPageTitleExitDistancePx,
 } from '@/app/pageTransition'
 import { siteContent } from '@/config/content'
 import { PageTitle } from '@/shared/components/PageTitle'
@@ -48,11 +48,12 @@ export function StackPage() {
       return
     }
 
+    const titleEntryDistance = getPageTitleExitDistancePx()
     const ctx = gsap.context(() => {
       gsap.fromTo(
         `.${styles.titleBlock}`,
-        { autoAlpha: 0, y: '15vh' },
-        { autoAlpha: 1, y: 0, duration: 3, ease: 'power3.out' },
+        { autoAlpha: 0, y: titleEntryDistance, force3D: true },
+        { autoAlpha: 1, y: 0, duration: 3, ease: 'power3.out', force3D: true, overwrite: 'auto' },
       )
     }, shellRef)
 
@@ -94,10 +95,11 @@ export function StackPage() {
     const titleTween = titleBlock
       ? gsap.to(titleBlock, {
           autoAlpha: 0,
-          y: PAGE_TITLE_EXIT_DISTANCE,
+          y: getPageTitleExitDistancePx(),
           duration: PAGE_TITLE_EXIT_DURATION_S,
           ease: PAGE_TITLE_EXIT_EASE,
           overwrite: true,
+          force3D: true,
         })
       : null
 
@@ -114,7 +116,7 @@ export function StackPage() {
         aria-pressed={stackProgress >= 0.5}
         style={{
           opacity: titleOpacity,
-          transform: `translate(-50%, calc(-50% - ${titleShift}vh))`,
+          transform: `translate3d(-50%, calc(-50% - ${titleShift}vh), 0)`,
         }}
         {...titleHandlers}
         data-cursor="interactive"

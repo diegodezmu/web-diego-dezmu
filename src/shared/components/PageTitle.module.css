@@ -9,4 +9,6 @@
   text-shadow: var(--shadow-title);
   text-transform: uppercase;
   white-space: nowrap;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }

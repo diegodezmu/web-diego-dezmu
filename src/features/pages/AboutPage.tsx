@@ -2,10 +2,10 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { useLocation } from 'react-router-dom'
 import {
-  PAGE_TITLE_EXIT_DISTANCE,
   PAGE_TITLE_EXIT_DURATION_S,
   PAGE_TITLE_EXIT_EASE,
-  PAGE_TITLE_SECONDARY_EXIT_DISTANCE,
+  getPageTitleExitDistancePx,
+  getPageTitleSecondaryExitDistancePx,
 } from '@/app/pageTransition'
 import { assets } from '@/shared/assets'
 import { siteContent } from '@/config/content'
@@ -61,11 +61,12 @@ export function AboutPage() {
       return
     }
 
+    const titleEntryDistance = getPageTitleExitDistancePx()
     const ctx = gsap.context(() => {
       gsap.fromTo(
         `.${styles.titleBlock}`,
-        { autoAlpha: 0, y: '15vh' },
-        { autoAlpha: 1, y: 0, duration: 3, ease: 'power3.out' },
+        { autoAlpha: 0, y: titleEntryDistance, force3D: true },
+        { autoAlpha: 1, y: 0, duration: 3, ease: 'power3.out', force3D: true, overwrite: 'auto' },
       )
       gsap.fromTo(
         `.${styles.copyParagraph}`,
@@ -118,19 +119,21 @@ export function AboutPage() {
     const titleTween = titleBlock
       ? gsap.to(titleBlock, {
           autoAlpha: 0,
-          y: PAGE_TITLE_EXIT_DISTANCE,
+          y: getPageTitleExitDistancePx(),
           duration: PAGE_TITLE_EXIT_DURATION_S,
           ease: PAGE_TITLE_EXIT_EASE,
           overwrite: true,
+          force3D: true,
         })
       : null
     const contentTween = contentColumn
       ? gsap.to(contentColumn, {
           autoAlpha: 0,
-          y: PAGE_TITLE_SECONDARY_EXIT_DISTANCE,
+          y: getPageTitleSecondaryExitDistancePx(),
           duration: PAGE_TITLE_EXIT_DURATION_S * 0.92,
           ease: PAGE_TITLE_EXIT_EASE,
           overwrite: true,
+          force3D: true,
         })
       : null
 
@@ -215,7 +218,7 @@ export function AboutPage() {
         aria-pressed={aboutScrollProgress >= ABOUT_CLICK_TOGGLE_THRESHOLD}
         style={{
           opacity: titleOpacity,
-          transform: `translate(-50%, calc(-50% - ${titleShift}px))`,
+          transform: `translate3d(-50%, calc(-50% - ${titleShift}px), 0)`,
         }}
         onWheel={(event) => {
           const element = scrollRef.current
