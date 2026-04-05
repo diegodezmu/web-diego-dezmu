@@ -5,13 +5,20 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    // Keep generic vendor splits, but let Vite own the scene graph chunking so
-    // the React.lazy SceneCanvas boundary stays fully async.
-    // The default 500 kB warning is too low for this dedicated scene payload.
-    chunkSizeWarningLimit: 900,
+    // The dedicated 3D vendor chunk remains above Vite's default 500 kB budget,
+    // but it is now intentionally isolated for browser cache reuse.
+    chunkSizeWarningLimit: 962,
     rolldownOptions: {
       output: {
         manualChunks(id) {
+          if (
+            id.includes('/node_modules/three/') ||
+            id.includes('/node_modules/@react-three/fiber/') ||
+            id.includes('/node_modules/@react-three/drei/')
+          ) {
+            return 'three-vendor'
+          }
+
           if (id.includes('/node_modules/gsap/')) {
             return 'gsap'
           }
