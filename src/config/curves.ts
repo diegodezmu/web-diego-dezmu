@@ -82,7 +82,7 @@ export const alphaConfig: CurveSceneConfig = {
   curve: {
     freqX: 2,
     freqY: 1,
-    ampX: 0.3,
+    ampX: 0.5,
     ampY: 0.3,
     phase: 0,
     crossModAmount: 0,
@@ -92,7 +92,16 @@ export const alphaConfig: CurveSceneConfig = {
     animate: true,
   },
   particles: sharedCurveParticles,
-  lfos: createLfoBank(),
+  lfos: createLfoBank({
+    enabled: true,
+    ratio: 0.05,
+    wave: 'triangle',
+    amountPct: 0,
+    target: {
+      scope: 'curve',
+      key: 'ampY',
+    },
+  }),
 }
 
 export const betaConfig: CurveSceneConfig = {
@@ -109,7 +118,16 @@ export const betaConfig: CurveSceneConfig = {
     animate: true,
   },
   particles: sharedCurveParticles,
-  lfos: createLfoBank(),
+  lfos: createLfoBank({
+    enabled: true,
+    ratio: 0.1,
+    wave: 'sawtooth',
+    amountPct: 10,
+    target: {
+      scope: 'curve',
+      key: 'crossModAmount',
+    },
+  }),
 }
 
 export const gammaConfig: CurveSceneConfig = {
@@ -165,13 +183,22 @@ export const deltaConfig: CurveSceneConfig = {
     orbitMotionPct: 20,
     recovery: 0.008,
   }),
-  lfos: createLfoBank(),
+  lfos: createLfoBank({
+    enabled: true,
+    ratio: 0,
+    wave: 'triangle',
+    amountPct: 0,
+    target: {
+      scope: 'curve',
+      key: 'ampY',
+    },
+  }),
 }
 
 export const aboutMarginGridConfig = {
   cellPx: 18,
   count: 15000,
-  sizePx: 3.1,
+  sizePx: 2.1,
   opacity: 80,
   glowBoost: 100,
   haloPx: 12,
