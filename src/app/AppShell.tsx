@@ -1,5 +1,5 @@
 import { Suspense, lazy, useDeferredValue, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react'
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { FallbackBackground } from '@/app/FallbackBackground'
 import { IntroCurtain } from '@/app/IntroCurtain'
 import { SceneErrorBoundary } from '@/app/SceneErrorBoundary'
@@ -42,6 +42,9 @@ const AboutPage = lazy(() =>
 )
 const StackPage = lazy(() =>
   import('@/features/pages/StackPage').then((module) => ({ default: module.StackPage })),
+)
+const NotFoundPage = lazy(() =>
+  import('@/features/pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })),
 )
 
 function clamp(value: number, min: number, max: number) {
@@ -366,7 +369,7 @@ export function AppShell() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/stack" element={<StackPage />} />
               <Route path="/contact" element={<ContactPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
         </main>
