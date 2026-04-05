@@ -63,7 +63,7 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
   }
 
   return (
-    <aside className={styles.overlay} aria-modal="true" role="dialog">
+    <aside className={styles.overlay} aria-modal="true" role="dialog" aria-label="Site menu">
       <div className={styles.panel}>
         <button
           ref={closeButtonRef}
@@ -73,8 +73,8 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
           data-cursor="interactive"
           onClick={closeMenu}
         >
-          <span className={styles.closeLine} />
-          <span className={styles.closeLine} />
+          <span className={styles.closeLine} aria-hidden="true" />
+          <span className={styles.closeLine} aria-hidden="true" />
         </button>
 
         <nav className={`${styles.nav} ${navMotionClass}`.trim()} aria-label="Site menu">
@@ -88,6 +88,7 @@ export function MenuOverlay({ activeLabel, motion }: MenuOverlayProps) {
                 className={`${styles.linkButton} ${isActive ? styles.linkButtonActive : ''}`}
                 type="button"
                 data-cursor="interactive"
+                aria-current={isActive ? 'page' : undefined}
                 onClick={() => {
                   shouldRestoreFocusRef.current = false
                   const targetPath = section === 'home' ? '/' : `/${section}`

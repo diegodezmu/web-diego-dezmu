@@ -211,6 +211,8 @@ export function AboutPage() {
       <button
         className={styles.titleAnchor}
         type="button"
+        aria-controls="about-scroll-area"
+        aria-pressed={aboutScrollProgress >= ABOUT_CLICK_TOGGLE_THRESHOLD}
         style={{
           opacity: titleOpacity,
           transform: `translate(-50%, calc(-50% - ${titleShift}px))`,
@@ -309,7 +311,14 @@ export function AboutPage() {
         }}
         data-cursor="interactive"
       >
-        <PageTitle as="span" className={styles.titleBlock} title={siteContent.aboutTitle} />
+        <PageTitle
+          id="about-page-title"
+          as="span"
+          role="heading"
+          aria-level={1}
+          className={styles.titleBlock}
+          title={siteContent.aboutTitle}
+        />
       </button>
 
       <div
@@ -323,7 +332,13 @@ export function AboutPage() {
         aria-hidden="true"
       />
 
-      <div ref={scrollRef} className={styles.scrollArea}>
+      <div
+        id="about-scroll-area"
+        ref={scrollRef}
+        className={styles.scrollArea}
+        tabIndex={0}
+        aria-labelledby="about-page-title"
+      >
         <div className={styles.contentColumn}>
           <div className={styles.copyBlock}>
             {siteContent.aboutParagraphs.map((paragraph) => (

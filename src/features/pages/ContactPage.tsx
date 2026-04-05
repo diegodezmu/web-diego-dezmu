@@ -101,6 +101,7 @@ export function ContactPage() {
   }, [location.pathname, pageTransitionOrigin, pageTransitionPhase, reducedMotion])
 
   const revealProgress = clamp((contactProgress - 0.01) / 0.14, 0, 1)
+  const contactLinksExpanded = contactProgress >= 0.5
 
   return (
     <section
@@ -142,6 +143,8 @@ export function ContactPage() {
       <button
         className={styles.titleAnchor}
         type="button"
+        aria-controls="contact-links-block"
+        aria-expanded={contactLinksExpanded}
         style={{
           transform: `translate(-50%, -50%)`,
         }}
@@ -150,8 +153,11 @@ export function ContactPage() {
         data-cursor="interactive"
       >
         <PageTitle
+          id="contact-page-title"
           key={contentRevealKey}
           as="span"
+          role="heading"
+          aria-level={1}
           className={`${styles.titleBlock} ${
             contentRevealKey === initialContentRevealKey
               ? styles.titleBlockMount
@@ -162,7 +168,11 @@ export function ContactPage() {
       </button>
 
       <div
+        id="contact-links-block"
         className={styles.linksBlock}
+        role="group"
+        aria-labelledby="contact-page-title"
+        aria-hidden={!contactLinksExpanded}
         style={{
           opacity: revealProgress,
           transform: `translate(-50%, ${10 - revealProgress * 10}vh)`,
@@ -172,10 +182,11 @@ export function ContactPage() {
           className={styles.emailLink}
           href={`mailto:${siteContent.contactEmail}`}
           data-cursor="interactive"
+          tabIndex={contactLinksExpanded ? undefined : -1}
         >
           {siteContent.contactEmail}
         </a>
-        <div className={styles.socialRow} aria-label="Social links">
+        <div className={styles.socialRow} role="group" aria-label="Social links">
           {siteContent.contactSocialLinks.map((link) => (
             <a
               key={link.label}
@@ -184,6 +195,8 @@ export function ContactPage() {
               target="_blank"
               rel="noopener noreferrer"
               data-cursor="interactive"
+              aria-label={`${link.label} (opens in a new tab)`}
+              tabIndex={contactLinksExpanded ? undefined : -1}
             >
               {link.label}
             </a>

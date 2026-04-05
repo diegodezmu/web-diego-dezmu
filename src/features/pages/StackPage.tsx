@@ -111,6 +111,7 @@ export function StackPage() {
       <button
         className={styles.titleAnchor}
         type="button"
+        aria-pressed={stackProgress >= 0.5}
         style={{
           opacity: titleOpacity,
           transform: `translate(-50%, calc(-50% - ${titleShift}vh))`,
@@ -118,16 +119,24 @@ export function StackPage() {
         {...titleHandlers}
         data-cursor="interactive"
       >
-        <PageTitle as="span" className={styles.titleBlock} title={siteContent.stackTitle} />
+        <PageTitle
+          id="stack-page-title"
+          as="span"
+          role="heading"
+          aria-level={1}
+          className={styles.titleBlock}
+          title={siteContent.stackTitle}
+        />
       </button>
 
-      <div className={styles.hint} style={{ opacity: hintOpacity }}>
+      <div className={styles.hint} style={{ opacity: hintOpacity }} aria-hidden="true">
         Drag to orbit
       </div>
 
       <div
         ref={interactionRef}
         className={styles.interactionLayer}
+        aria-hidden="true"
         {...interactionLayerHandlers}
       />
 
