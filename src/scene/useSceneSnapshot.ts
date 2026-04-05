@@ -3,7 +3,6 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { PAGE_TITLE_EXIT_DURATION_S } from '@/app/pageTransition'
 import {
-  aboutMarginGridConfig,
   alphaConfig,
   betaConfig,
   type CurveSceneConfig,
@@ -23,7 +22,7 @@ import {
 import { resolveLfoSceneParameters } from './lfo'
 import { fitPointCount } from './generators/bufferTransforms'
 import { fillLissajousPoints } from './generators/curves'
-import { generateMarginGridPoints, generateViewportGridPoints } from './generators/grids'
+import { generateFrameScatterPoints, generateViewportGridPoints } from './generators/grids'
 import { generateStackSceneData, STACK_CUBE_CENTER_Y } from './generators/stackEmbedding'
 import type { SceneSnapshot, StackSceneData } from './types'
 
@@ -133,40 +132,6 @@ function fillFittedTriplets(target: Float32Array, source: Float32Array, count: n
     target[targetOffset + 1] = source[sourceOffset + 1]
     target[targetOffset + 2] = source[sourceOffset + 2]
   }
-}
-
-function pushPointsOutsideViewport(
-  source: Float32Array,
-  width: number,
-  height: number,
-  overscanX: number,
-  overscanY: number,
-) {
-  const points = new Float32Array(source.length)
-  const halfWidth = Math.max(width * 0.5, 1e-6)
-  const halfHeight = Math.max(height * 0.5, 1e-6)
-  const exitX = halfWidth + overscanX
-  const exitY = halfHeight + overscanY
-
-  for (let index = 0; index < source.length; index += 3) {
-    const x = source[index]
-    const y = source[index + 1]
-    const z = source[index + 2]
-    const horizontalWeight = Math.abs(x) / halfWidth
-    const verticalWeight = Math.abs(y) / halfHeight
-
-    if (horizontalWeight >= verticalWeight) {
-      points[index] = (Math.sign(x) || 1) * exitX
-      points[index + 1] = y
-    } else {
-      points[index] = x
-      points[index + 1] = (Math.sign(y) || 1) * exitY
-    }
-
-    points[index + 2] = z
-  }
-
-  return points
 }
 
 function getPointCloudMetrics(points: Float32Array) {
@@ -315,12 +280,6 @@ export function useSceneSnapshot() {
   const contactOutBufferRef = useRef(new Float32Array(contactCount * 3))
   const blendBufferRef = useRef(new Float32Array(maxCount * 3))
 
-  const aboutMarginCellWorld = pixelsToWorld(
-    aboutMarginGridConfig.cellPx,
-    size.height,
-    framePreset.cameraPosition[2],
-    camera.fov,
-  )
   const aboutMarginWorldX = frameWorld.width * (frameMarginPx / Math.max(1, size.width))
   const aboutMarginWorldY = frameWorld.height * (frameMarginPx / Math.max(1, size.height))
   const menuCellWorld = pixelsToWorld(
@@ -352,37 +311,18 @@ export function useSceneSnapshot() {
     } satisfies StackSceneResources
   }, [maxCount, stackMapPreset.count])
 
-  const aboutTransitionResources = useMemo(() => {
-    const marginSource = fitPointCount(
-      generateMarginGridPoints(
+  const aboutFrameSource = useMemo(
+    () =>
+      generateFrameScatterPoints(
         frameWorld.width,
         frameWorld.height,
-        aboutMarginCellWorld,
-        aboutMarginWorldX,
-        aboutMarginWorldY,
-        0.04,
+        aboutMarginWorldX * 0.5,
+        aboutMarginWorldY * 0.5,
+        maxCount,
+        0,
       ),
-      maxCount,
-    )
-
-    return {
-      marginSource,
-      exitSource: pushPointsOutsideViewport(
-        marginSource,
-        frameWorld.width,
-        frameWorld.height,
-        aboutMarginWorldX + aboutMarginCellWorld * 4,
-        aboutMarginWorldY + aboutMarginCellWorld * 4,
-      ),
-    }
-  }, [
-    aboutMarginCellWorld,
-    aboutMarginWorldX,
-    aboutMarginWorldY,
-    frameWorld.height,
-    frameWorld.width,
-    maxCount,
-  ])
+    [aboutMarginWorldX, aboutMarginWorldY, frameWorld.height, frameWorld.width, maxCount],
+  )
 
   const menuSource = useMemo(
     () =>
@@ -620,15 +560,15 @@ export function useSceneSnapshot() {
             framePreset.glowBoost,
             aboutBlend,
           )
-          snapshot.orbit = aboutScene.particles.orbitMotion
-          snapshot.drift = aboutScene.particles.driftMotion
+          snapshot.orbit = lerp(aboutScene.particles.orbitMotion, framePreset.orbitMotion, aboutBlend)
+          snapshot.drift = lerp(aboutScene.particles.driftMotion, framePreset.driftMotion, aboutBlend)
           snapshot.recovery = lerp(aboutScene.particles.recovery, framePreset.recovery, aboutBlend)
-          snapshot.pointerRadiusPx = aboutScene.particles.pointerRadiusPx
-          snapshot.pointerStrength = aboutScene.particles.pointerStrength
-          snapshot.blendTargets = aboutTransitionResources.exitSource
+          snapshot.pointerRadiusPx = lerp(aboutScene.particles.pointerRadiusPx, 0, aboutBlend)
+          snapshot.pointerStrength = lerp(aboutScene.particles.pointerStrength, 0, aboutBlend)
+          snapshot.blendTargets = aboutFrameSource
           snapshot.blend = aboutBlend
-          snapshot.cameraPosition[0] = pointer.x * 0.06
-          snapshot.cameraPosition[1] = pointer.y * 0.05 - aboutBlend * 0.04
+          snapshot.cameraPosition[0] = pointer.x * 0.06 * (1 - aboutBlend)
+          snapshot.cameraPosition[1] = pointer.y * 0.05 * (1 - aboutBlend) - aboutBlend * 0.04
           snapshot.cameraPosition[2] = aboutPreset.cameraPosition[2]
           snapshot.cameraLookAt[0] = 0
           snapshot.cameraLookAt[1] = -aboutBlend * 0.08

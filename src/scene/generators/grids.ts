@@ -1,4 +1,4 @@
-import { hashSigned } from './shared'
+import { clamp, hashSigned } from './shared'
 
 function appendSegment(
   segments: number[],
@@ -84,4 +84,143 @@ export function generateMarginGridPoints(
   }
 
   return new Float32Array(points)
+}
+
+type FrameStrip = {
+  minX: number
+  maxX: number
+  minY: number
+  maxY: number
+  area: number
+}
+
+const TOP_FRAME_THICKNESS_SCALE = 1.2
+
+function halton(index: number, base: number) {
+  let result = 0
+  let fraction = 1 / base
+  let current = index
+
+  while (current > 0) {
+    result += (current % base) * fraction
+    current = Math.floor(current / base)
+    fraction /= base
+  }
+
+  return result
+}
+
+function getFrameStrips(
+  width: number,
+  height: number,
+  frameThicknessX: number,
+  frameThicknessY: number,
+) {
+  const halfWidth = Math.max(width * 0.5, 1e-6)
+  const halfHeight = Math.max(height * 0.5, 1e-6)
+  const thicknessX = clamp(frameThicknessX, 0, halfWidth)
+  const thicknessY = clamp(frameThicknessY, 0, halfHeight)
+  const topThicknessY = clamp(thicknessY * TOP_FRAME_THICKNESS_SCALE, 0, halfHeight)
+  const innerLeft = -halfWidth + thicknessX
+  const innerRight = halfWidth - thicknessX
+  const innerTop = halfHeight - topThicknessY
+  const innerBottom = -halfHeight + thicknessY
+  const sideHeight = Math.max(0, innerTop - innerBottom)
+
+  return [
+    {
+      minX: -halfWidth,
+      maxX: halfWidth,
+      minY: innerTop,
+      maxY: halfHeight,
+      area: width * topThicknessY,
+    },
+    {
+      minX: -halfWidth,
+      maxX: halfWidth,
+      minY: -halfHeight,
+      maxY: innerBottom,
+      area: width * thicknessY,
+    },
+    {
+      minX: -halfWidth,
+      maxX: innerLeft,
+      minY: innerBottom,
+      maxY: innerTop,
+      area: thicknessX * sideHeight,
+    },
+    {
+      minX: innerRight,
+      maxX: halfWidth,
+      minY: innerBottom,
+      maxY: innerTop,
+      area: thicknessX * sideHeight,
+    },
+  ].filter((strip) => strip.maxX > strip.minX && strip.maxY > strip.minY)
+}
+
+function resolveStripCounts(strips: FrameStrip[], totalCount: number) {
+  const totalArea = strips.reduce((sum, strip) => sum + strip.area, 0)
+
+  if (totalArea <= 1e-6 || totalCount <= 0) {
+    return strips.map(() => 0)
+  }
+
+  const counts = strips.map((strip) => Math.floor((strip.area / totalArea) * totalCount))
+  let remaining = totalCount - counts.reduce((sum, count) => sum + count, 0)
+
+  if (remaining <= 0) {
+    return counts
+  }
+
+  const priorities = strips
+    .map((strip, index) => ({
+      index,
+      remainder: (strip.area / totalArea) * totalCount - counts[index],
+    }))
+    .sort((a, b) => b.remainder - a.remainder)
+
+  for (let index = 0; index < priorities.length && remaining > 0; index += 1) {
+    counts[priorities[index].index] += 1
+    remaining -= 1
+  }
+
+  return counts
+}
+
+export function generateFrameScatterPoints(
+  width: number,
+  height: number,
+  frameThicknessX: number,
+  frameThicknessY: number,
+  count: number,
+  depth: number,
+) {
+  const strips = getFrameStrips(width, height, frameThicknessX, frameThicknessY)
+  const stripCounts = resolveStripCounts(strips, count)
+  const points = new Float32Array(count * 3)
+  let pointIndex = 0
+  let sequenceIndex = 1
+
+  for (let stripIndex = 0; stripIndex < strips.length; stripIndex += 1) {
+    const strip = strips[stripIndex]
+    const stripCount = stripCounts[stripIndex] ?? 0
+    const stripWidth = strip.maxX - strip.minX
+    const stripHeight = strip.maxY - strip.minY
+
+    for (let localIndex = 0; localIndex < stripCount; localIndex += 1) {
+      const x = strip.minX + halton(sequenceIndex, 2) * stripWidth
+      const y = strip.minY + halton(sequenceIndex, 3) * stripHeight
+      const offset = pointIndex * 3
+
+      points[offset] = x
+      points[offset + 1] = y
+      points[offset + 2] = depth === 0 ? 0 : hashSigned(sequenceIndex * 0.93) * depth
+
+      pointIndex += 1
+      sequenceIndex += 1
+    }
+  }
+
+  return points
 }
