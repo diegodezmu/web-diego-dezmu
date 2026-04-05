@@ -209,7 +209,7 @@ export const aboutMarginGridConfig = {
 
 export const stackEmbeddingMapConfig: ParticleTuning = {
   count: 15000,
-  sizePx: 3.5,
+  sizePx: 3.4,
   opacity: 0.8,
   glowBoost: 100,
   strokeWeightPx: 1,

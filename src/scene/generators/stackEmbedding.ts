@@ -17,16 +17,16 @@ const STACK_CUBE_HALF = STACK_CUBE_SIZE * 0.5
 export const STACK_CUBE_CENTER_Y = STACK_CUBE_HALF * 0.5 + 0.5
 const STACK_CUBE_DIVISIONS = 8
 const STACK_PARTICLE_COUNT_BY_TIER = {
-  1: 22,
+  1: 25,
   2: 30,
-  3: 38,
-  4: 46,
-  5: 54,
-  6: 62,
-  7: 73,
-  8: 84,
-  9: 96,
-  10: 108,
+  3: 35,
+  4: 40,
+  5: 45,
+  6: 50,
+  7: 55,
+  8: 60,
+  9: 65,
+  10: 70,
 } as const
 const STACK_RADIUS_BY_TIER = {
   1: 0.15,
