@@ -71,6 +71,7 @@
 }
 
 .linkButton {
+  position: relative;
   min-width: 168px;
   padding: 24px;
   display: inline-flex;
@@ -89,6 +90,15 @@
     transform var(--page-transition);
   will-change: transform;
   animation: itemSlideIn 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.08s both;
+}
+
+.linkButton::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: 0;
+  bottom: -8px;
+  left: 0;
 }
 
 .linkButton:nth-child(1) {

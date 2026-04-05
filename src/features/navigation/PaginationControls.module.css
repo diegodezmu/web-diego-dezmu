@@ -216,6 +216,20 @@
   right: calc(var(--frame-margin) - 11.93px);
 }
 
+.sideButtonLeft:hover .chevron,
+.sideButtonLeft:focus-visible .chevron,
+.mobileButtonLeft:hover .chevron,
+.mobileButtonLeft:focus-visible .chevron {
+  transform: translate(-10px, -50%);
+}
+
+.sideButtonRight:hover .chevron,
+.sideButtonRight:focus-visible .chevron,
+.mobileButtonRight:hover .chevron,
+.mobileButtonRight:focus-visible .chevron {
+  transform: translate(10px, -50%);
+}
+
 .mobileSpacer::before {
   display: none;
 }

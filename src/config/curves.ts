@@ -66,7 +66,7 @@ function createLfoBank(firstLfo?: Partial<LfoConfig>): LfoBank {
 const sharedCurveParticles = createParticleTuning({
   count: 15000,
   sizePx: 3.3,
-  opacityPct: 80,
+  opacityPct: 90,
   glowBoostPct: 100,
   strokeWeightPx: 1,
   jitterPx: 10,
@@ -94,12 +94,12 @@ export const alphaConfig: CurveSceneConfig = {
   particles: sharedCurveParticles,
   lfos: createLfoBank({
     enabled: true,
-    ratio: 0.05,
-    wave: 'triangle',
-    amountPct: 0,
+    ratio: 0.03,
+    wave: 'sine',
+    amountPct: 5,
     target: {
       scope: 'curve',
-      key: 'ampY',
+      key: 'ampX',
     },
   }),
 }
@@ -172,7 +172,7 @@ export const deltaConfig: CurveSceneConfig = {
   particles: createParticleTuning({
     count: 15000,
     sizePx: 3.5,
-    opacityPct: 80,
+    opacityPct: 90,
     glowBoostPct: 100,
     strokeWeightPx: 1,
     jitterPx: 10,
@@ -185,7 +185,7 @@ export const deltaConfig: CurveSceneConfig = {
   }),
   lfos: createLfoBank({
     enabled: true,
-    ratio: 0.05,
+    ratio: 0.04,
     wave: 'sine',
     amountPct: 0.1,
     target: {
@@ -199,7 +199,7 @@ export const aboutMarginGridConfig = {
   cellPx: 18,
   count: 15000,
   sizePx: 1.5,
-  opacity: 80,
+  opacity: 90,
   glowBoost: 100,
   haloPx: 12,
   pointerRadiusPx: 60,
@@ -210,7 +210,7 @@ export const aboutMarginGridConfig = {
 export const stackEmbeddingMapConfig: ParticleTuning = {
   count: 15000,
   sizePx: 3.4,
-  opacity: 0.8,
+  opacity: 0.9,
   glowBoost: 100,
   strokeWeightPx: 1,
   jitterPx: 0,
@@ -226,7 +226,7 @@ export const menuGridConfig = {
   cellPx: 18,
   count: 15000,
   sizePx: 3.1,
-  opacity: 80,
+  opacity: 90,
   glowBoost: 100,
   haloPx: 12,
   pointerRadiusPx: 192,

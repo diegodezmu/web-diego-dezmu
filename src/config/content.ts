@@ -11,7 +11,7 @@ export const PARTICLE_TINT_COLOR = 'rgba(111, 101, 220, 1)'
 
 const contactSocialLinks: ContactSocialLink[] = [
   { label: 'Instagram', href: 'https://www.instagram.com/ddezmu' },
-  { label: 'twitter / X', href: 'https://x.com/ddezmu' },
+  { label: 'X/twitter', href: 'https://x.com/ddezmu' },
 ]
 
 export const sectionOrder: AppSection[] = ['home', 'about', 'stack', 'contact']
@@ -57,7 +57,7 @@ export const stackSkillSpecs: StackSkillSpec[] = [
   { label: 'Agents', group: 'ai', densityTier: 7 },
   { label: 'Context engineering', group: 'ai', densityTier: 7 },
   { label: 'Prompting', group: 'ai', densityTier: 8 },
-  { label: 'MCP', group: 'ai', densityTier: 6 },
+  { label: 'MCP', group: 'ai', densityTier: 5 },
   { label: 'API', group: 'ai', densityTier: 7 },
   { label: 'RAG', group: 'ai', densityTier: 7 },
   { label: 'OpenClaw', group: 'ai', densityTier: 5 },
@@ -70,7 +70,7 @@ export const stackSkillSpecs: StackSkillSpec[] = [
   { label: 'Prototyping', group: 'design', densityTier: 8 },
   { label: 'Touch designer', group: 'design', densityTier: 2 },
   { label: 'Motion design', group: 'design', densityTier: 4 },
-  { label: 'Antigravity', group: 'tooling', densityTier: 7 },
+  { label: 'Antigravity', group: 'tooling', densityTier: 6 },
   { label: 'Claude Code', group: 'tooling', densityTier: 7 },
   { label: 'Codex', group: 'tooling', densityTier: 7 },
   { label: 'Python', group: 'tooling', densityTier: 3 },

@@ -6,7 +6,7 @@
 
 :root {
   --color-dark: #000000;
-  --color-dark-hover: #060606;
+  --color-dark-hover: #0d0d0d;
   --color-accent: var(--color-light-highlight);
   --color-light-primary: #d1d1d1;
   --color-light-highlight: #ffffff;
@@ -38,7 +38,6 @@
   --nav-enter-duration: 1500ms;
   --nav-enter-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --shadow-title:
-    0 0 0px rgba(0, 0, 0, 1),
     0 0 1px rgba(0, 0, 0, 1),
     0 0 2px rgba(0, 0, 0, 1),
     0 0 3px rgba(0, 0, 0, 1),

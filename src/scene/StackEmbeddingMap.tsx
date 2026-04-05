@@ -19,7 +19,7 @@ function StackLineSegments({ positions, color, snapshotRef }: StackLineSegmentsP
       return
     }
 
-    material.opacity = 0.14 * snapshotRef.current.stackDisplayProgress
+    material.opacity = 0.16 * snapshotRef.current.stackDisplayProgress
   })
 
   return (
