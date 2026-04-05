@@ -23,6 +23,8 @@ export function CustomCursor() {
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        focusable="false"
       >
         <path
           d="M0.615234 15.3848H3.07715V16H0V12.9229H0.615234V15.3848ZM16 16H12.9229V15.3848H15.3848V12.9229H16V16ZM3.07715 0.615234H0.615234V3.07715H0V0H3.07715V0.615234ZM16 3.07715H15.3848V0.615234H12.9229V0H16V3.07715Z"
@@ -34,6 +36,8 @@ export function CustomCursor() {
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        focusable="false"
       >
         <circle cx="8" cy="8" r="2.46191" fill="currentColor" />
       </svg>

@@ -5,6 +5,9 @@ type PageTitleProps = {
   className?: string
   titleClassName?: string
   as?: 'h1' | 'h2' | 'span'
+  id?: string
+  role?: 'heading'
+  'aria-level'?: number
 }
 
 export function PageTitle({
@@ -12,6 +15,18 @@ export function PageTitle({
   className = '',
   titleClassName = '',
   as: Tag = 'h2',
+  id,
+  role,
+  'aria-level': ariaLevel,
 }: PageTitleProps) {
-  return <Tag className={`${styles.title} ${className} ${titleClassName}`.trim()}>{title}</Tag>
+  return (
+    <Tag
+      id={id}
+      role={role}
+      aria-level={ariaLevel}
+      className={`${styles.title} ${className} ${titleClassName}`.trim()}
+    >
+      {title}
+    </Tag>
+  )
 }
