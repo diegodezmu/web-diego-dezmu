@@ -102,4 +102,9 @@
   .linksBlock {
     bottom: 72px;
   }
+
+  .emailLink,
+  .socialLink {
+    font-size: calc(var(--link-size) - 1px);
+  }
 }

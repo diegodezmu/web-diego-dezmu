@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
+import { getDefaultStackZoom } from '@/shared/utils/stackZoom'
 import { useAppStore } from '@/state/appStore'
 
 const STACK_TRANSITION_DURATION_S = 2
@@ -32,7 +33,7 @@ export function useStackTransition(stackProgress: number) {
       return
     }
 
-    setStackZoom(1)
+    setStackZoom(getDefaultStackZoom())
 
     if (stackStateTarget === 1) {
       setStackCamera({ hasInteracted: false })

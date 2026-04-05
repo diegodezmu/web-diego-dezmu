@@ -85,7 +85,7 @@ export const stackSkillSpecs: StackSkillSpec[] = [
   { label: 'Vercel', group: 'engineering', densityTier: 6 },
   { label: 'Supabase', group: 'engineering', densityTier: 5 },
   { label: 'PostgreSQL', group: 'engineering', densityTier: 4 },
-  { label: 'Sound design', group: 'audio', densityTier: 6 },
+  { label: 'Cursor', group: 'tooling', densityTier: 6 },
   { label: 'Ableton Live', group: 'audio', densityTier: 7 },
   { label: 'Max4live', group: 'audio', densityTier: 2 },
 ]

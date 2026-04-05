@@ -52,6 +52,7 @@ const STACK_LABEL_SCALE_BY_TIER = {
   9: 1.19,
   10: 1.26,
 } as const
+const STACK_LABEL_VERTICAL_OFFSET = -0.02
 const STACK_CLUSTER_LAYOUTS: Record<
   StackSkillGroup,
   { center: [number, number, number]; spread: [number, number, number] }
@@ -130,7 +131,7 @@ function getAnchorDistance(left: [number, number, number], right: [number, numbe
 
 function createLabelAnchor(position: [number, number, number], radius: number, text: string) {
   const depthOffset = clamp(position[2] * 0.035, -0.12, 0.12)
-  const vertical = 0.22 + radius * 0.9 + text.length * 0.002
+  const vertical = 0.22 + radius * 0.9 + text.length * 0.002 + STACK_LABEL_VERTICAL_OFFSET
 
   return toTuple(position[0] - 0.35, position[1] + vertical, position[2] + depthOffset)
 }

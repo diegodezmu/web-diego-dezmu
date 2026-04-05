@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { STACK_ZOOM_MIN, STACK_ZOOM_STEP, getStackZoomMax } from '@/shared/utils/stackZoom'
 import { DEFAULT_STACK_PHI, useAppStore } from '@/state/appStore'
 
-const ZOOM_MIN = 0.4
-const ZOOM_MAX = 1.0
-const ZOOM_STEP = 0.2
 const THETA_MIN = -Infinity
 const THETA_MAX = Infinity
 const PHI_MIN = Math.max(Math.PI * 0.2, DEFAULT_STACK_PHI - 0.7)
@@ -23,6 +21,7 @@ export function useStackCamera(stackProgress: number) {
   const setStackCamera = useAppStore((state) => state.setStackCamera)
   const markStackCameraInteracted = useAppStore((state) => state.markStackCameraInteracted)
   const setStackZoom = useAppStore((state) => state.setStackZoom)
+  const zoomMax = getStackZoomMax()
   const velocityRef = useRef({
     theta: 0,
     phi: 0,
@@ -100,9 +99,9 @@ export function useStackCamera(stackProgress: number) {
     stopInertia,
     startInertia,
     applyOrbit,
-    handleZoomOut: () => setStackZoom(clamp(stackZoom + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)),
-    handleZoomIn: () => setStackZoom(clamp(stackZoom - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)),
-    isZoomOutDisabled: stackZoom >= ZOOM_MAX,
-    isZoomInDisabled: stackZoom <= ZOOM_MIN,
+    handleZoomOut: () => setStackZoom(clamp(stackZoom + STACK_ZOOM_STEP, STACK_ZOOM_MIN, zoomMax)),
+    handleZoomIn: () => setStackZoom(clamp(stackZoom - STACK_ZOOM_STEP, STACK_ZOOM_MIN, zoomMax)),
+    isZoomOutDisabled: stackZoom >= zoomMax,
+    isZoomInDisabled: stackZoom <= STACK_ZOOM_MIN,
   }
 }

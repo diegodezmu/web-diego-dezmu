@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { INTRO_CURTAIN_ENABLED } from '@/config/appFlags'
 import { sectionToSceneMode } from '@/config/scenePresets'
 import type { AppSection, Capabilities, PointerState, SceneMode } from '@/shared/types'
+import { getDefaultStackZoom } from '@/shared/utils/stackZoom'
 
 export const DEFAULT_STACK_THETA = Math.PI * 0.21 + Math.PI * 0.55
 export const DEFAULT_STACK_PHI = Math.PI * 0.44
@@ -99,7 +100,7 @@ export const useAppStore = create<AppState>((set) => ({
   stackStateTarget: 0,
   stackProgress: 0,
   stackCamera: defaultStackCamera,
-  stackZoom: 1,
+  stackZoom: getDefaultStackZoom(),
   startHold: () => set({ holdStartTime: Date.now() }),
   endHold: () => set({ holdStartTime: null }),
   completeIntro: () => set({ introCompleted: true }),
@@ -130,7 +131,7 @@ export const useAppStore = create<AppState>((set) => ({
       stackStateTarget: 0,
       stackProgress: 0,
       stackCamera: defaultStackCamera,
-      stackZoom: 1,
+      stackZoom: getDefaultStackZoom(),
     }),
   setSceneMode: (sceneMode) => set({ sceneMode }),
   setMenuOpen: (menuOpen) => set({ menuOpen }),

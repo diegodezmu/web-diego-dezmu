@@ -220,13 +220,6 @@
   display: none;
 }
 
-@media (max-width: 1200px) {
-  .sideButton {
-    width: 136px;
-    height: 332px;
-  }
-}
-
 @keyframes paginationDockIn {
   from {
     opacity: 0;
