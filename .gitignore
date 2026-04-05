@@ -7,9 +7,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
+node_modules/
+dist/
 dist-ssr
+.env
+.env.local
 *.local
 Visual-references/
 
@@ -17,11 +19,14 @@ Visual-references/
 .DS_Store
 .AppleDouble
 ._*
+Thumbs.db
 
 # Editor directories and files
+.vscode/
+!.vscode/
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 *.suo
 *.ntvs*
 *.njsproj

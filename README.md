@@ -1,72 +1,65 @@
-# web-diego-dezmu
+# Diego Dezmu Portfolio
 
-Interactive portfolio built with React, Vite, TypeScript, GSAP, Three.js, and React Three Fiber. The app mixes route-driven DOM content with a persistent particle scene that morphs across the main sections of the site.
+A personal portfolio built with React, Vite, TypeScript, and React Three Fiber. It combines route-driven content with a persistent WebGL particle scene that morphs across the experience instead of resetting between pages.
 
-Current version: `4.2.0`
+At the center of the site is an interactive particle system shaped by Lissajous curves, tuned across device tiers, and backed by graceful fallbacks when WebGL or motion-heavy effects are not available.
 
-## Scripts
+## Preview
 
-```bash
-npm install
-npm run dev
-npm run lint
-npm run build
-npm run preview
+![Portfolio preview](./docs/preview.png)
+
+Diego can replace `./docs/preview.png` with a current screenshot or GIF before publishing the repository.
+
+## Tech Stack
+
+- React 19
+- Vite
+- TypeScript
+- React Three Fiber
+- Zustand
+- GSAP
+- CSS Modules
+
+## Highlights
+
+- Persistent particle scene driven by Lissajous curves and route-aware morph targets
+- Adaptive GPU tier system that scales particle density and sizing per device capability
+- Graceful degradation with WebGL capability detection and fallback backgrounds
+- `prefers-reduced-motion` support and touch-aware interaction handling
+- Orchestrated page transitions shared between the DOM layer and the persistent scene
+
+## Project Structure
+
+```text
+src/
+├── app/                App shell, routing, intro curtain, fallbacks, and transition orchestration
+├── assets/             Fonts, portraits, and fallback imagery bundled through Vite
+├── config/             Copy, feature flags, curve definitions, and scene presets
+├── features/           Page-level UI plus layout, navigation, and menu modules
+├── scene/              Persistent R3F particle scene, generators, and stack embedding logic
+├── shared/             Reusable components, utilities, assets, and shared types
+└── state/              Zustand store coordinating UI state and scene state
 ```
 
-## Stack
+## Run Locally
 
-- React 19 + TypeScript + Vite
-- React Router for section routing
-- Zustand for shared interaction and scene state
-- Three.js + React Three Fiber + Drei for the persistent WebGL layer
-- GSAP for content reveal and section transitions
+```bash
+git clone https://github.com/[USUARIO]/[REPO].git
+cd [REPO]
+npm install
+npm run dev
+```
 
-## Structure
+No environment variables or API keys are required.
 
-- `src/app`: shell, routing, shared overlays, fallback handling
-- `src/assets`: Vite-processed images and fonts used by the app
-- `src/features/pages`: `home`, `about`, `stack`, and `contact` page content
-- `src/scene`: particle system, stack embedding map, labels, and point generators
-- `src/config`: copy, curve definitions, and scene presets
-- `src/shared`: shared components, utilities, and types
-- `src/state`: Zustand store for UI and scene coordination
-- `public`: static assets served as-is
-- `tests`: unit coverage for generators, config, and shared utilities
-- `docs`: audits, licenses, and tooling notes kept out of the runtime tree
+## Production
 
-## Current Experience
+https://[DOMINIO]
 
-- `Home`: animated wordmark and role lockup over a Lissajous-based particle composition.
-- `About`: scroll-driven biography reveal with a responsive portrait loaded through `<picture>` and a particle-frame transition in the scene.
-- `Stack`: two-state interaction that morphs from the curve field into a 3D skill embedding map with orbit, inertia, touch gestures, zoom controls, and projected labels.
-- `Contact`: wheel/touch-driven reveal for the email block and social links with an upward particle exit transition.
-- `Global`: animated menu overlay, pagination controls, custom cursor for non-touch devices, capability detection, and non-WebGL fallback backgrounds.
+## Author
 
-## Content and Scene Tuning
+Diego Dezmu
 
-- Text content, section labels, and the stack taxonomy live in `src/config/content.ts`.
-- Particle curve presets live in `src/config/curves.ts`.
-- Device-tier scene presets live in `src/config/scenePresets.ts`.
-- LFO modulation helpers for animated curve and particle parameters live in `src/scene/lfo.ts`.
+## License
 
-## Update Log
-
-### `4.2.0`
-
-- Replaced the previous single About portrait asset with a responsive desktop/mobile pair: `src/assets/images/portrait-desktop.webp` and `src/assets/images/portrait-mobile.webp`.
-- Reworked the `About` section to use direct scroll progress, title-triggered wheel/touch control, and a responsive image frame.
-- Expanded the `Stack` section into a curve-to-embedding-map transition with grouped skills, orbit controls, zoom buttons, and projected labels in 3D space.
-- Updated the particle scene to support the stack map transition, section-specific blends, and LFO-driven parameter modulation.
-- Tightened shell-level interaction handling for menu overlay visibility, pointer interactivity, and WebGL fallback states.
-- Split the runtime bundle with lazy-loaded pages/canvas and manual vendor chunking, then isolated the remaining R3F payload as its own async scene chunk with an explicit warning budget for staging builds.
-
-## Validation
-
-- `npm run lint`
-- `npm run build`
-
-## Notes
-
-- The WebGL scene remains persistent at runtime, but it is now delivered through async chunks so the entry bundle stays light.
-- Vite's `chunkSizeWarningLimit` is set to `900` because the isolated R3F runtime is a deliberate async payload, not the entry bundle.
+MIT
