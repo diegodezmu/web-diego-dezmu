@@ -23,6 +23,7 @@ export function StackPage() {
   const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
   const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const stackProgress = useAppStore((state) => state.stackProgress)
+  const reducedMotion = useAppStore((state) => state.capabilities.reducedMotion)
   const { titleOpacity, titleShift } = useStackTransition(stackProgress)
   const {
     hintOpacity,
@@ -43,6 +44,10 @@ export function StackPage() {
   })
 
   useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
     const ctx = gsap.context(() => {
       gsap.fromTo(
         `.${styles.titleBlock}`,
@@ -52,9 +57,13 @@ export function StackPage() {
     }, shellRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [reducedMotion])
 
   useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
     if (contentRevealKey === previousContentRevealKeyRef.current) {
       return
     }
@@ -70,9 +79,13 @@ export function StackPage() {
     }, shellRef)
 
     return () => ctx.revert()
-  }, [contentRevealKey])
+  }, [contentRevealKey, reducedMotion])
 
   useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
     if (pageTransitionPhase !== 'exiting' || pageTransitionOrigin !== location.pathname) {
       return
     }
@@ -91,7 +104,7 @@ export function StackPage() {
     return () => {
       titleTween?.kill()
     }
-  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase])
+  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase, reducedMotion])
 
   return (
     <section ref={shellRef} className={styles.page}>

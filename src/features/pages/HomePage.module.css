@@ -117,3 +117,10 @@
     display: none;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .wordmark,
+  .roleGroup {
+    animation: none;
+  }
+}

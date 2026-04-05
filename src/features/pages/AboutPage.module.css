@@ -138,3 +138,10 @@
     aspect-ratio: 322 / 163;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollMask,
+  .titleAnchor {
+    transition: none;
+  }
+}

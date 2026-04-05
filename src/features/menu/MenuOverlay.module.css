@@ -299,6 +299,24 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .closeButtonEnter,
+  .closeButtonExit,
+  .linkButton,
+  .caption,
+  .navExit .linkButton,
+  .captionExit {
+    animation: none;
+  }
+
+  .closeButton,
+  .linkButton,
+  .linkLabel {
+    transition: none;
+  }
+}
+
 @keyframes closeToggleEnterMobile {
   from {
     opacity: 0;

@@ -1,6 +1,8 @@
 import { Suspense, lazy, useDeferredValue, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { FallbackBackground } from '@/app/FallbackBackground'
 import { IntroCurtain } from '@/app/IntroCurtain'
+import { SceneErrorBoundary } from '@/app/SceneErrorBoundary'
 import { PAGE_TITLE_EXIT_DURATION_MS } from '@/app/pageTransition'
 import { INTRO_CURTAIN_ENABLED } from '@/config/appFlags'
 import { sectionLabels } from '@/config/content'
@@ -54,7 +56,7 @@ function renderFallbackScene(
 ) {
   if (activeSection === 'stack' && !menuOpen) {
     return (
-      <>
+      <FallbackBackground>
         <div
           className={`${styles.fallbackBackdrop} ${styles['fallbackBackdrop--stackGamma']}`}
           style={{ opacity: 1 - stackFallbackBlend * 0.76, transition: 'none' }}
@@ -65,15 +67,17 @@ function renderFallbackScene(
           style={{ opacity: stackFallbackBlend, transition: 'none' }}
           aria-hidden="true"
         />
-      </>
+      </FallbackBackground>
     )
   }
 
   return (
-    <div
-      className={`${styles.fallbackBackdrop} ${styles[`fallbackBackdrop--${fallbackMode}`]}`}
-      aria-hidden="true"
-    />
+    <FallbackBackground>
+      <div
+        className={`${styles.fallbackBackdrop} ${styles[`fallbackBackdrop--${fallbackMode}`]}`}
+        aria-hidden="true"
+      />
+    </FallbackBackground>
   )
 }
 
@@ -119,12 +123,41 @@ export function AppShell() {
     })
 
     document.documentElement.dataset.cursorMode = !detected.isTouch ? 'custom' : 'native'
+    document.documentElement.dataset.reducedMotion = detected.reducedMotion
+      ? 'reduce'
+      : 'no-preference'
   })
 
   useEffect(() => {
+    const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const coarsePointerMedia = window.matchMedia('(pointer: coarse)')
+    const handleCapabilityChange = () => {
+      syncCapabilities()
+    }
+    const registerMediaListener = (query: MediaQueryList) => {
+      if ('addEventListener' in query) {
+        query.addEventListener('change', handleCapabilityChange)
+        return () => query.removeEventListener('change', handleCapabilityChange)
+      }
+
+      const legacyQuery = query as MediaQueryList & {
+        addListener: (listener: (event: MediaQueryListEvent) => void) => void
+        removeListener: (listener: (event: MediaQueryListEvent) => void) => void
+      }
+
+      legacyQuery.addListener(handleCapabilityChange)
+      return () => legacyQuery.removeListener(handleCapabilityChange)
+    }
+    const unregisterReducedMotion = registerMediaListener(reducedMotionMedia)
+    const unregisterCoarsePointer = registerMediaListener(coarsePointerMedia)
+
     syncCapabilities()
     window.addEventListener('resize', syncCapabilities)
-    return () => window.removeEventListener('resize', syncCapabilities)
+    return () => {
+      unregisterReducedMotion()
+      unregisterCoarsePointer()
+      window.removeEventListener('resize', syncCapabilities)
+    }
   }, [])
 
   useEffect(() => {
@@ -313,9 +346,11 @@ export function AppShell() {
       />
 
       {webglSupported ? (
-        <Suspense fallback={sceneFallback}>
-          <SceneCanvas />
-        </Suspense>
+        <SceneErrorBoundary fallback={sceneFallback}>
+          <Suspense fallback={sceneFallback}>
+            <SceneCanvas />
+          </Suspense>
+        </SceneErrorBoundary>
       ) : (
         sceneFallback
       )}

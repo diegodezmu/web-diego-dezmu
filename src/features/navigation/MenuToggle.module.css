@@ -63,3 +63,14 @@
     font-size: 18px;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle {
+    animation: none;
+    transition: none;
+  }
+
+  .word {
+    transition: none;
+  }
+}

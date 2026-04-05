@@ -53,9 +53,14 @@ export function AboutPage() {
   const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
   const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const aboutScrollProgress = useAppStore((state) => state.aboutScrollProgress)
+  const reducedMotion = useAppStore((state) => state.capabilities.reducedMotion)
   const setAboutScrollProgress = useAppStore((state) => state.setAboutScrollProgress)
 
   useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
     const ctx = gsap.context(() => {
       gsap.fromTo(
         `.${styles.titleBlock}`,
@@ -75,9 +80,13 @@ export function AboutPage() {
     }, shellRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [reducedMotion])
 
   useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
     if (contentRevealKey === previousContentRevealKeyRef.current) {
       return
     }
@@ -93,9 +102,13 @@ export function AboutPage() {
     }, shellRef)
 
     return () => ctx.revert()
-  }, [contentRevealKey])
+  }, [contentRevealKey, reducedMotion])
 
   useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
     if (pageTransitionPhase !== 'exiting' || pageTransitionOrigin !== location.pathname) {
       return
     }
@@ -125,7 +138,7 @@ export function AboutPage() {
       titleTween?.kill()
       contentTween?.kill()
     }
-  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase])
+  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase, reducedMotion])
 
   useLayoutEffect(() => {
     const element = scrollRef.current
@@ -174,6 +187,11 @@ export function AboutPage() {
       useAppStore.getState().aboutScrollProgress < ABOUT_CLICK_TOGGLE_THRESHOLD
         ? ABOUT_CLICK_PROGRESS_TARGET
         : 0
+
+    if (reducedMotion) {
+      element.scrollTop = maxScrollTop * targetProgress
+      return
+    }
 
     aboutScrollTweenRef.current?.kill()
     aboutScrollTweenRef.current = null
@@ -282,6 +300,11 @@ export function AboutPage() {
 
           if (event.currentTarget.hasPointerCapture(event.pointerId)) {
             event.currentTarget.releasePointerCapture(event.pointerId)
+          }
+        }}
+        onClick={(event) => {
+          if (event.detail === 0) {
+            toggleAboutState()
           }
         }}
         data-cursor="interactive"

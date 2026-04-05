@@ -18,6 +18,7 @@ export function SceneCanvas() {
   return (
     <div className={styles.canvasWrap} aria-hidden="true">
       <Canvas
+        aria-hidden="true"
         camera={{ fov: 34, near: 0.1, far: 50, position: [0, 0, 11.5] }}
         dpr={dpr}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}

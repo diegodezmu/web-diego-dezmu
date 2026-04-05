@@ -60,13 +60,14 @@
 .linksBlock {
   position: absolute;
   left: 50%;
-  bottom: 92px;
+  bottom: calc(var(--frame-margin) + env(safe-area-inset-bottom, 0px));
   z-index: 4;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  width: 194px;
+  width: min(calc(100% - var(--frame-margin) * 2), 280px);
+  padding-inline: 12px;
   transition:
     opacity 2500ms cubic-bezier(0.215, 0.61, 0.355, 1),
     transform 2500ms cubic-bezier(0.215, 0.61, 0.355, 1);
@@ -84,6 +85,7 @@
 
 .emailLink {
   color: var(--color-light-primary);
+  overflow-wrap: anywhere;
 }
 
 .socialRow {
@@ -91,7 +93,8 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  white-space: nowrap;
+  flex-wrap: wrap;
+  white-space: normal;
 }
 
 .socialLink {
@@ -99,12 +102,19 @@
 }
 
 @media (max-width: 767px) {
-  .linksBlock {
-    bottom: 72px;
-  }
-
   .emailLink,
   .socialLink {
     font-size: calc(var(--link-size) - 1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .titleBlockMount,
+  .titleBlockReveal {
+    animation: none;
+  }
+
+  .linksBlock {
+    transition: none;
   }
 }

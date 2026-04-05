@@ -29,9 +29,14 @@ export function HomePage() {
   const contentRevealKey = useAppStore((state) => state.contentRevealKey)
   const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
   const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
+  const reducedMotion = useAppStore((state) => state.capabilities.reducedMotion)
   const shouldDelayHomeIntro = mountedDuringIntroRef.current && contentRevealKey === 0
 
   useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
     if (pageTransitionPhase !== 'exiting' || pageTransitionOrigin !== location.pathname) {
       return
     }
@@ -69,7 +74,7 @@ export function HomePage() {
       wordmarkTween?.kill()
       roleGroupTween?.kill()
     }
-  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase])
+  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase, reducedMotion])
 
   return (
     <section ref={shellRef} className={styles.page}>

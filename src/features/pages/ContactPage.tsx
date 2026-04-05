@@ -46,6 +46,7 @@ export function ContactPage() {
   const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const contactProgress = useAppStore((state) => state.contactProgress)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
+  const reducedMotion = useAppStore((state) => state.capabilities.reducedMotion)
   const setContactProgress = useAppStore((state) => state.setContactProgress)
 
   useEffect(() => {
@@ -72,6 +73,10 @@ export function ContactPage() {
   }, [setContactProgress])
 
   useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
     if (pageTransitionPhase !== 'exiting' || pageTransitionOrigin !== location.pathname) {
       return
     }
@@ -93,7 +98,7 @@ export function ContactPage() {
     return () => {
       titleTween?.kill()
     }
-  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase])
+  }, [location.pathname, pageTransitionOrigin, pageTransitionPhase, reducedMotion])
 
   const revealProgress = clamp((contactProgress - 0.01) / 0.14, 0, 1)
 

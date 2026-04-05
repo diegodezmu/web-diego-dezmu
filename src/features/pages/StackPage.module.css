@@ -122,3 +122,12 @@
     max-width: calc(100vw - var(--frame-margin) * 2);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .hint,
+  .zoomControls,
+  .zoomButton,
+  .zoomButtonInner {
+    transition: none;
+  }
+}

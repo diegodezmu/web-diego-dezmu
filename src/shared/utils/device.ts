@@ -22,8 +22,7 @@ export function detectCapabilities(): Omit<Capabilities, 'webglSupported'> {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const deviceMemory = (navigator as NavigatorWithDeviceMemory).deviceMemory ?? 8
   const concurrency = navigator.hardwareConcurrency ?? 8
-  const lowPower =
-    width <= 767 || deviceMemory <= 4 || concurrency <= 4 || reducedMotion
+  const lowPower = deviceMemory <= 4 || concurrency <= 4 || reducedMotion
 
   return {
     deviceTier: lowPower ? 'lowPower' : getDeviceTier(width),

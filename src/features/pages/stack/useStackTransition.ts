@@ -11,6 +11,7 @@ export function useStackTransition(stackProgress: number) {
   const setStackProgress = useAppStore((state) => state.setStackProgress)
   const setStackCamera = useAppStore((state) => state.setStackCamera)
   const setStackZoom = useAppStore((state) => state.setStackZoom)
+  const reducedMotion = useAppStore((state) => state.capabilities.reducedMotion)
   const stackProgressTweenRef = useRef<gsap.core.Tween | null>(null)
   const stackProgressValueRef = useRef({ value: 0 })
 
@@ -40,6 +41,12 @@ export function useStackTransition(stackProgress: number) {
     }
 
     stackProgressTweenRef.current?.kill()
+
+    if (reducedMotion) {
+      setStackProgress(stackStateTarget)
+      return
+    }
+
     stackProgressValueRef.current.value = current
     stackProgressTweenRef.current = gsap.to(stackProgressValueRef.current, {
       value: stackStateTarget,
@@ -55,7 +62,7 @@ export function useStackTransition(stackProgress: number) {
       stackProgressTweenRef.current?.kill()
       stackProgressTweenRef.current = null
     }
-  }, [setStackCamera, setStackProgress, setStackZoom, stackStateTarget])
+  }, [reducedMotion, setStackCamera, setStackProgress, setStackZoom, stackStateTarget])
 
   useEffect(
     () => () => {

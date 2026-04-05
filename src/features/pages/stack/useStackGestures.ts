@@ -1,4 +1,10 @@
-import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
+import {
+  useEffect,
+  useRef,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
+} from 'react'
 import { useAppStore } from '@/state/appStore'
 
 const GESTURE_THRESHOLD = 8
@@ -164,6 +170,14 @@ export function useStackGestures({
     }
   }
 
+  const handleTitleClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    if (event.detail !== 0) {
+      return
+    }
+
+    setStackStateTarget(stackProgress < 0.5 ? 1 : 0)
+  }
+
   const handleInteractionPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     const stackActive = useAppStore.getState().stackProgress > 0.001
     const isTouchInput = event.pointerType === 'touch'
@@ -306,6 +320,7 @@ export function useStackGestures({
   return {
     interactionRef,
     titleHandlers: {
+      onClick: handleTitleClick,
       onWheel: handleTitleWheel,
       onPointerDown: handleTitlePointerDown,
       onPointerMove: handleTitlePointerMove,

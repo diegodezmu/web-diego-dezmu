@@ -315,3 +315,20 @@
     transform: translateY(-12px);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .sideButton,
+  .mobileButton,
+  .mobileSpacer,
+  .sideButtonExit,
+  .mobileButtonExit,
+  .mobileSlotExit {
+    animation: none;
+  }
+
+  .sideButton,
+  .mobileButton,
+  .chevron {
+    transition: none;
+  }
+}
