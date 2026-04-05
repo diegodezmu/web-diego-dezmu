@@ -25,6 +25,7 @@ const pathToSection = {
 } as const
 
 const MENU_OVERLAY_MOTION_MS = 900
+const ABOUT_UNDERLAY_FADE_PROGRESS = 0.06
 const CURSOR_INTERACTIVE_SELECTOR = [
   'button[data-cursor="interactive"]:not([disabled])',
   'a[data-cursor="interactive"][href]',
@@ -88,6 +89,7 @@ export function AppShell() {
   const pageTransitionTarget = useAppStore((state) => state.pageTransitionTarget)
   const isTouch = useAppStore((state) => state.capabilities.isTouch)
   const webglSupported = useAppStore((state) => state.capabilities.webglSupported)
+  const aboutScrollProgress = useAppStore((state) => state.aboutScrollProgress)
   const contactProgress = useAppStore((state) => state.contactProgress)
   const stackProgress = useAppStore((state) => state.stackProgress)
   const setActiveSection = useAppStore((state) => state.setActiveSection)
@@ -235,8 +237,9 @@ export function AppShell() {
     !menuOpen && underlaySection === 'contact' ? Math.min(1, 0.4 + contactProgress * 0.52) : 0
   const renderedContactUnderlayOpacity =
     !menuOpen && renderedSection === 'contact' ? Math.min(1, 0.4 + contactProgress * 0.52) : 0
-  const aboutContentBelowScene = !menuOpen && renderedSection === 'about'
-  const aboutUnderlayOpacity = showAboutUnderlay ? 1 : 0
+  const aboutUnderlayOpacity = showAboutUnderlay
+    ? 1 - clamp(aboutScrollProgress / ABOUT_UNDERLAY_FADE_PROGRESS, 0, 1)
+    : 0
   const contactUnderlayOpacity = Math.max(
     targetContactUnderlayOpacity,
     renderedContactUnderlayOpacity,
@@ -318,7 +321,7 @@ export function AppShell() {
       )}
 
       <div
-        className={`${styles.contentLayer} ${aboutContentBelowScene ? styles.contentLayerBelowScene : ''} ${menuVisible ? styles.layerHidden : ''}`}
+        className={`${styles.contentLayer} ${menuVisible ? styles.layerHidden : ''}`}
         aria-hidden={menuVisible}
       >
         <main className={styles.main}>

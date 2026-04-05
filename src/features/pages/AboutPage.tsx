@@ -16,6 +16,7 @@ import styles from './AboutPage.module.css'
 const ABOUT_CLICK_PROGRESS_TARGET = 0.81
 const ABOUT_CLICK_TOGGLE_THRESHOLD = ABOUT_CLICK_PROGRESS_TARGET * 0.5
 const ABOUT_CLICK_SCROLL_DURATION_S = 1.2
+const ABOUT_SCROLL_MASK_FADE_PROGRESS = 0.06
 const TITLE_TOUCH_DRAG_THRESHOLD = 8
 
 type TitleScrollGesture = {
@@ -28,6 +29,10 @@ type TitleScrollGesture = {
 
 function getAboutMaxScrollTop(element: HTMLDivElement) {
   return Math.max(0, element.scrollHeight - element.clientHeight)
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
 }
 
 export function AboutPage() {
@@ -156,6 +161,8 @@ export function AboutPage() {
 
   const titleOpacity = 1 - Math.min(1, aboutScrollProgress * 1.8)
   const titleShift = aboutScrollTop
+  const scrollMaskOpacity =
+    1 - clamp(aboutScrollProgress / ABOUT_SCROLL_MASK_FADE_PROGRESS, 0, 1)
   const toggleAboutState = () => {
     const element = scrollRef.current
     if (!element) {
@@ -281,6 +288,17 @@ export function AboutPage() {
       >
         <PageTitle as="span" className={styles.titleBlock} title={siteContent.aboutTitle} />
       </button>
+
+      <div
+        className={`${styles.scrollMask} ${styles.scrollMaskTop}`}
+        style={{ opacity: scrollMaskOpacity }}
+        aria-hidden="true"
+      />
+      <div
+        className={`${styles.scrollMask} ${styles.scrollMaskBottom}`}
+        style={{ opacity: scrollMaskOpacity }}
+        aria-hidden="true"
+      />
 
       <div ref={scrollRef} className={styles.scrollArea}>
         <div className={styles.contentColumn}>

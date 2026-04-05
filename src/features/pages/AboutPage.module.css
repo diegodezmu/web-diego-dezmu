@@ -4,6 +4,39 @@
   height: 100%;
 }
 
+.scrollMask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.scrollMaskTop {
+  top: 0;
+  height: 240px;
+  background:
+    linear-gradient(180deg,
+      rgb(0, 0, 0) 0,
+      rgb(0, 0, 0) 16px,
+      rgba(0, 0, 0, 0.72) 72px,
+      rgba(0, 0, 0, 0.22) 144px,
+      rgba(0, 0, 0, 0) 240px);
+}
+
+.scrollMaskBottom {
+  bottom: 0;
+  height: 240px;
+  background:
+    linear-gradient(0deg,
+      rgb(0, 0, 0) 0,
+      rgb(0, 0, 0) 16px,
+      rgba(0, 0, 0, 0.8) 72px,
+      rgba(0, 0, 0, 0.3) 144px,
+      rgba(0, 0, 0, 0) 240px);
+}
+
 .titleAnchor {
   position: absolute;
   top: 50%;
@@ -77,6 +110,11 @@
 }
 
 @media (max-width: 767px) {
+  .scrollMaskTop,
+  .scrollMaskBottom {
+    height: 208px;
+  }
+
   .scrollArea {
     padding-top: 85vh;
     padding-bottom: 18vh;

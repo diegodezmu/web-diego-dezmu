@@ -48,7 +48,7 @@ export const scenePresets: Record<SceneMode, ScenePreset> = {
     pointerRadiusPx: aboutMarginGridConfig.pointerRadiusPx,
     pointerStrength: aboutMarginGridConfig.pointerStrength,
     driftMotion: 0.1,
-    orbitMotion: 0.1,
+    orbitMotion: 0.11,
     recovery: aboutMarginGridConfig.recovery,
     spin: 0,
     cameraPosition: [0, 0, 11.2],

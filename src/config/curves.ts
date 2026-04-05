@@ -121,7 +121,7 @@ export const betaConfig: CurveSceneConfig = {
   lfos: createLfoBank({
     enabled: true,
     ratio: 0.1,
-    wave: 'sawtooth',
+    wave: 'saw',
     amountPct: 10,
     target: {
       scope: 'curve',
@@ -185,12 +185,12 @@ export const deltaConfig: CurveSceneConfig = {
   }),
   lfos: createLfoBank({
     enabled: true,
-    ratio: 0,
-    wave: 'triangle',
-    amountPct: 0,
+    ratio: 0.05,
+    wave: 'sine',
+    amountPct: 0.1,
     target: {
       scope: 'curve',
-      key: 'ampY',
+      key: 'crossModAmount',
     },
   }),
 }
@@ -198,7 +198,7 @@ export const deltaConfig: CurveSceneConfig = {
 export const aboutMarginGridConfig = {
   cellPx: 18,
   count: 15000,
-  sizePx: 2.1,
+  sizePx: 1.5,
   opacity: 80,
   glowBoost: 100,
   haloPx: 12,
