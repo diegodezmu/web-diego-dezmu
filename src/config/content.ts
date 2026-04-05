@@ -1,4 +1,4 @@
-import type { AppSection, StackSkillGroup, StackSkillSpec } from '@/shared/types'
+import type { AppSection, StackSkillSpec } from '@/shared/types'
 
 type ContactSocialLink = {
   label: string
@@ -40,14 +40,6 @@ export const siteContent = {
   contactEmail: 'diego.dezmu@gmail.com',
   contactSocialLinks,
   menuCaption: '© SITE BY DIEGO DEZMU 2026',
-}
-
-export const stackGroupPalette: Record<StackSkillGroup, string> = {
-  engineering: '#b8bec8',
-  design: '#d0cbc5',
-  ai: '#e1e4ea',
-  tooling: '#9b9faa',
-  audio: '#b7b2ac',
 }
 
 export const stackSkillSpecs: StackSkillSpec[] = [

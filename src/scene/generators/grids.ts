@@ -51,41 +51,6 @@ export function generateViewportGridPoints(
   return points
 }
 
-export function generateMarginGridPoints(
-  width: number,
-  height: number,
-  cellSize: number,
-  marginX: number,
-  marginY: number,
-  depth: number,
-) {
-  const halfWidth = width * 0.5
-  const halfHeight = height * 0.5
-  const columns = Math.max(2, Math.floor(width / cellSize) + 1)
-  const rows = Math.max(2, Math.floor(height / cellSize) + 1)
-  const innerHalfWidth = Math.max(0, halfWidth - marginX)
-  const innerHalfHeight = Math.max(0, halfHeight - marginY)
-  const points: number[] = []
-  let offset = 0
-
-  for (let row = 0; row < rows; row += 1) {
-    const y = halfHeight - (row / Math.max(1, rows - 1)) * height
-
-    for (let column = 0; column < columns; column += 1) {
-      const x = -halfWidth + (column / Math.max(1, columns - 1)) * width
-
-      if (Math.abs(x) < innerHalfWidth && Math.abs(y) < innerHalfHeight) {
-        continue
-      }
-
-      points.push(x, y, hashSigned(offset * 0.93) * depth)
-      offset += 1
-    }
-  }
-
-  return new Float32Array(points)
-}
-
 type FrameStrip = {
   minX: number
   maxX: number

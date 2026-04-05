@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { DeviceTier, SceneMode } from '@/shared/types'
-import { getPresetForTier, scenePresets, sectionToSceneMode } from '@/config/scenePresets'
+import { getPresetForTier, sectionToSceneMode } from '@/config/scenePresets'
 
 const sceneModes: SceneMode[] = [
   'homeAlpha',
@@ -47,26 +47,28 @@ describe('getPresetForTier', () => {
     }
   })
 
-  it('scales count and sizePx while preserving the rest of the base preset', () => {
+  it('scales sizePx and preserves invariant fields across tiers', () => {
     for (const mode of sceneModes) {
-      const base = scenePresets[mode]
+      const desktopPreset = getPresetForTier(mode, 'desktop')
       const tabletPreset = getPresetForTier(mode, 'tablet')
 
-      expect(tabletPreset.count).toBe(Math.max(1800, Math.floor(base.count * tierCountScale.tablet)))
-      expect(tabletPreset.sizePx).toBe(base.sizePx * tierSizeScale.tablet)
-      expect(tabletPreset.opacity).toBe(base.opacity)
-      expect(tabletPreset.cameraPosition).toEqual(base.cameraPosition)
-      expect(tabletPreset.cameraLookAt).toEqual(base.cameraLookAt)
-      expect(tabletPreset.spread).toEqual(base.spread)
+      expect(tabletPreset.count).toBe(Math.max(1800, Math.floor(desktopPreset.count * tierCountScale.tablet)))
+      expect(tabletPreset.sizePx).toBe(desktopPreset.sizePx * tierSizeScale.tablet)
+      expect(tabletPreset.opacity).toBe(desktopPreset.opacity)
+      expect(tabletPreset.cameraPosition).toEqual(desktopPreset.cameraPosition)
+      expect(tabletPreset.cameraLookAt).toEqual(desktopPreset.cameraLookAt)
+      expect(tabletPreset.spread).toEqual(desktopPreset.spread)
     }
   })
 
   it('enforces the minimum particle count floor for lowPower', () => {
     for (const mode of sceneModes) {
-      const base = scenePresets[mode]
+      const desktopPreset = getPresetForTier(mode, 'desktop')
       const lowPowerPreset = getPresetForTier(mode, 'lowPower')
 
-      expect(lowPowerPreset.count).toBe(Math.max(1800, Math.floor(base.count * tierCountScale.lowPower)))
+      expect(lowPowerPreset.count).toBe(
+        Math.max(1800, Math.floor(desktopPreset.count * tierCountScale.lowPower)),
+      )
     }
   })
 })

@@ -1,16 +1,7 @@
 import type { StackSkillGroup, StackSkillSpec } from '@/shared/types'
 import type { StackSceneData, StackSkillDatum } from '../types'
-import { fitPointCount } from './bufferTransforms'
 import { createGridSegments } from './grids'
-import {
-  clamp,
-  fillBufferPoint,
-  gaussian,
-  hashSigned,
-  hashString,
-  mulberry32,
-  toTuple,
-} from './shared'
+import { clamp, fillBufferPoint, gaussian, hashSigned, hashString, mulberry32, toTuple } from './shared'
 
 const STACK_CUBE_SIZE = 10
 const STACK_CUBE_HALF = STACK_CUBE_SIZE * 0.5
@@ -224,57 +215,6 @@ function fillSkillSpherePoints(
   }
 
   return cursor
-}
-
-type StackTransitionMappingOptions = {
-  scaleX: number
-  scaleY: number
-  scaleZ: number
-  depthJitter: number
-  lateralJitter: number
-  verticalJitter: number
-}
-
-export function mapTransitionPointsToStack(
-  source: Float32Array,
-  count: number,
-  options: Partial<StackTransitionMappingOptions> = {},
-) {
-  const fitted = fitPointCount(source, count)
-  const mapped = new Float32Array(count * 3)
-  const settings: StackTransitionMappingOptions = {
-    scaleX: 2.08,
-    scaleY: 2.26,
-    scaleZ: 0.84,
-    depthJitter: 1.28,
-    lateralJitter: 0.09,
-    verticalJitter: 0.08,
-    ...options,
-  }
-
-  for (let index = 0; index < count; index += 1) {
-    const offset = index * 3
-    const x =
-      fitted[offset] * settings.scaleX +
-      hashSigned((index + 1) * 0.71) * settings.lateralJitter
-    const y =
-      STACK_CUBE_CENTER_Y +
-      fitted[offset + 1] * settings.scaleY +
-      hashSigned((index + 1) * 1.07) * settings.verticalJitter
-    const z =
-      fitted[offset + 2] * settings.scaleZ +
-      hashSigned((index + 1) * 1.39) * settings.depthJitter
-
-    mapped[offset] = clamp(x, -STACK_CUBE_HALF + 0.14, STACK_CUBE_HALF - 0.14)
-    mapped[offset + 1] = clamp(
-      y,
-      STACK_CUBE_CENTER_Y - STACK_CUBE_HALF + 0.14,
-      STACK_CUBE_CENTER_Y + STACK_CUBE_HALF - 0.14,
-    )
-    mapped[offset + 2] = clamp(z, -STACK_CUBE_HALF + 0.14, STACK_CUBE_HALF - 0.14)
-  }
-
-  return mapped
 }
 
 export function generateStackSceneData(

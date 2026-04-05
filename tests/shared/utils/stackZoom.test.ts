@@ -1,20 +1,28 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   STACK_ZOOM_MIN,
   STACK_ZOOM_STEP,
-  getDefaultStackZoomForWidth,
-  getStackZoomMaxForWidth,
+  getDefaultStackZoom,
+  getStackZoomMax,
 } from '@/shared/utils/stackZoom'
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('stackZoom', () => {
   it('keeps desktop and tablet at the existing max zoom-out step', () => {
-    expect(getStackZoomMaxForWidth(768)).toBe(1)
-    expect(getStackZoomMaxForWidth(1440)).toBe(1)
+    vi.stubGlobal('window', { innerWidth: 768 })
+    expect(getStackZoomMax()).toBe(1)
+
+    vi.stubGlobal('window', { innerWidth: 1440 })
+    expect(getStackZoomMax()).toBe(1)
   })
 
   it('adds one extra zoom-out step on mobile viewports', () => {
-    expect(getStackZoomMaxForWidth(767)).toBe(1 + STACK_ZOOM_STEP)
-    expect(getDefaultStackZoomForWidth(390)).toBe(1 + STACK_ZOOM_STEP)
+    vi.stubGlobal('window', { innerWidth: 390 })
+    expect(getStackZoomMax()).toBe(1 + STACK_ZOOM_STEP)
+    expect(getDefaultStackZoom()).toBe(1 + STACK_ZOOM_STEP)
   })
 
   it('preserves the existing zoom-in floor', () => {

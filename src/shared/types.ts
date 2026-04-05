@@ -82,7 +82,7 @@ export type LfoParticleKey =
   | 'orbitMotion'
   | 'recovery'
 
-export type LfoTarget =
+type LfoTarget =
   | {
       scope: 'curve'
       key: LfoCurveKey

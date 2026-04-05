@@ -25,12 +25,15 @@ npm run preview
 ## Structure
 
 - `src/app`: shell, routing, shared overlays, fallback handling
+- `src/assets`: Vite-processed images and fonts used by the app
 - `src/features/pages`: `home`, `about`, `stack`, and `contact` page content
 - `src/scene`: particle system, stack embedding map, labels, and point generators
 - `src/config`: copy, curve definitions, and scene presets
-- `Material`: imported images and SVG assets
-- `Documents`: historical planning and handoff docs that may not reflect the current implementation
-- `Visual-references`: non-runtime visual references for design iteration
+- `src/shared`: shared components, utilities, and types
+- `src/state`: Zustand store for UI and scene coordination
+- `public`: static assets served as-is
+- `tests`: unit coverage for generators, config, and shared utilities
+- `docs`: audits, licenses, and tooling notes kept out of the runtime tree
 
 ## Current Experience
 
@@ -51,7 +54,7 @@ npm run preview
 
 ### `4.2.0`
 
-- Replaced the previous single About portrait asset with a responsive desktop/mobile pair: `Material/portrait-desktop.webp` and `Material/portrait-mobile.webp`.
+- Replaced the previous single About portrait asset with a responsive desktop/mobile pair: `src/assets/images/portrait-desktop.webp` and `src/assets/images/portrait-mobile.webp`.
 - Reworked the `About` section to use direct scroll progress, title-triggered wheel/touch control, and a responsive image frame.
 - Expanded the `Stack` section into a curve-to-embedding-map transition with grouped skills, orbit controls, zoom buttons, and projected labels in 3D space.
 - Updated the particle scene to support the stack map transition, section-specific blends, and LFO-driven parameter modulation.

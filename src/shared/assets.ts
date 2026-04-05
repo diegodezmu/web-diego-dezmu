@@ -1,5 +1,5 @@
-import portraitDesktopUrl from '../../Material/portrait-desktop.webp'
-import portraitMobileUrl from '../../Material/portrait-mobile.webp'
+import portraitDesktopUrl from '@/assets/images/portrait-desktop.webp'
+import portraitMobileUrl from '@/assets/images/portrait-mobile.webp'
 
 export const assets = {
   portraitDesktopUrl,

@@ -22,7 +22,7 @@ export const EXPLODE_PRESETS: Record<
   contact: { strength: 0 },
 }
 
-export const scenePresets: Record<SceneMode, ScenePreset> = {
+const scenePresets: Record<SceneMode, ScenePreset> = {
   homeAlpha: {
     ...alphaConfig.particles,
     spin: 0,

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { detectCapabilities, getDeviceTier } from '@/shared/utils/device'
+import { detectCapabilities } from '@/shared/utils/device'
 
 type BrowserStubOptions = {
   width: number
@@ -38,19 +38,18 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('getDeviceTier', () => {
-  it('uses 767px as the mobile cutoff', () => {
-    expect(getDeviceTier(767)).toBe('mobile')
-    expect(getDeviceTier(768)).toBe('tablet')
-  })
-
-  it('uses 1200px as the tablet cutoff', () => {
-    expect(getDeviceTier(1200)).toBe('tablet')
-    expect(getDeviceTier(1201)).toBe('desktop')
-  })
-})
-
 describe('detectCapabilities', () => {
+  it('keeps non-low-power widths on the tablet and desktop tiers', () => {
+    stubBrowserEnvironment({ width: 768 })
+    expect(detectCapabilities().deviceTier).toBe('tablet')
+
+    stubBrowserEnvironment({ width: 1200 })
+    expect(detectCapabilities().deviceTier).toBe('tablet')
+
+    stubBrowserEnvironment({ width: 1201 })
+    expect(detectCapabilities().deviceTier).toBe('desktop')
+  })
+
   it('detects a normal desktop environment', () => {
     stubBrowserEnvironment({ width: 1440 })
 
@@ -61,7 +60,7 @@ describe('detectCapabilities', () => {
     })
   })
 
-  it('marks small viewports as lowPower even when getDeviceTier would be mobile', () => {
+  it('marks small viewports as lowPower', () => {
     stubBrowserEnvironment({ width: 767, coarsePointer: true })
 
     expect(detectCapabilities()).toEqual({

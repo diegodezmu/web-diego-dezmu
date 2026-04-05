@@ -6,11 +6,11 @@ export const STACK_ZOOM_STEP = 0.2
 const STACK_ZOOM_MAX_DESKTOP = 1.0
 const STACK_ZOOM_MAX_MOBILE = STACK_ZOOM_MAX_DESKTOP + STACK_ZOOM_STEP
 
-export function getStackZoomMaxForWidth(width: number) {
+function getStackZoomMaxForWidth(width: number) {
   return width <= MOBILE_STACK_ZOOM_BREAKPOINT ? STACK_ZOOM_MAX_MOBILE : STACK_ZOOM_MAX_DESKTOP
 }
 
-export function getDefaultStackZoomForWidth(width: number) {
+function getDefaultStackZoomForWidth(width: number) {
   return getStackZoomMaxForWidth(width)
 }
 

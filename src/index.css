@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Michroma';
-  src: url('../Material/Michroma/Michroma-Regular.ttf') format('truetype');
+  src: url('./assets/fonts/Michroma-Regular.ttf') format('truetype');
   font-display: swap;
 }
 

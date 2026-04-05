@@ -4,7 +4,7 @@ type NavigatorWithDeviceMemory = Navigator & {
   deviceMemory?: number
 }
 
-export function getDeviceTier(width: number): DeviceTier {
+function getDeviceTier(width: number): DeviceTier {
   if (width <= 767) {
     return 'mobile'
   }
