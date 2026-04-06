@@ -122,7 +122,7 @@ export const betaConfig: CurveSceneConfig = {
     crossModAmount: Math.PI * 0.25,
     foldAmount: 0,
     ringModFreq: 0,
-    speed: 0.005,
+    speed: 0.012,
     animate: true,
   },
   particles: sharedCurveParticles,
