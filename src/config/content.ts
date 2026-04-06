@@ -7,7 +7,7 @@ type ContactSocialLink = {
 
 /** Tinte global de las partículas en todas las escenas.
  *  Formato #RRGGBB — editable con cualquier color picker. */
-export const PARTICLE_TINT_COLOR = 'rgba(111, 101, 220, 1)'
+export const PARTICLE_TINT_COLOR = 'rgba(130, 121, 224, 1)'
 
 const contactSocialLinks: ContactSocialLink[] = [
   { label: 'Instagram', href: 'https://www.instagram.com/ddezmu' },
@@ -45,10 +45,10 @@ export const siteContent = {
 export const stackSkillSpecs: StackSkillSpec[] = [
   { label: 'LLM', group: 'ai', densityTier: 8 },
   { label: 'n8n', group: 'ai', densityTier: 6 },
-  { label: 'Workflows', group: 'ai', densityTier: 6 },
+  { label: 'Agentic flows', group: 'ai', densityTier: 7 },
   { label: 'Agents', group: 'ai', densityTier: 7 },
   { label: 'Context engineering', group: 'ai', densityTier: 7 },
-  { label: 'Prompting', group: 'ai', densityTier: 8 },
+  { label: 'Prompt engineering', group: 'engineering', densityTier: 8 },
   { label: 'MCP', group: 'ai', densityTier: 5 },
   { label: 'API', group: 'ai', densityTier: 7 },
   { label: 'RAG', group: 'ai', densityTier: 7 },
@@ -57,9 +57,9 @@ export const stackSkillSpecs: StackSkillSpec[] = [
   { label: 'System design', group: 'design', densityTier: 8 },
   { label: 'UX', group: 'design', densityTier: 8 },
   { label: 'UI', group: 'design', densityTier: 8 },
-  { label: 'Product Design', group: 'design', densityTier: 7 },
+  { label: 'CLI', group: 'engineering', densityTier: 7 },
   { label: 'Figma', group: 'design', densityTier: 8 },
-  { label: 'Prototyping', group: 'design', densityTier: 8 },
+  { label: 'Docker', group: 'engineering', densityTier: 5 },
   { label: 'Touch designer', group: 'design', densityTier: 2 },
   { label: 'Motion design', group: 'design', densityTier: 4 },
   { label: 'Antigravity', group: 'tooling', densityTier: 6 },
@@ -69,9 +69,9 @@ export const stackSkillSpecs: StackSkillSpec[] = [
   { label: 'React', group: 'engineering', densityTier: 4 },
   { label: 'Next.js', group: 'engineering', densityTier: 2 },
   { label: 'Node.js', group: 'engineering', densityTier: 2 },
-  { label: 'Git', group: 'tooling', densityTier: 6 },
+  { label: 'Git', group: 'tooling', densityTier: 7 },
   { label: 'WebGL', group: 'engineering', densityTier: 5 },
-  { label: 'Three.js', group: 'engineering', densityTier: 6 },
+  { label: 'Obsidian', group: 'tooling', densityTier: 6 },
   { label: 'GSAP', group: 'engineering', densityTier: 4 },
   { label: 'Adobe CC', group: 'design', densityTier: 4 },
   { label: 'Vercel', group: 'engineering', densityTier: 6 },

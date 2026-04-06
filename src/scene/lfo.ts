@@ -104,6 +104,7 @@ function evaluateBaseWave(wave: Exclude<LfoWave, 'random'>, phase: number) {
     case 'triangle':
       return 1 - 4 * Math.abs(fract(phase + 0.25) - 0.5)
     case 'saw':
+    case 'sawtooth':
       return fract(phase + 0.5) * 2 - 1
     case 'sine':
     default:

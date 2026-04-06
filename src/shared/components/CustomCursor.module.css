@@ -28,9 +28,9 @@
 }
 
 .cursorInteractive .cursorFrame {
-  transform: scale(1.5);
+  transform: scale(1.4);
 }
 
 .cursorInteractive .cursorCenter {
-  transform: scale(0.9);
+  transform: scale(1);
 }

@@ -4,6 +4,10 @@ export type CurveSceneConfig = {
   curve: CurveDefinition
   particles: ParticleTuning
   lfos: LfoBank
+  viewportScale: {
+    width: number
+    height: number
+  }
 }
 
 type ParticleSpec = {
@@ -102,6 +106,10 @@ export const alphaConfig: CurveSceneConfig = {
       key: 'ampX',
     },
   }),
+  viewportScale: {
+    width: 0.18,
+    height: 0.18,
+  },
 }
 
 export const betaConfig: CurveSceneConfig = {
@@ -112,22 +120,26 @@ export const betaConfig: CurveSceneConfig = {
     ampY: 0.55,
     phase: 0,
     crossModAmount: Math.PI * 0.25,
-    foldAmount: 5,
+    foldAmount: 0,
     ringModFreq: 0,
-    speed: 0.004,
+    speed: 0.005,
     animate: true,
   },
   particles: sharedCurveParticles,
   lfos: createLfoBank({
-    enabled: true,
+    enabled: false,
     ratio: 0.1,
-    wave: 'saw',
+    wave: 'sawtooth',
     amountPct: 10,
     target: {
       scope: 'curve',
       key: 'crossModAmount',
     },
   }),
+  viewportScale: {
+    width: 0.20,
+    height: 0.20,
+  },
 }
 
 export const gammaConfig: CurveSceneConfig = {
@@ -154,6 +166,10 @@ export const gammaConfig: CurveSceneConfig = {
       key: 'ampY',
     },
   }),
+  viewportScale: {
+    width: 0.3,
+    height: 0.26,
+  },
 }
 
 export const deltaConfig: CurveSceneConfig = {
@@ -193,12 +209,16 @@ export const deltaConfig: CurveSceneConfig = {
       key: 'crossModAmount',
     },
   }),
+  viewportScale: {
+    width: 0.26,
+    height: 0.26,
+  },
 }
 
 export const aboutMarginGridConfig = {
   cellPx: 18,
   count: 15000,
-  sizePx: 1.5,
+  sizePx: 1.52,
   opacity: 90,
   glowBoost: 100,
   haloPx: 12,

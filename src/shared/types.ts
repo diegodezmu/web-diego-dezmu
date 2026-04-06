@@ -12,7 +12,7 @@ export type SceneMode =
 
 export type DeviceTier = 'desktop' | 'tablet' | 'mobile' | 'lowPower'
 
-export type LfoWave = 'sine' | 'triangle' | 'saw' | 'random'
+export type LfoWave = 'sine' | 'triangle' | 'saw' | 'sawtooth' | 'random'
 
 export type LfoSlotId = 'lfo1' | 'lfo2' | 'lfo3'
 

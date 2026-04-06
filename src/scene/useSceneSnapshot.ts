@@ -458,11 +458,11 @@ export function useSceneSnapshot() {
         gammaScene.curve,
         stackPhaseRef.current,
         stackGammaWorld.width *
-        0.3 *
-        getAmplitudeRatio(gammaConfig.curve.ampX, gammaScene.curve.ampX),
+          gammaConfig.viewportScale.width *
+          getAmplitudeRatio(gammaConfig.curve.ampX, gammaScene.curve.ampX),
         stackGammaWorld.height *
-        0.26 *
-        getAmplitudeRatio(gammaConfig.curve.ampY, gammaScene.curve.ampY),
+          gammaConfig.viewportScale.height *
+          getAmplitudeRatio(gammaConfig.curve.ampY, gammaScene.curve.ampY),
         0.22,
         thickness,
       )
@@ -543,10 +543,10 @@ export function useSceneSnapshot() {
             aboutScene.curve,
             aboutPhaseRef.current,
             aboutWorld.width *
-              0.32 *
+              betaConfig.viewportScale.width *
               getAmplitudeRatio(betaConfig.curve.ampX, aboutScene.curve.ampX),
             aboutWorld.height *
-              0.22 *
+              betaConfig.viewportScale.height *
               getAmplitudeRatio(betaConfig.curve.ampY, aboutScene.curve.ampY),
             0.22,
             thickness,
@@ -600,10 +600,10 @@ export function useSceneSnapshot() {
             contactScene.curve,
             contactPhaseRef.current,
             contactWorld.width *
-              0.26 *
+              deltaConfig.viewportScale.width *
               getAmplitudeRatio(deltaConfig.curve.ampX, contactScene.curve.ampX),
             contactWorld.height *
-              0.26 *
+              deltaConfig.viewportScale.height *
               getAmplitudeRatio(deltaConfig.curve.ampY, contactScene.curve.ampY),
             0.26,
             thickness,
@@ -681,10 +681,10 @@ export function useSceneSnapshot() {
             homeScene.curve,
             homePhaseRef.current,
             homeWorld.width *
-              0.18 *
+              alphaConfig.viewportScale.width *
               getAmplitudeRatio(alphaConfig.curve.ampX, homeScene.curve.ampX),
             homeWorld.height *
-              0.18 *
+              alphaConfig.viewportScale.height *
               getAmplitudeRatio(alphaConfig.curve.ampY, homeScene.curve.ampY),
             0.22,
             thickness,
