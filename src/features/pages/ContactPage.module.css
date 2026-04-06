@@ -72,6 +72,7 @@
 }
 
 @media (max-width: 767px) {
+
   .emailLink,
   .socialLink {
     font-size: calc(var(--link-size) - 1px);

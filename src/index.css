@@ -34,7 +34,7 @@
 
 :root {
   --color-dark: #000000;
-  --color-dark-hover: #0d0d0d;
+  --color-dark-hover: #0b0b0b;
   --color-accent: var(--color-light-highlight);
   --color-light-primary: #d1d1d1;
   --color-light-highlight: #ffffff;
@@ -46,19 +46,19 @@
   --frame-margin-tablet: 48px;
   --frame-margin-mobile: 40px;
   --frame-margin: var(--frame-margin-desktop);
-  --title-size: 32px;
+  --title-size: 36px;
   --title-tracking: 0.45em;
-  --menu-button-size: 20px;
-  --menu-button-tracking: 0.5em;
-  --logo-display-size: 48px;
-  --logo-display-tracking: 0.5em;
-  --role-size: 12px;
+  --menu-button-size: 24px;
+  --menu-button-tracking: 0.45em;
+  --logo-display-size: 36px;
+  --logo-display-tracking: 0.45em;
+  --role-size: 14px;
   --body-size: 17px;
-  --link-size: 16px;
-  --caption-size: 12px;
+  --link-size: 18px;
+  --caption-size: 14px;
   --micro-logo-size: 12px;
   --micro-logo-tracking: 2px;
-  --menu-toggle-size: 18px;
+  --menu-toggle-size: 20px;
   --menu-toggle-tracking: 0.09em;
   /* Delay de entrada de UI en home — sincroniza con recomposición de partículas */
   --intro-delay: 5s;

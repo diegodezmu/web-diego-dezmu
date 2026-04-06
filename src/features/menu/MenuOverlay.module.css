@@ -73,7 +73,7 @@
 .linkButton {
   position: relative;
   min-width: 168px;
-  padding: 24px;
+  padding: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -290,16 +290,18 @@
 
   .linkButton {
     min-width: 308px;
-    padding: 24px;
+    padding: 20px;
     font-size: var(--menu-button-size);
   }
 
   .caption {
     white-space: nowrap;
+    font-size: 11px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .panel,
   .closeButtonEnter,
   .closeButtonExit,

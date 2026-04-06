@@ -59,7 +59,7 @@ function ProjectedLabelComponent({ skill, snapshotRef }: ProjectedLabelProps) {
       projected.z <= 1
     ) {
       const depthScale = clamp(12 / distance, 0.34, 1.48)
-      const fontSize = Math.max(8, Math.round(12 * depthScale * skill.labelScale))
+      const fontSize = Math.max(10, Math.round(22 * depthScale * skill.labelScale))
 
       element.style.fontSize = `${fontSize}px`
       targetOpacity = Math.min(1, visibility)
