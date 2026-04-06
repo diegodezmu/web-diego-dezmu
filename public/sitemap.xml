@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://[DOMINIO]/</loc>
+    <loc>https://diegodezmu.com/</loc>
   </url>
   <url>
-    <loc>https://[DOMINIO]/about</loc>
+    <loc>https://diegodezmu.com/about</loc>
   </url>
   <url>
-    <loc>https://[DOMINIO]/stack</loc>
+    <loc>https://diegodezmu.com/stack</loc>
   </url>
   <url>
-    <loc>https://[DOMINIO]/contact</loc>
+    <loc>https://diegodezmu.com/contact</loc>
   </url>
 </urlset>
