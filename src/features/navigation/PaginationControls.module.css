@@ -54,16 +54,12 @@
   transform-origin: right center;
 }
 
-.sideButton:hover,
 .sideButton:focus-visible,
-.mobileButton:hover,
 .mobileButton:focus-visible {
   color: var(--color-light-highlight);
 }
 
-.sideButton:hover::before,
 .sideButton:focus-visible::before,
-.mobileButton:hover::before,
 .mobileButton:focus-visible::before {
   transform: scaleX(1);
 }
@@ -126,9 +122,7 @@
   fill: currentColor;
 }
 
-.sideButton:hover .chevron,
 .sideButton:focus-visible .chevron,
-.mobileButton:hover .chevron,
 .mobileButton:focus-visible .chevron {
   color: var(--color-light-highlight);
   background: transparent;
@@ -216,18 +210,42 @@
   right: calc(var(--frame-margin) - 11.93px);
 }
 
-.sideButtonLeft:hover .chevron,
 .sideButtonLeft:focus-visible .chevron,
-.mobileButtonLeft:hover .chevron,
 .mobileButtonLeft:focus-visible .chevron {
   transform: translate(-10px, -50%);
 }
 
-.sideButtonRight:hover .chevron,
 .sideButtonRight:focus-visible .chevron,
-.mobileButtonRight:hover .chevron,
 .mobileButtonRight:focus-visible .chevron {
   transform: translate(10px, -50%);
+}
+
+@media (hover: hover) {
+  .sideButton:hover,
+  .mobileButton:hover {
+    color: var(--color-light-highlight);
+  }
+
+  .sideButton:hover::before,
+  .mobileButton:hover::before {
+    transform: scaleX(1);
+  }
+
+  .sideButton:hover .chevron,
+  .mobileButton:hover .chevron {
+    color: var(--color-light-highlight);
+    background: transparent;
+  }
+
+  .sideButtonLeft:hover .chevron,
+  .mobileButtonLeft:hover .chevron {
+    transform: translate(-10px, -50%);
+  }
+
+  .sideButtonRight:hover .chevron,
+  .mobileButtonRight:hover .chevron {
+    transform: translate(10px, -50%);
+  }
 }
 
 .mobileSpacer::before {

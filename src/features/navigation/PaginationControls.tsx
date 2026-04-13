@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { shouldInterceptPageTransitionClick, usePageTransitionNavigation } from '@/app/usePageTransitionNavigation'
 import { sectionLabels, sectionOrder } from '@/config/content'
@@ -97,22 +97,16 @@ function SideButton({
 export function PaginationControls() {
   const activeSection = useAppStore((state) => state.activeSection)
   const menuOpen = useAppStore((state) => state.menuOpen)
+  const contentRevealKey = useAppStore((state) => state.contentRevealKey)
   const pageTransitionPhase = useAppStore((state) => state.pageTransitionPhase)
   const pageTransitionOrigin = useAppStore((state) => state.pageTransitionOrigin)
   const mountedDuringIntroRef = useRef(!useAppStore.getState().introCompleted)
-  const homeIntroDelayConsumedRef = useRef(false)
   const shouldDelayHomeIntro =
     activeSection === 'home' &&
     mountedDuringIntroRef.current &&
-    !homeIntroDelayConsumedRef.current
+    contentRevealKey === 0
   const homeIntroClass = shouldDelayHomeIntro ? styles.homeIntroNav : ''
   const exiting = pageTransitionPhase === 'exiting' && pageTransitionOrigin === sectionToPath(activeSection)
-
-  useEffect(() => {
-    if (!menuOpen && shouldDelayHomeIntro) {
-      homeIntroDelayConsumedRef.current = true
-    }
-  }, [menuOpen, shouldDelayHomeIntro])
 
   if (menuOpen) {
     return null
